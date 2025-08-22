@@ -1,5 +1,5 @@
 from importlib.metadata import version, PackageNotFoundError
-from xpcs_toolkit.xpcs_file import XpcsFile
+from xpcs_toolkit.xpcs_file import XpcsDataFile, XpcsFile  # XpcsFile for backward compatibility
 from xpcs_toolkit.viewer_kernel import ViewerKernel
 from xpcs_toolkit.file_locator import FileLocator
 

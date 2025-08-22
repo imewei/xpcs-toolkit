@@ -300,7 +300,7 @@ class XpcsDataFile:
         return result_data
 
     def __getattr__(self, key):
-        # keys from qmap
+        # keys from q_space_map
         if key in [
             "sqlist",
             "dqlist",
@@ -320,12 +320,12 @@ class XpcsDataFile:
             "map_units",
             "get_qbin_label",
         ]:
-            return self.qmap.__dict__[key]
+            return self.q_space_map.__dict__[key]
         # delayed loading of saxs_2d due to its large size
         elif key == "saxs_2d":
             if self.saxs_2d_data is None:
-                ret = get(self.fname, ["saxs_2d"], "alias", ftype="nexus")
-                self.saxs_2d_data = ret["saxs_2d"]
+                result_data = get(self.filename, ["saxs_2d"], "alias", ftype="nexus")
+                self.saxs_2d_data = result_data["saxs_2d"]
             return self.saxs_2d_data
         elif key == "saxs_2d_log":
             if self.saxs_2d_log_data is None:
