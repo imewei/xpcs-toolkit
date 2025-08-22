@@ -16,18 +16,135 @@ logger = logging.getLogger(__name__)
 
 class AnalysisKernel(DataFileLocator):
     """
-    AnalysisKernel provides comprehensive analysis functionality for XPCS data.
+    AnalysisKernel - Advanced XPCS Data Analysis Engine
     
-    This class serves as the main analysis engine, coordinating various analysis
-    modules and managing data processing workflows for X-ray Photon Correlation
-    Spectroscopy experiments.
+    This comprehensive analysis kernel serves as the primary engine for processing
+    and analyzing X-ray Photon Correlation Spectroscopy (XPCS) datasets. It coordinates
+    multiple specialized analysis modules to provide complete analysis workflows for
+    both multi-tau and two-time correlation experiments.
+    
+    ## Core Analysis Capabilities
+    
+    ### Multi-tau Correlation Analysis
+    - **G2 Function Analysis**: Complete g2(q,t) correlation function processing
+    - **Relaxation Dynamics**: Extract characteristic relaxation times and dynamics
+    - **Q-range Selection**: Analyze specific momentum transfer ranges
+    - **Time-range Filtering**: Focus on specific time scales of interest
+    - **Statistical Analysis**: Proper error propagation from photon statistics
+    - **Fitting Algorithms**: Single and double exponential fitting with bounds
+    
+    ### Two-time Correlation Analysis
+    - **C2 Visualization**: Two-dimensional correlation function display
+    - **Aging Studies**: Time-resolved analysis of non-stationary systems
+    - **Evolution Maps**: Speckle pattern evolution over experimental time
+    - **Non-equilibrium Dynamics**: Analysis of systems far from equilibrium
+    - **Interactive Exploration**: Real-time correlation data examination
+    
+    ### Small-Angle X-ray Scattering (SAXS)
+    - **2D Pattern Analysis**: Complete scattering pattern visualization
+    - **Radial Averaging**: 1D intensity profiles with sector integration
+    - **Q-space Mapping**: Momentum transfer calibration and binning
+    - **Background Subtraction**: Automated and manual background correction
+    - **Region of Interest**: Customizable ROI analysis for anisotropic samples
+    - **Export Capabilities**: Data export in standard formats
+    
+    ### Experimental Quality Assessment
+    - **Beam Stability**: Monitor intensity fluctuations and beam drift
+    - **Detector Performance**: Assess detector stability and noise levels
+    - **Sample Drift**: Detect and quantify sample movement during measurement
+    - **Statistical Metrics**: Calculate stability and quality parameters
+    - **Long-term Monitoring**: Track experimental conditions over time
+    
+    ## Advanced Features
+    
+    ### Batch Processing
+    - **Multi-file Analysis**: Process entire datasets automatically
+    - **Parameter Consistency**: Maintain consistent analysis parameters
+    - **Parallel Processing**: Efficient handling of large dataset collections
+    - **Progress Tracking**: Real-time analysis progress monitoring
+    - **Error Handling**: Robust processing with detailed error reporting
+    
+    ### Interactive Visualization
+    - **Real-time Plotting**: Dynamic plot updates during analysis
+    - **Multi-panel Displays**: Simultaneous visualization of multiple analyses
+    - **Zoom and Pan**: Interactive exploration of data
+    - **Publication Quality**: High-resolution output suitable for publications
+    - **Custom Styling**: Configurable plot appearance and formatting
+    
+    ### Data Management
+    - **File Organization**: Intelligent file discovery and organization
+    - **Metadata Handling**: Complete experimental parameter preservation
+    - **Format Support**: Native NeXus and legacy HDF5 format handling
+    - **Memory Optimization**: Efficient handling of large datasets
+    - **Caching System**: Intelligent data caching for improved performance
+    
+    ## Typical Analysis Workflows
+    
+    ### Standard Multi-tau Analysis
+    ```python
+    # Initialize analysis kernel
+    kernel = AnalysisKernel('/path/to/data')
+    kernel.build()
+    
+    # Plot G2 correlation functions
+    q_range = (0.01, 0.1)
+    time_range = (1e-6, 1e3)
+    kernel.plot_g2_function(handler, q_range, time_range, y_range=(0.9, 1.5))
+    
+    # Perform tau vs q analysis
+    fitting_results = kernel.plot_tau_vs_q(q_range=q_range)
+    ```
+    
+    ### SAXS Pattern Analysis
+    ```python
+    # Visualize 2D scattering patterns
+    kernel.plot_saxs_2d(rows=[0], log_scale=True)
+    
+    # Generate 1D radial profiles
+    kernel.plot_saxs_1d(pg_handler, mp_handler, q_range=(0.005, 0.5))
+    
+    # Export analysis results
+    kernel.export_saxs_1d_data(pg_handler, '/output/folder')
+    ```
+    
+    ### Quality Assessment
+    ```python
+    # Check beam stability
+    stability_info = kernel.get_info_at_mouse_position(rows=[0], x=512, y=512)
+    
+    # Generate fitting summary
+    fitting_tree = kernel.get_fitting_tree(rows=[0, 1, 2])
+    ```
+    
+    ## Integration with Synchrotron Facilities
+    
+    Optimized for use at synchrotron beamlines, particularly APS 8-ID-I:
+    - **Real-time Analysis**: Process data as it's being collected
+    - **Automated Workflows**: Integration with beamline control systems
+    - **Remote Access**: Support for remote analysis and monitoring
+    - **High Throughput**: Handle continuous data streams efficiently
+    - **Standardized Protocols**: Consistent analysis across experiments
     
     Parameters
     ----------
     path : str
         Path to the directory containing XPCS data files.
+        The kernel will automatically discover and index all compatible files.
     statusbar : object, optional
-        Status bar widget for progress updates.
+        Status bar widget for displaying progress updates during analysis.
+        Used primarily in GUI applications for user feedback.
+        
+    Attributes
+    ----------
+    path : str
+        Working directory path containing XPCS data files
+    average_toolbox : AverageToolbox
+        Tool for averaging multiple datasets
+    current_dataset : XpcsDataFile or None
+        Currently active dataset for analysis
+    metadata : dict
+        Analysis metadata and configuration parameters
+    
     """
     
     def __init__(self, path: str, statusbar=None):

@@ -147,21 +147,123 @@ def create_identifier(filename: str, label_style: Optional[str] = None, simplify
 
 class XpcsDataFile:
     """
-    XpcsDataFile is a class that wraps an XPCS analysis HDF file.
+    XpcsDataFile - Comprehensive XPCS Dataset Handler
     
-    This class provides comprehensive functionality for loading, analyzing,
-    and manipulating X-ray Photon Correlation Spectroscopy (XPCS) data.
+    This class provides complete functionality for loading, analyzing, and manipulating
+    X-ray Photon Correlation Spectroscopy (XPCS) datasets from the customized NeXus
+    file format developed at Argonne National Laboratory's Advanced Photon Source
+    beamline 8-ID-I.
+    
+    ## Supported Analysis Types
+    
+    ### Multi-tau Correlation Analysis
+    - Complete g2(q,t) correlation function datasets
+    - Time-delay correlation analysis from microseconds to hours
+    - Statistical error propagation and uncertainty quantification
+    - Advanced fitting capabilities for extracting relaxation dynamics
+    - Support for both equilibrium and non-equilibrium systems
+    
+    ### Two-time Correlation Analysis
+    - Two-dimensional C(q,t1,t2) correlation function visualization
+    - Time-resolved dynamics for aging and non-stationary systems
+    - Interactive exploration of speckle pattern evolution
+    - Support for studying glass transitions and phase changes
+    - Age-dependent correlation analysis
+    
+    ## File Format Support
+    
+    ### APS 8-ID-I NeXus Format
+    - Native support for the customized NeXus format
+    - Complete experimental metadata preservation
+    - Optimized data structures for large-scale experiments
+    - Multi-dimensional dataset handling
+    - Comprehensive q-space mapping information
+    
+    ### Data Components
+    - **Scattering Patterns**: 2D detector images with calibration
+    - **Correlation Functions**: Multi-tau or two-time correlation data
+    - **Q-space Maps**: Momentum transfer calibration and binning
+    - **Detector Geometry**: Pixel positions and solid angles
+    - **Experimental Parameters**: Beam energy, detector distance, etc.
+    - **Analysis Metadata**: Processing parameters and timestamps
+    
+    ## Key Features
+    
+    ### Intelligent Data Loading
+    - Lazy loading of large datasets to minimize memory usage
+    - Automatic detection of analysis type (multi-tau vs two-time)
+    - Efficient handling of multi-gigabyte datasets
+    - Selective field loading for specific analysis needs
+    
+    ### Advanced Q-space Handling
+    - Automatic q-vector calculation from detector geometry
+    - Support for both isotropic and anisotropic samples
+    - Dynamic and static q-binning for different analysis types
+    - Phi-angle sectoring for anisotropy studies
+    
+    ### Correlation Analysis Tools
+    - G2 function extraction with customizable q-ranges
+    - Time-range selection for specific dynamics
+    - Statistical error propagation from raw photon statistics
+    - Baseline correction and normalization
+    
+    ### Visualization Support
+    - Direct integration with matplotlib for publication-quality plots
+    - Interactive visualization tools for data exploration
+    - Export capabilities for external analysis software
+    - Support for both linear and logarithmic scaling
+    
+    ## Typical Usage
+    
+    ```python
+    # Load XPCS dataset
+    xpcs_data = XpcsDataFile('experiment_data.hdf')
+    
+    # Check available analysis types
+    print(f"Analysis types: {xpcs_data.analysis_type}")
+    
+    # Extract correlation data
+    q_vals, t_vals, g2, g2_err, labels = xpcs_data.get_g2_data(q_range=(0.01, 0.1))
+    
+    # Access scattering pattern
+    saxs_pattern = xpcs_data.saxs_2d
+    
+    # Get experimental metadata
+    metadata = xpcs_data.get_hdf_metadata()
+    ```
     
     Parameters
     ----------
     filename : str
         Path to the HDF file containing XPCS analysis data.
+        Must be in APS 8-ID-I NeXus format or compatible legacy format.
     fields : list of str, optional
-        Additional data fields to load from the file.
+        Additional data fields to load beyond the standard set.
+        Useful for accessing specialized analysis results or raw data.
     label_style : str, optional
-        Comma-separated string of indices to customize the label creation.
-    qmap_manager : object, optional
-        Q-map manager object for handling q-space mapping.
+        Comma-separated string of indices to customize the file label creation.
+        Used for organizing multiple datasets in batch analysis.
+    qmap_manager : QMapManager, optional
+        Q-map manager object for handling q-space mapping and caching.
+        Improves performance when analyzing multiple related files.
+        
+    Attributes
+    ----------
+    filename : str
+        Path to the loaded data file
+    analysis_type : tuple
+        Types of analysis available ('Multitau', 'Twotime', or both)
+    q_space_map : QMap
+        Q-space mapping and calibration information
+    label : str
+        Human-readable identifier for the dataset
+    g2 : ndarray, optional
+        Multi-tau correlation function data (if available)
+    saxs_2d : ndarray
+        2D scattering pattern from the detector
+    time_elapsed : ndarray, optional
+        Time delay values for correlation analysis (if available)
+    
     """
 
     def __init__(self, filename: str, fields: Optional[List[str]] = None, 

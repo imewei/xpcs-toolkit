@@ -1,9 +1,93 @@
 """
-Headless CLI interface for pyXpcsViewer
+XPCS Toolkit - Headless Command-Line Interface for XPCS Data Analysis
 
-This module provides command-line interface for headless operation of XPCS analysis
-without GUI dependencies. It uses matplotlib for plot generation and saves figures
-to disk.
+This module provides a comprehensive command-line interface for headless operation
+of X-ray Photon Correlation Spectroscopy (XPCS) data analysis and visualization.
+Designed for batch processing, automated workflows, and integration with analysis
+pipelines at synchrotron facilities.
+
+## Supported File Formats
+
+### APS 8-ID-I NeXus Format
+- Custom NeXus format developed at Argonne National Laboratory
+- Multi-tau correlation analysis results
+- Two-time correlation analysis results
+- Complete experimental metadata and parameters
+- Optimized for large-scale XPCS experiments
+
+### Legacy HDF5 Format
+- Backward compatibility with older data formats
+- Automatic format detection and conversion
+- Seamless migration path for existing datasets
+
+## Analysis Capabilities
+
+### 2D SAXS Visualization (saxs2d)
+- Small-angle X-ray scattering pattern visualization
+- Logarithmic and linear intensity scaling
+- Detector geometry correction
+- Q-space mapping and calibration
+- Beam center determination
+- Mask application and bad pixel handling
+
+### G2 Correlation Analysis (g2)
+- Multi-tau correlation function analysis
+- Time-delay dependent dynamics
+- Q-range selection and filtering
+- Statistical error propagation
+- Relaxation time extraction
+- Non-ergodic behavior characterization
+
+### 1D Radial Analysis (saxs1d)
+- Radial averaging of 2D patterns
+- Angular integration with customizable sectors
+- Background subtraction capabilities
+- Multi-phi analysis for anisotropic samples
+- Logarithmic scaling options
+- Export to standard data formats
+
+### Beam Stability Monitoring (stability)
+- Intensity time-series analysis
+- Beam position stability assessment
+- Detector stability monitoring
+- Sample drift detection
+- Long-term measurement quality control
+- Statistical stability metrics
+
+### File Management (list)
+- Automatic file discovery and indexing
+- Format validation and verification
+- Metadata extraction and summary
+- Batch operation preparation
+- Dataset organization tools
+
+## Command-Line Features
+
+- **Batch Processing**: Process multiple files automatically
+- **Parameter Control**: Full control over analysis parameters
+- **Output Formats**: PNG, PDF, SVG figure generation
+- **Logging**: Detailed processing logs for debugging
+- **Error Handling**: Robust error reporting and recovery
+- **Integration**: Easy integration with shell scripts and workflows
+
+## Typical Workflow
+
+1. **File Discovery**: List and validate XPCS data files
+2. **Quality Assessment**: Check beam stability and data quality
+3. **Pattern Analysis**: Visualize 2D scattering patterns
+4. **Correlation Analysis**: Extract and fit g2 functions
+5. **Radial Averaging**: Generate 1D scattering profiles
+6. **Export Results**: Save analysis results and figures
+
+## Usage in Synchrotron Environments
+
+Optimized for use at synchrotron beamlines where:
+- Large volumes of data require automated processing
+- Consistent analysis protocols are essential
+- Integration with beamline control systems is needed
+- Remote analysis capabilities are required
+- Reproducible analysis workflows are critical
+
 """
 import argparse
 import sys
@@ -276,16 +360,88 @@ def list_files(args):
 
 
 def create_parser():
-    """Create argument parser"""
+    """Create comprehensive argument parser for XPCS analysis.
+    
+    Returns
+    -------
+    argparse.ArgumentParser
+        Configured parser with all XPCS analysis commands and options.
+    """
     parser = argparse.ArgumentParser(
-        description="XPCS Toolkit: Headless XPCS analysis tool",
+        description="""XPCS Toolkit - Advanced X-ray Photon Correlation Spectroscopy Analysis
+
+A comprehensive command-line tool for analyzing XPCS datasets from synchrotron 
+beamlines, with specialized support for the customized NeXus file format 
+developed at Argonne National Laboratory's Advanced Photon Source beamline 8-ID-I.
+
+Supported Analysis Types:
+  • Multi-tau correlation analysis (g2 functions)
+  • Two-time correlation analysis (C2 functions)
+  • Small-angle X-ray scattering (SAXS) visualization
+  • Beam stability monitoring and quality assessment
+  • Radial averaging and sector integration
+
+File Format Support:
+  • APS 8-ID-I NeXus format (primary)
+  • Legacy HDF5 formats (backward compatibility)
+  • Automatic format detection and validation
+
+Output Options:
+  • High-resolution PNG, PDF, SVG figures
+  • Publication-quality plots with LaTeX labels
+  • Configurable DPI and color schemes
+  • Batch processing with consistent formatting""",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Examples:
-  %(prog)s list /path/to/hdf/files
-  %(prog)s saxs2d /path/to/hdf/files --outfile saxs2d.png
-  %(prog)s g2 /path/to/hdf/files --outfile g2.png --qmin 0.01 --qmax 0.1
-  %(prog)s saxs1d /path/to/hdf/files --outfile saxs1d.png --log-x --log-y
+DETAILED EXAMPLES:
+
+File Discovery and Validation:
+  %(prog)s list /beamline/data/2024-1/user_experiment/
+    → List all XPCS files and validate format compatibility
+
+2D SAXS Pattern Visualization:
+  %(prog)s saxs2d /data/xpcs/ --outfile detector_pattern.png --log-scale
+    → Generate logarithmic-scale 2D scattering pattern
+  
+  %(prog)s saxs2d /data/ --outfile pattern.pdf --dpi 300 --max-files 1
+    → High-resolution PDF output of first file only
+
+G2 Correlation Function Analysis:
+  %(prog)s g2 /data/multitau/ --outfile correlation.png --qmin 0.005 --qmax 0.2
+    → Plot g2 functions for specific q-range (typical soft matter)
+  
+  %(prog)s g2 /data/ --qmin 0.01 --qmax 0.5 --max-files 4 --dpi 150
+    → Compare up to 4 files with hard matter q-range
+
+1D Radial Scattering Profiles:
+  %(prog)s saxs1d /data/ --outfile intensity_profile.png --log-x --log-y
+    → Double-logarithmic plot for power-law analysis
+  
+  %(prog)s saxs1d /data/ --qmin 0.001 --qmax 1.0 --outfile sector_avg.svg
+    → Vector graphics output with custom q-range
+
+Beam Stability Assessment:
+  %(prog)s stability /data/long_measurement/ --outfile beam_stability.png
+    → Monitor intensity fluctuations during measurement
+
+Batch Processing Workflows:
+  find /beamline/data/ -name "*.hdf" -exec dirname {} \; | sort -u | \
+  while read dir; do
+    %(prog)s list "$dir"
+    %(prog)s saxs2d "$dir" --outfile "$dir/pattern.png" --log-scale
+    %(prog)s g2 "$dir" --outfile "$dir/g2.png" --qmin 0.01 --qmax 0.1
+  done
+    → Automated analysis of entire experimental campaign
+
+SYNCHROTRON INTEGRATION:
+  • Real-time analysis: Process data as it's collected
+  • Remote operation: Run analysis from anywhere with network access
+  • Automated pipelines: Integration with beamline control systems
+  • Quality control: Immediate feedback on data quality
+  • Archive processing: Batch analysis of stored datasets
+
+For interactive analysis and advanced features, use the full XPCS Toolkit GUI.
+For technical support: https://github.com/imewei/xpcs-toolkit
         """
     )
     
