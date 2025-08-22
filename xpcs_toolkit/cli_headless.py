@@ -9,17 +9,12 @@ import argparse
 import sys
 import logging
 import os
-from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
 from xpcs_toolkit import __version__
 from xpcs_toolkit.data_file_locator import DataFileLocator
 from xpcs_toolkit.analysis_kernel import AnalysisKernel
-
-# Backward compatibility - import old names with deprecation warnings
-from xpcs_toolkit.file_locator import FileLocator  # This now provides the deprecated wrapper
-from xpcs_toolkit.viewer_kernel import ViewerKernel  # This now provides the deprecated wrapper
 
 logger = logging.getLogger(__name__)
 

@@ -8,6 +8,18 @@ from xpcs_toolkit.xpcs_file import XpcsFile
 from xpcs_toolkit.analysis_kernel import ViewerKernel
 from xpcs_toolkit.data_file_locator import FileLocator
 
+# Explicit exports
+__all__ = [
+    # New classes (recommended)
+    'XpcsDataFile',
+    'AnalysisKernel', 
+    'DataFileLocator',
+    # Backward compatibility aliases
+    'XpcsFile',
+    'ViewerKernel',
+    'FileLocator',
+]
+
 # Version handling - try both old and new package names for compatibility
 try:
     __version__ = version("xpcs-toolkit")
