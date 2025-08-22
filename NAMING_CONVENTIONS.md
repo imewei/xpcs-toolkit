@@ -54,8 +54,11 @@ xf → xpcs_file
 fl → file_locator
 vk → kernel / analysis_kernel
 args → arguments
-fname → filename
+fname → filename  # ✅ COMPLETED
+ftype → file_type  # ✅ COMPLETED
 fstr → filter_string
+qrange → q_range  # ✅ COMPLETED
+qindex → q_index  # ✅ COMPLETED
 ```
 
 ### Function Names
