@@ -1,0 +1,98 @@
+[build-system]
+requires = ["setuptools>=61.0", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xpcs-toolkit"  # New package name
+dynamic = ["version"]
+description = "XPCS Toolkit: A headless command-line tool for X-ray Photon Correlation Spectroscopy analysis"
+authors = [{name = "Miaoqi Chu", email = "mqichu@anl.gov"}]
+maintainers = [{name = "Miaoqi Chu", email = "mqichu@anl.gov"}]
+
+classifiers = [
+    "Development Status :: 4 - Beta",  
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Natural Language :: English"
+]
+
+license = {text = "MIT"}
+keywords = ["XPCS", "X-ray", "photon correlation spectroscopy", "synchrotron", "visualization", "science"]
+
+dependencies = [
+    "numpy",
+    "scipy",
+    "h5py",
+    "hdf5plugin",
+    "matplotlib",
+    "pandas",
+    "scikit-learn",
+    "joblib",
+    "tqdm"
+]
+
+[project.scripts]
+# Primary commands
+xpcs-toolkit = "xpcs_toolkit.cli_headless:main"
+xpcs = "xpcs_toolkit.cli_headless:main"
+
+[project.optional-dependencies]
+dev = [
+    "coverage",
+    "pytest",
+    "pytest-cov",
+    "mypy",
+    "ruff"
+]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme"
+]
+
+[project.urls]
+bugs = "https://github.com/AZjk/pyxpcsviewer/issues"
+changelog = "https://github.com/AZjk/pyxpcsviewer/blob/master/changelog.md"
+homepage = "https://github.com/AZjk/pyxpcsviewer"
+
+[tool.setuptools]
+# Package is now in root directory
+packages = ["xpcs_toolkit", "xpcs_toolkit.module", "xpcs_toolkit.fileIO", "xpcs_toolkit.helper", "xpcs_toolkit.configure"]
+# Exclude tests from installed package
+
+[tool.setuptools_scm]
+version_scheme = "post-release"
+local_scheme = "node-and-timestamp"
+
+[tool.setuptools.package-data]
+"*" = ["*.*"]
+
+# Pytest
+[tool.pytest.ini_options]
+testpaths = ["xpcs_toolkit/tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+
+# Mypy
+[tool.mypy]
+files = "."
+strict = true
+warn_unreachable = true
+warn_no_return = true
+
+[[tool.mypy.overrides]]
+module = "xpcs_toolkit.tests.*"
+allow_untyped_defs = true
+disable_error_code = "attr-defined"
