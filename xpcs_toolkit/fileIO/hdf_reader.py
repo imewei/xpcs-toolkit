@@ -34,9 +34,21 @@ def put(save_path, result, ftype="nexus", mode="raw"):
         return
 
 
-def get_abs_cs_scale(fname, ftype="nexus"):
-    key = hdf_key[ftype]["abs_cross_section_scale"]
-    with h5py.File(fname, "r") as f:
+def get_abs_cs_scale(filename=None, file_type="nexus", fname=None, ftype=None):
+    # Backward compatibility for old parameter names
+    if fname is not None:
+        import warnings
+        warnings.warn("Parameter 'fname' is deprecated, use 'filename' instead", 
+                     DeprecationWarning, stacklevel=2)
+        filename = fname
+    if ftype is not None:
+        import warnings
+        warnings.warn("Parameter 'ftype' is deprecated, use 'file_type' instead", 
+                     DeprecationWarning, stacklevel=2)
+        file_type = ftype
+    
+    key = hdf_key[file_type]["abs_cross_section_scale"]
+    with h5py.File(filename, "r") as f:
         if key not in f:
             return None
         else:
@@ -87,24 +99,36 @@ def read_metadata_to_dict(file_path):
     return data_dict
 
 
-def get(fname, fields, mode="raw", ret_type="dict", ftype="nexus"):
+def get(filename=None, fields=None, mode="raw", ret_type="dict", file_type="nexus", 
+        fname=None, ftype=None):
     """
     get the values for the various keys listed in fields for a single
     file;
-    :param fname:
-    :param fields_raw: list of keys [key1, key2, ..., ]
+    :param filename: file name
+    :param fields: list of keys [key1, key2, ..., ]
     :param mode: ['raw' | 'alias']; alias is defined in .hdf_key
                  otherwise the raw hdf key will be used
     :param ret_type: return dictonary if 'dict', list if it is 'list'
     :return: dictionary or dictionary;
     """
+    # Backward compatibility for old parameter names
+    if fname is not None:
+        import warnings
+        warnings.warn("Parameter 'fname' is deprecated, use 'filename' instead", 
+                     DeprecationWarning, stacklevel=2)
+        filename = fname
+    if ftype is not None:
+        import warnings
+        warnings.warn("Parameter 'ftype' is deprecated, use 'file_type' instead", 
+                     DeprecationWarning, stacklevel=2)
+        file_type = ftype
     assert mode in ["raw", "alias"], "mode not supported"
     assert ret_type in ["dict", "list"], "ret_type not supported"
 
     ret = {}
-    with h5py.File(fname, "r") as HDF_Result:
+    with h5py.File(filename, "r") as HDF_Result:
         for key in fields:
-            path = hdf_key[ftype][key] if mode == "alias" else key
+            path = hdf_key[file_type][key] if mode == "alias" else key
             if path not in HDF_Result:
                 logger.error("path to field not found: %s", path)
                 raise ValueError("key not found: %s:%s", key, path)
@@ -125,31 +149,42 @@ def get(fname, fields, mode="raw", ret_type="dict", ftype="nexus"):
         return [ret[key] for key in fields]
 
 
-def get_analysis_type(fname, ftype="nexus"):
+def get_analysis_type(filename=None, file_type="nexus", fname=None, ftype=None):
     """
     determine the analysis type of the file
     Parameters
     ----------
-    fname: str
+    filename: str
         file name
-    ftype: str
+    file_type: str
         file type, 'nexus' or 'legacy'
     Returns
     -------
     tuple
         analysis type, 'Twotime' or 'Multitau', or both
     """
-    c2_prefix = hdf_key[ftype]["c2_prefix"]
-    g2_prefix = hdf_key[ftype]["g2"]
+    # Backward compatibility for old parameter names
+    if fname is not None:
+        import warnings
+        warnings.warn("Parameter 'fname' is deprecated, use 'filename' instead", 
+                     DeprecationWarning, stacklevel=2)
+        filename = fname
+    if ftype is not None:
+        import warnings
+        warnings.warn("Parameter 'ftype' is deprecated, use 'file_type' instead", 
+                     DeprecationWarning, stacklevel=2)
+        file_type = ftype
+    c2_prefix = hdf_key[file_type]["c2_prefix"]
+    g2_prefix = hdf_key[file_type]["g2"]
     analysis_type = []
-    with h5py.File(fname, "r") as HDF_Result:
+    with h5py.File(filename, "r") as HDF_Result:
         if c2_prefix in HDF_Result:
             analysis_type.append("Twotime")
         if g2_prefix in HDF_Result:
             analysis_type.append("Multitau")
 
     if len(analysis_type) == 0:
-        raise ValueError(f"No analysis type found in {fname}")
+        raise ValueError(f"No analysis type found in {filename}")
     return tuple(analysis_type)
 
 

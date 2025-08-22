@@ -11,18 +11,18 @@ class QMapManager:
     def __init__(self):
         self.db = {}
 
-    def get_qmap(self, fname):
-        hash_value = get_hash(fname)  # Compute hash
+    def get_qmap(self, filename):
+        hash_value = get_hash(filename)  # Compute hash
         if hash_value not in self.db:
-            qmap = QMap(fname=fname)
+            qmap = QMap(filename=filename)
             self.db[hash_value] = qmap
         return self.db[hash_value]
 
 
 class QMap:
-    def __init__(self, fname=None, root_key="/xpcs/qmap"):
+    def __init__(self, filename=None, root_key="/xpcs/qmap"):
         self.root_key = root_key
-        self.fname = fname
+        self.filename = filename
         self.load_dataset()
         self.extent = self.get_detector_extent()
         self.qmap, self.qmap_units = self.compute_qmap()
@@ -30,7 +30,7 @@ class QMap:
 
     def load_dataset(self):
         info = {}
-        with h5py.File(self.fname, "r") as f:
+        with h5py.File(self.filename, "r") as f:
             for key in (
                 "mask",
                 "dqmap",
@@ -122,16 +122,22 @@ class QMap:
                 label = f"qbin={qbin}, {label}"
             return label
 
-    def get_qbin_in_qrange(self, qrange, zero_based=True):
+    def get_qbin_in_qrange(self, q_range=None, zero_based=True, qrange=None):
+        # Backward compatibility for old parameter name
+        if qrange is not None:
+            import warnings
+            warnings.warn("Parameter 'qrange' is deprecated, use 'q_range' instead", 
+                         DeprecationWarning, stacklevel=2)
+            q_range = qrange
         if self.map_names[0] != "q":
-            logger.info("qrange is only supported for qmaps with 0-axis as q")
-            qrange = None
+            logger.info("q_range is only supported for qmaps with 0-axis as q")
+            q_range = None
 
         qlist = np.tile(self.dqlist[:, np.newaxis], self.dynamic_num_pts[1])
-        if qrange is None:
+        if q_range is None:
             qselected = np.ones_like(qlist, dtype=bool)
         else:
-            qselected = (qlist >= qrange[0]) * (qlist <= qrange[1])
+            qselected = (qlist >= q_range[0]) * (qlist <= q_range[1])
         qselected = qselected.flatten()
         if np.sum(qselected) == 0:
             qselected = np.ones_like(qlist, dtype=bool).flatten()
@@ -247,14 +253,14 @@ class QMap:
             return avg
 
 
-def get_hash(fname, root_key="/xpcs/qmap"):
+def get_hash(filename, root_key="/xpcs/qmap"):
     """Extracts the hash from the HDF5 file."""
-    with h5py.File(fname, "r") as f:
+    with h5py.File(filename, "r") as f:
         return f[root_key].attrs["hash"]
 
 
-def get_qmap(fname, **kwargs):
-    return QMap(fname, **kwargs)
+def get_qmap(filename, **kwargs):
+    return QMap(filename, **kwargs)
 
 
 def test_qmap_manager():

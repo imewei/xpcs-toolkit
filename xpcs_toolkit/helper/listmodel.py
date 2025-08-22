@@ -82,7 +82,7 @@ class TableDataModel:
             self.input_list = input_list
         self.max_display = max_display
         self.xlabels = ['id', 'size', 'progress', 'start', 'ETA (s)',
-                        'finish', 'fname']
+                        'finish', 'filename']
         self.layoutChanged = MockSignal()
 
     def data(self, index, role=None):
