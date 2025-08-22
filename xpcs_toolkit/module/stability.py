@@ -26,7 +26,7 @@ def plot(
     log_y = (False, True)[plot_type // 2]
     plot_item.setLogMode(x=log_x, y=log_y)
 
-    q, Iqp, xlabel, ylabel = fc.get_saxs1d_data(
+    q, Iqp, xlabel, ylabel = fc.get_saxs_1d_data(
         target="saxs1d_partial", norm_method=norm_method
     )
     for n in range(Iqp.shape[0]):

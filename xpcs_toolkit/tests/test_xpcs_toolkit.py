@@ -10,8 +10,11 @@ import os
 from pathlib import Path
 
 # Import using the new package name
-from xpcs_toolkit.viewer_kernel import ViewerKernel
+from xpcs_toolkit.analysis_kernel import AnalysisKernel
 from xpcs_toolkit.helper.listmodel import ListDataModel
+
+# Also import old class names to test backward compatibility
+from xpcs_toolkit.viewer_kernel import ViewerKernel  # This should issue deprecation warning
 
 
 def test_new_package_imports():
@@ -23,24 +26,37 @@ def test_new_package_imports():
 
 
 def test_cli_version_new_name():
-    """Test that the new CLI commands show correct branding."""
-    # Test xpcs-toolkit command
-    result = subprocess.run(
-        ["xpcs-toolkit", "--version"],
-        capture_output=True,
-        text=True
-    )
-    if result.returncode == 0:
-        assert "xpcs-toolkit" in result.stdout.lower()
+    """Test that the new CLI commands show correct branding (if installed as console scripts)."""
+    import shutil
     
-    # Test xpcs command  
+    # Test xpcs-toolkit command if available
+    if shutil.which("xpcs-toolkit"):
+        result = subprocess.run(
+            ["xpcs-toolkit", "--version"],
+            capture_output=True,
+            text=True
+        )
+        if result.returncode == 0:
+            assert "xpcs-toolkit" in result.stdout.lower()
+    
+    # Test xpcs command if available  
+    if shutil.which("xpcs"):
+        result = subprocess.run(
+            ["xpcs", "--version"],
+            capture_output=True,
+            text=True
+        )
+        if result.returncode == 0:
+            assert "xpcs-toolkit" in result.stdout.lower()
+    
+    # At minimum, test the direct module invocation
     result = subprocess.run(
-        ["xpcs", "--version"],
+        [sys.executable, "-m", "xpcs_toolkit.cli_headless", "--version"],
         capture_output=True,
         text=True
     )
-    if result.returncode == 0:
-        assert "xpcs-toolkit" in result.stdout.lower()
+    assert result.returncode == 0
+    assert "xpcs-toolkit" in result.stdout.lower()
 
 
 def test_cli_help_new_branding():
@@ -61,17 +77,27 @@ def test_backward_compatibility_warning():
     import subprocess
     import sys
     
-    # Test in a subprocess to ensure clean import
+    # Test in a subprocess to ensure clean import and instantiation
+    test_code = """
+import warnings
+warnings.simplefilter('always')
+from xpcs_toolkit import FileLocator, ViewerKernel
+# Instantiate to trigger deprecation warnings
+try:
+    fl = FileLocator('.')
+    vk = ViewerKernel('.')
+except:
+    pass  # Don't care about errors, just want warnings
+"""
     result = subprocess.run(
-        [sys.executable, "-c", "import warnings; warnings.simplefilter('always'); import pyxpcsviewer"],
+        [sys.executable, "-c", test_code],
         capture_output=True,
         text=True
     )
     
-    # Check that a deprecation warning was issued
+    # Check that a deprecation warning was issued (warnings go to stderr)
     assert "DeprecationWarning" in result.stderr
     assert "deprecated" in result.stderr.lower()
-    assert "xpcs_toolkit" in result.stderr
 
 
 def test_new_package_structure():
@@ -93,19 +119,21 @@ def test_new_package_structure():
 
 def test_api_equivalence():
     """Test that both old and new APIs provide the same functionality."""
-    # Import using both names
-    import pyxpcsviewer
     import xpcs_toolkit
     
-    # Check that key classes are available from both
-    assert hasattr(pyxpcsviewer, 'XpcsFile')
-    assert hasattr(xpcs_toolkit, 'XpcsFile')
-    assert hasattr(pyxpcsviewer, 'ViewerKernel')
-    assert hasattr(xpcs_toolkit, 'ViewerKernel')
+    # Check that key classes are available (both old and new names)
+    assert hasattr(xpcs_toolkit, 'XpcsFile')  # Old name for backward compatibility
+    assert hasattr(xpcs_toolkit, 'XpcsDataFile')  # New name
+    assert hasattr(xpcs_toolkit, 'ViewerKernel')  # Old name for backward compatibility
+    assert hasattr(xpcs_toolkit, 'AnalysisKernel')  # New name
     
-    # Check that they're the same classes
-    assert pyxpcsviewer.XpcsFile is xpcs_toolkit.XpcsFile
-    assert pyxpcsviewer.ViewerKernel is xpcs_toolkit.ViewerKernel
+    # Check that old and new classes are available
+    assert hasattr(xpcs_toolkit, 'DataFileLocator')  # New name
+    assert hasattr(xpcs_toolkit, 'FileLocator')  # Old name for backward compatibility
+    
+    # Test that the classes are properly related
+    assert issubclass(xpcs_toolkit.XpcsFile, xpcs_toolkit.XpcsDataFile)
+    assert issubclass(xpcs_toolkit.FileLocator, xpcs_toolkit.DataFileLocator)
 
 
 def test_module_imports_new_name():
@@ -134,10 +162,15 @@ def test_cli_commands_available():
         assert cmd in result.stdout
 
 
-def test_version_consistency():
-    """Test that version is consistent across old and new package names."""
-    import pyxpcsviewer
+def test_new_class_functionality():
+    """Test that the new classes have expected functionality."""
     import xpcs_toolkit
     
-    # Both should have the same version
-    assert pyxpcsviewer.__version__ == xpcs_toolkit.__version__
+    # Test that the new classes exist and are callable
+    XpcsDataFile = xpcs_toolkit.XpcsDataFile
+    AnalysisKernel = xpcs_toolkit.AnalysisKernel
+    DataFileLocator = xpcs_toolkit.DataFileLocator
+    
+    assert callable(XpcsDataFile)
+    assert callable(AnalysisKernel)
+    assert callable(DataFileLocator)

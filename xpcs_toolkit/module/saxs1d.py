@@ -194,10 +194,10 @@ def pg_plot(
 
     plot_id = 0
     for n, fi in enumerate(xf_list):
-        q, Iq, xlabel, ylabel = fi.get_saxs1d_data(
+        q, Iq, xlabel, ylabel = fi.get_saxs_1d_data(
             bkg_xf=bkg_file,
             bkg_weight=weight,
-            qrange=(qmin, qmax),
+            q_range=(qmin, qmax),
             sampling=sampling,
             norm_method=norm_method,
             use_absolute_crosssection=absolute_crosssection,

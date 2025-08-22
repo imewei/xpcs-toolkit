@@ -6,7 +6,7 @@ import uuid
 import time
 import numpy as np
 from ..fileIO.hdf_reader import put
-from ..xpcs_file import XpcsFile as XF
+from ..xpcs_file import XpcsDataFile as XF
 from shutil import copyfile
 from ..helper.listmodel import ListDataModel
 from tqdm import trange

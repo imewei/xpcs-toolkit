@@ -35,7 +35,7 @@ def get_data(xf_list, q_range=None, t_range=None):
 
     q, tel, g2, g2_err, labels = [], [], [], [], []
     for fc in xf_list:
-        _q, _tel, _g2, _g2_err, _labels = fc.get_g2_data(qrange=q_range, trange=t_range)
+        _q, _tel, _g2, _g2_err, _labels = fc.get_g2_data(q_range=q_range, t_range=t_range)
         q.append(_q)
         tel.append(_tel)
         g2.append(_g2)
@@ -128,7 +128,7 @@ def pg_plot(
         # default base line to be 1.0; used for non-fitting or fit error cases
         baseline_offset = np.ones(num_qval)
         if show_fit:
-            fit_summary = xf_list[m].fit_g2(
+            fit_summary = xf_list[m].fit_g2_function(
                 q_range, t_range, bounds, fit_flag, fit_func
             )
             if fit_summary is not None and subtract_baseline:

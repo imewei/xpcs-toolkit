@@ -14,8 +14,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from xpcs_toolkit import __version__
-from xpcs_toolkit.file_locator import FileLocator
-from xpcs_toolkit.viewer_kernel import ViewerKernel
+from xpcs_toolkit.data_file_locator import DataFileLocator
+from xpcs_toolkit.analysis_kernel import AnalysisKernel
+
+# Backward compatibility - import old names with deprecation warnings
+from xpcs_toolkit.file_locator import FileLocator  # This now provides the deprecated wrapper
+from xpcs_toolkit.viewer_kernel import ViewerKernel  # This now provides the deprecated wrapper
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +49,7 @@ def plot_saxs_2d(arguments):
     logger.info(f"Processing 2D scattering analysis for path: {arguments.path}")
     
     # Initialize file locator and analysis kernel
-    file_locator = FileLocator(arguments.path)
+    file_locator = DataFileLocator(arguments.path)
     file_locator.build()
     
     if not file_locator.source:
@@ -58,7 +62,7 @@ def plot_saxs_2d(arguments):
                        if maximum_files else file_locator.source.input_list)
     file_locator.add_target(files_to_process)
     
-    analysis_kernel = ViewerKernel(arguments.path)
+    analysis_kernel = AnalysisKernel(arguments.path)
     
     # Create matplotlib figure
     fig, ax = plt.subplots(figsize=(10, 8))
@@ -103,7 +107,7 @@ def plot_g2_function(arguments):
     """
     logger.info(f"Processing correlation function analysis for path: {arguments.path}")
     
-    file_locator = FileLocator(arguments.path)
+    file_locator = DataFileLocator(arguments.path)
     file_locator.build()
     
     if not file_locator.source:
@@ -116,7 +120,7 @@ def plot_g2_function(arguments):
                        if maximum_files else file_locator.source.input_list)
     file_locator.add_target(files_to_process)
     
-    analysis_kernel = ViewerKernel(arguments.path)
+    analysis_kernel = AnalysisKernel(arguments.path)
     
     # Get multi-tau correlation files
     xpcs_file_list = analysis_kernel.get_xf_list(filter_atype="Multitau")
@@ -135,7 +139,7 @@ def plot_g2_function(arguments):
         q_minimum = arguments.qmin
         q_maximum = arguments.qmax
         q_range = (q_minimum, q_maximum) if q_minimum is not None and q_maximum is not None else None
-        q_values, time_elapsed, g2, g2_error, q_bin_labels = xpcs_file.get_g2_data(qrange=q_range)
+        q_values, time_elapsed, g2, g2_error, q_bin_labels = xpcs_file.get_g2_data(q_range=q_range)
         
         # Plot first q-bin
         if g2.shape[1] > 0:
@@ -165,7 +169,7 @@ def plot_saxs1d(args):
     """Plot 1D radial scattering profiles"""
     logger.info(f"Processing SAXS 1D for path: {args.path}")
     
-    fl = FileLocator(args.path)
+    fl = DataFileLocator(args.path)
     fl.build()
     
     if not fl.source:
@@ -176,7 +180,7 @@ def plot_saxs1d(args):
     files_to_process = fl.source.input_list[:args.max_files] if args.max_files else fl.source.input_list
     fl.add_target(files_to_process)
     
-    vk = ViewerKernel(args.path)
+    vk = AnalysisKernel(args.path)
     
     # Get files
     xf_list = vk.get_xf_list()
@@ -192,7 +196,7 @@ def plot_saxs1d(args):
     for i, xf in enumerate(xf_list):
         # Get 1D scattering data
         q_range = (args.qmin, args.qmax) if args.qmin is not None and args.qmax is not None else None
-        q, Iq, xlabel, ylabel = xf.get_saxs1d_data(qrange=q_range)
+        q, Iq, xlabel, ylabel = xf.get_saxs_1d_data(q_range=q_range)
         
         # Plot first phi slice
         ax.plot(q, Iq[0], 'o-', color=colors[i], markersize=3, 
@@ -220,7 +224,7 @@ def plot_stability(args):
     """Plot beam stability analysis"""
     logger.info(f"Processing stability analysis for path: {args.path}")
     
-    fl = FileLocator(args.path)
+    fl = DataFileLocator(args.path)
     fl.build()
     
     if not fl.source:
@@ -230,7 +234,7 @@ def plot_stability(args):
     files_to_process = fl.source.input_list[:1]  # Just one file for stability
     fl.add_target(files_to_process)
     
-    vk = ViewerKernel(args.path)
+    vk = AnalysisKernel(args.path)
     
     xf_list = vk.get_xf_list()
     if not xf_list:
@@ -262,7 +266,7 @@ def list_files(args):
     """List available HDF files in directory"""
     logger.info(f"Listing files in path: {args.path}")
     
-    fl = FileLocator(args.path)
+    fl = DataFileLocator(args.path)
     fl.build()
     
     if not fl.source:
