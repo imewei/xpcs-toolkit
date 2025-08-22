@@ -1,7 +1,12 @@
 from importlib.metadata import version, PackageNotFoundError
-from xpcs_toolkit.xpcs_file import XpcsDataFile, XpcsFile  # XpcsFile for backward compatibility
-from xpcs_toolkit.viewer_kernel import ViewerKernel
-from xpcs_toolkit.file_locator import FileLocator
+# New classes (recommended)
+from xpcs_toolkit.xpcs_file import XpcsDataFile
+from xpcs_toolkit.analysis_kernel import AnalysisKernel  
+from xpcs_toolkit.data_file_locator import DataFileLocator
+# Backward compatibility aliases (deprecated)
+from xpcs_toolkit.xpcs_file import XpcsFile
+from xpcs_toolkit.analysis_kernel import ViewerKernel
+from xpcs_toolkit.data_file_locator import FileLocator
 
 # Version handling - try both old and new package names for compatibility
 try:

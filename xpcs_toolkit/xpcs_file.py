@@ -350,42 +350,104 @@ class XpcsDataFile:
         else:
             raise KeyError(f"key [{key}] not found")
 
-    def get_info_at_position(self, x, y):
+    def get_info_at_position(self, x: int, y: int) -> Optional[str]:
+        """Get information at a specific detector position.
+        
+        Parameters
+        ----------
+        x, y : int
+            Pixel coordinates on the detector.
+            
+        Returns
+        -------
+        str or None
+            Formatted string with intensity and q-map information, or None if out of bounds.
+        """
         x, y = int(x), int(y)
         shape = self.saxs_2d.shape
         if x < 0 or x >= shape[1] or y < 0 or y >= shape[0]:
             return None
         else:
             scat_intensity = self.saxs_2d[y, x]
-            qmap_info = self.qmap.get_qmap_at_pos(x, y)
+            qmap_info = self.q_space_map.get_qmap_at_pos(x, y)
             return f"I={scat_intensity:.4e} {qmap_info}"
 
-    def get_detector_extent(self):
-        return self.qmap.extent
+    def get_detector_extent(self) -> Tuple[float, float, float, float]:
+        """Get the detector extent for plotting.
+        
+        Returns
+        -------
+        tuple
+            (left, right, bottom, top) extent values.
+        """
+        return self.q_space_map.extent
 
-    def get_qbin_label(self, qbin: int, append_qbin: bool = False):
-        return self.qmap.get_qbin_label(qbin, append_qbin=append_qbin)
+    def get_qbin_label(self, qbin: int, append_qbin: bool = False) -> str:
+        """Get label for a specific q-bin.
+        
+        Parameters
+        ----------
+        qbin : int
+            Q-bin index.
+        append_qbin : bool, optional
+            Whether to append the q-bin number to the label.
+            
+        Returns
+        -------
+        str
+            Formatted q-bin label.
+        """
+        return self.q_space_map.get_qbin_label(qbin, append_qbin=append_qbin)
 
-    def get_qbinlist_at_qindex(self, qindex, zero_based=True):
-        return self.qmap.get_qbinlist_at_qindex(qindex, zero_based=zero_based)
+    def get_qbinlist_at_qindex(self, qindex: int, zero_based: bool = True) -> List[int]:
+        """Get list of q-bins at a specific q-index.
+        
+        Parameters
+        ----------
+        qindex : int
+            Q-index value.
+        zero_based : bool, optional
+            Whether to use zero-based indexing.
+            
+        Returns
+        -------
+        list of int
+            List of q-bin indices.
+        """
+        return self.q_space_map.get_qbinlist_at_qindex(qindex, zero_based=zero_based)
 
-    def get_g2_data(self, qrange=None, trange=None):
-        assert "Multitau" in self.atype, "only multitau is supported"
-        # qrange can be None
-        qindex_selected, qvalues = self.qmap.get_qbin_in_qrange(qrange, zero_based=True)
+    def get_g2_data(self, q_range: Optional[Tuple[float, float]] = None, 
+                    time_range: Optional[Tuple[float, float]] = None) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, List[str]]:
+        """Get G2 correlation data within specified q and time ranges.
+        
+        Parameters
+        ----------
+        q_range : tuple of float, optional
+            (q_min, q_max) range for q-values.
+        time_range : tuple of float, optional
+            (t_min, t_max) range for time values.
+            
+        Returns
+        -------
+        tuple
+            (q_values, time_elapsed, g2, g2_err, labels)
+        """
+        assert "Multitau" in self.analysis_type, "only multitau is supported"
+        # q_range can be None
+        qindex_selected, qvalues = self.q_space_map.get_qbin_in_qrange(q_range, zero_based=True)
         g2 = self.g2[:, qindex_selected]
         g2_err = self.g2_err[:, qindex_selected]
-        labels = [self.qmap.get_qbin_label(qbin + 1) for qbin in qindex_selected]
+        labels = [self.q_space_map.get_qbin_label(qbin + 1) for qbin in qindex_selected]
 
-        if trange is not None:
-            t_roi = (self.t_el >= trange[0]) * (self.t_el <= trange[1])
+        if time_range is not None:
+            t_roi = (self.time_elapsed >= time_range[0]) * (self.time_elapsed <= time_range[1])
             g2 = g2[t_roi]
             g2_err = g2_err[t_roi]
-            t_el = self.t_el[t_roi]
+            time_elapsed = self.time_elapsed[t_roi]
         else:
-            t_el = self.t_el
+            time_elapsed = self.time_elapsed
 
-        return qvalues, t_el, g2, g2_err, labels
+        return qvalues, time_elapsed, g2, g2_err, labels
 
     def get_saxs1d_data(
         self,
