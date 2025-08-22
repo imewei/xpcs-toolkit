@@ -6,8 +6,8 @@ build-backend = "setuptools.build_meta"
 name = "xpcs-toolkit"  # New package name
 dynamic = ["version"]
 description = "XPCS Toolkit: A headless command-line tool for X-ray Photon Correlation Spectroscopy analysis"
-authors = [{name = "Miaoqi Chu", email = "mqichu@anl.gov"}]
-maintainers = [{name = "Miaoqi Chu", email = "mqichu@anl.gov"}]
+authors = [{name = "Wei Chen", email = "weichen@anl.gov"}]
+maintainers = [{name = "Wei Chen", email = "weichen@anl.gov"}]
 
 classifiers = [
     "Development Status :: 4 - Beta",  
