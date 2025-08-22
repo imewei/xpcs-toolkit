@@ -2,6 +2,7 @@ import os
 import re
 import numpy as np
 import warnings
+from typing import Optional, Tuple, List, Union, Dict, Any
 
 from .fileIO.hdf_reader import get, get_analysis_type, read_metadata_to_dict
 from .helper.fitting import fit_with_fixed
@@ -91,13 +92,13 @@ def power_law(x, a, b):
     return a * x**b
 
 
-def create_id(fname, label_style=None, simplify_flag=True):
+def create_identifier(filename: str, label_style: Optional[str] = None, simplify_flag: bool = True) -> str:
     """
     Generate a simplified or customized ID string from a filename.
 
     Parameters
     ----------
-    fname : str
+    filename : str
         Input file name, possibly with path and extension.
     label_style : str or None, optional
         Comma-separated string of indices to extract specific components from the file name.
@@ -109,27 +110,27 @@ def create_id(fname, label_style=None, simplify_flag=True):
     str
         A simplified or customized ID string derived from the input filename.
     """
-    fname = os.path.basename(fname)
+    filename = os.path.basename(filename)
 
     if simplify_flag:
         # Remove leading zeros from structured parts like '_t0600' → '_t600'
-        fname = re.sub(r"_(\w)0+(\d+)", r"_\1\2", fname)
+        filename = re.sub(r"_(\w)0+(\d+)", r"_\1\2", filename)
         # Remove trailing _results and file extension
-        fname = re.sub(r"(_results)?\.hdf$", "", fname, flags=re.IGNORECASE)
+        filename = re.sub(r"(_results)?\.hdf$", "", filename, flags=re.IGNORECASE)
 
-    if len(fname) < 10 or not label_style:
-        return fname
+    if len(filename) < 10 or not label_style:
+        return filename
 
     try:
         selection = [int(x.strip()) for x in label_style.split(",")]
         if not selection:
             warnings.warn("Empty label_style selection. Returning simplified filename.")
-            return fname
+            return filename
     except ValueError:
         warnings.warn("Invalid label_style format. Must be comma-separated integers.")
-        return fname
+        return filename
 
-    segments = fname.split("_")
+    segments = filename.split("_")
     selected_segments = []
 
     for i in selection:
@@ -139,27 +140,42 @@ def create_id(fname, label_style=None, simplify_flag=True):
             warnings.warn(f"Index {i} out of range for segments {segments}")
 
     if not selected_segments:
-        return fname  # fallback if nothing valid was selected
+        return filename  # fallback if nothing valid was selected
 
     return "_".join(selected_segments)
 
 
-class XpcsFile(object):
+class XpcsDataFile:
     """
-    XpcsFile is a class that wraps an Xpcs analysis hdf file;
+    XpcsDataFile is a class that wraps an XPCS analysis HDF file.
+    
+    This class provides comprehensive functionality for loading, analyzing,
+    and manipulating X-ray Photon Correlation Spectroscopy (XPCS) data.
+    
+    Parameters
+    ----------
+    filename : str
+        Path to the HDF file containing XPCS analysis data.
+    fields : list of str, optional
+        Additional data fields to load from the file.
+    label_style : str, optional
+        Comma-separated string of indices to customize the label creation.
+    qmap_manager : object, optional
+        Q-map manager object for handling q-space mapping.
     """
 
-    def __init__(self, fname, fields=None, label_style=None, qmap_manager=None):
-        self.fname = fname
+    def __init__(self, filename: str, fields: Optional[List[str]] = None, 
+                 label_style: Optional[str] = None, qmap_manager=None):
+        self.filename = filename
         if qmap_manager is None:
-            self.qmap = get_qmap(self.fname)
+            self.q_space_map = get_qmap(self.filename)
         else:
-            self.qmap = qmap_manager.get_qmap(self.fname)
-        self.atype = get_analysis_type(self.fname)
+            self.q_space_map = qmap_manager.get_qmap(self.filename)
+        self.analysis_type = get_analysis_type(self.filename)
         self.label = self.update_label(label_style)
-        payload_dictionary = self.load_data(fields)
+        payload_dictionary = self.load_dataset(fields)
         self.__dict__.update(payload_dictionary)
-        self.hdf_info = None
+        self.hdf_metadata = None
         self.fit_summary = None
         self.c2_all_data = None
         self.c2_kwargs = None
@@ -168,15 +184,27 @@ class XpcsFile(object):
         self.saxs_2d_data = None
         self.saxs_2d_log_data = None
 
-    def update_label(self, label_style):
-        self.label = create_id(self.fname, label_style=label_style)
+    def update_label(self, label_style: Optional[str]) -> str:
+        """Update the label for this data file.
+        
+        Parameters
+        ----------
+        label_style : str, optional
+            Style specification for label creation.
+            
+        Returns
+        -------
+        str
+            Updated label string.
+        """
+        self.label = create_identifier(self.filename, label_style=label_style)
         return self.label
 
-    def __str__(self):
-        ans = ["File:" + str(self.fname)]
+    def __str__(self) -> str:
+        ans = ["File:" + str(self.filename)]
         for key, val in self.__dict__.items():
             # omit those to avoid lengthy output
-            if key == "hdf_info":
+            if key == "hdf_metadata":
                 continue
             elif isinstance(val, np.ndarray) and val.size > 1:
                 val = str(val.shape)
@@ -190,25 +218,47 @@ class XpcsFile(object):
         ans = "\n".join([ans, self.__str__()])
         return ans
 
-    def get_hdf_info(self, fstr=None):
+    def get_hdf_metadata(self, filter_strings: Optional[List[str]] = None) -> Dict[str, Any]:
         """
-        get a text representation of the xpcs file; the entries are organized
-        in a tree structure;
-        :param fstr: list of filter strings, ["string_1", "string_2", ...]
-        :return: a list strings
+        Get a text representation of the XPCS file metadata.
+        
+        The entries are organized in a tree structure for easy navigation.
+        
+        Parameters
+        ----------
+        filter_strings : list of str, optional
+            List of filter strings to apply to the metadata tree.
+            
+        Returns
+        -------
+        dict
+            Dictionary containing the HDF metadata tree structure.
         """
         # cache the data because it may take long time to generate the str
-        if self.hdf_info is None:
-            self.hdf_info = read_metadata_to_dict(self.fname)
-        return self.hdf_info
+        if self.hdf_metadata is None:
+            self.hdf_metadata = read_metadata_to_dict(self.filename)
+        return self.hdf_metadata
 
-    def load_data(self, extra_fields=None):
-        # default common fields for both twotime and multitau analysis;
+    def load_dataset(self, extra_fields: Optional[List[str]] = None) -> Dict[str, Any]:
+        """
+        Load dataset from the HDF file.
+        
+        Parameters
+        ----------
+        extra_fields : list of str, optional
+            Additional data fields to load from the file.
+            
+        Returns
+        -------
+        dict
+            Dictionary containing the loaded dataset.
+        """
+        # default common fields for both twotime and multitau analysis
         fields = ["saxs_1d", "Iqp", "Int_t", "t0", "t1", "start_time"]
 
-        if "Multitau" in self.atype:
+        if "Multitau" in self.analysis_type:
             fields = fields + ["tau", "g2", "g2_err", "stride_frame", "avg_frame"]
-        if "Twotime" in self.atype:
+        if "Twotime" in self.analysis_type:
             fields = fields + [
                 "c2_g2",
                 "c2_g2_segments",
@@ -224,31 +274,30 @@ class XpcsFile(object):
         # avoid duplicated keys
         fields = list(set(fields))
 
-        ret = get(self.fname, fields, "alias", ftype="nexus")
+        result_data = get(self.filename, fields, "alias", ftype="nexus")
 
-        if "Twotime" in self.atype:
-            stride_frame = ret.pop("c2_stride_frame")
-            avg_frame = ret.pop("c2_avg_frame")
-            ret["c2_t0"] = ret["t0"] * stride_frame * avg_frame
-        if "Multitau" in self.atype:
+        if "Twotime" in self.analysis_type:
+            stride_frame = result_data.pop("c2_stride_frame")
+            avg_frame = result_data.pop("c2_avg_frame")
+            result_data["c2_t0"] = result_data["t0"] * stride_frame * avg_frame
+        if "Multitau" in self.analysis_type:
             # correct g2_err to avoid fitting divergence
-            # ret['g2_err_mod'] = self.correct_g2_err(ret['g2_err'])
-            ret["g2_err"] = self.correct_g2_err(ret["g2_err"])
-            stride_frame = ret.pop("stride_frame")
-            avg_frame = ret.pop("avg_frame")
-            ret["t0"] = ret["t0"] * stride_frame * avg_frame
-            ret["t_el"] = ret["tau"] * ret["t0"]
-            ret["g2_t0"] = ret["t0"]
+            result_data["g2_err"] = self.correct_g2_err(result_data["g2_err"])
+            stride_frame = result_data.pop("stride_frame")
+            avg_frame = result_data.pop("avg_frame")
+            result_data["t0"] = result_data["t0"] * stride_frame * avg_frame
+            result_data["time_elapsed"] = result_data["tau"] * result_data["t0"]
+            result_data["g2_t0"] = result_data["t0"]
 
-        ret["saxs_1d"] = self.qmap.reshape_phi_analysis(
-            ret["saxs_1d"], self.label, mode="saxs_1d"
+        result_data["saxs_1d"] = self.q_space_map.reshape_phi_analysis(
+            result_data["saxs_1d"], self.label, mode="saxs_1d"
         )
-        ret["Iqp"] = self.qmap.reshape_phi_analysis(
-            ret["Iqp"], self.label, mode="stability"
+        result_data["Iqp"] = self.q_space_map.reshape_phi_analysis(
+            result_data["Iqp"], self.label, mode="stability"
         )
 
-        ret["abs_cross_section_scale"] = 1.0
-        return ret
+        result_data["abs_cross_section_scale"] = 1.0
+        return result_data
 
     def __getattr__(self, key):
         # keys from qmap
@@ -751,6 +800,62 @@ class XpcsFile(object):
         tree.setWindowTitle(self.fname)
         tree.resize(600, 800)
         return tree
+
+
+# Backward compatibility layer
+class XpcsFile(XpcsDataFile):
+    """Deprecated: Use XpcsDataFile instead.
+    
+    This class is provided for backward compatibility only.
+    New code should use XpcsDataFile directly.
+    """
+    
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "XpcsFile is deprecated, use XpcsDataFile instead",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        # Handle the old parameter name 'fname'
+        if 'fname' in kwargs:
+            kwargs['filename'] = kwargs.pop('fname')
+        super().__init__(*args, **kwargs)
+        
+        # Add backward compatibility attributes
+        self.fname = self.filename
+        self.qmap = self.q_space_map
+        self.atype = self.analysis_type
+        self.hdf_info = self.hdf_metadata
+        
+    # Deprecated method aliases
+    def get_hdf_info(self, fstr=None):
+        """Deprecated: Use get_hdf_metadata() instead."""
+        warnings.warn(
+            "get_hdf_info is deprecated, use get_hdf_metadata instead",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return self.get_hdf_metadata(filter_strings=fstr)
+        
+    def load_data(self, extra_fields=None):
+        """Deprecated: Use load_dataset() instead."""
+        warnings.warn(
+            "load_data is deprecated, use load_dataset instead",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return self.load_dataset(extra_fields=extra_fields)
+
+
+# Deprecated function alias
+def create_id(*args, **kwargs):
+    """Deprecated: Use create_identifier() instead."""
+    warnings.warn(
+        "create_id is deprecated, use create_identifier instead",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    return create_identifier(*args, **kwargs)
 
 
 def test1():
