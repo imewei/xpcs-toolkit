@@ -1,0 +1,65 @@
+# XPCS Toolkit - Development Dependencies
+# ========================================
+# This file contains all dependencies needed for development work on XPCS Toolkit.
+# Install with: pip install -r requirements-dev.txt
+
+# Include core dependencies
+-r requirements.txt
+
+# Testing Framework
+pytest>=6.0.0
+pytest-cov>=3.0.0
+pytest-xdist>=2.5.0          # Parallel test execution
+pytest-mock>=3.6.0           # Mocking support
+pytest-benchmark>=4.0.0      # Performance benchmarking
+
+# Code Coverage
+coverage[toml]>=6.0.0
+
+# Code Quality and Linting
+ruff>=0.1.0                   # Fast linter and formatter
+mypy>=1.0.0                   # Type checking
+pre-commit>=2.15.0            # Git hooks
+
+# Security and Vulnerability Scanning
+bandit>=1.7.0                 # Security linter
+safety>=2.0.0                 # Security vulnerabilities scanner
+
+# Performance Profiling and Analysis
+line_profiler>=3.5.0          # Line-by-line profiling
+memory_profiler>=0.60.0       # Memory usage profiling
+py-spy>=0.3.0                 # Sampling profiler
+
+# Build and Release Tools
+build>=0.8.0                  # Modern build tool
+twine>=4.0.0                  # Package uploading to PyPI
+wheel>=0.37.0                 # Wheel building
+setuptools>=61.0              # Package setup
+setuptools_scm[toml]>=6.2     # Version management from git
+
+# Documentation Dependencies
+sphinx>=4.0.0
+sphinx-rtd-theme>=1.0.0
+sphinx-autodoc-typehints>=1.12.0
+myst-parser>=0.18.0           # Markdown support in Sphinx
+sphinx-copybutton>=0.5.0      # Copy code buttons
+nbsphinx>=0.8.0               # Jupyter notebook support
+
+# Development Utilities
+ipython>=7.0.0                # Enhanced Python REPL
+jupyter>=1.0.0                # Jupyter notebooks
+black>=22.0.0                 # Code formatter (alternative to ruff format)
+isort>=5.10.0                 # Import sorting (alternative to ruff)
+flake8>=4.0.0                 # Linter (alternative to ruff)
+
+# Debugging and Development
+pdb++>=0.10.0                 # Enhanced debugger
+rich>=12.0.0                  # Rich terminal output
+typer>=0.7.0                  # CLI framework for development scripts
+
+# Version Control and Git
+gitpython>=3.1.0              # Git repository interaction
+
+# Environment and Dependency Management  
+pip-tools>=6.0.0              # Dependency management
+virtualenv>=20.0.0            # Virtual environment creation

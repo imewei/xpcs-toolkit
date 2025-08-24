@@ -1,45 +1,87 @@
 [build-system]
-requires = ["setuptools>=61.0", "setuptools_scm"]
+requires = [
+    "setuptools>=61.0",
+    "setuptools_scm[toml]>=6.2",
+    "wheel"
+]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "xpcs-toolkit"  # New package name
+name = "xpcs-toolkit"
 dynamic = ["version"]
-description = "XPCS Toolkit: A headless command-line tool for X-ray Photon Correlation Spectroscopy analysis"
-requires-python = ">=3.12"
-authors = [{name = "Wei Chen", email = "weichen@anl.gov"}]
-maintainers = [{name = "Wei Chen", email = "weichen@anl.gov"}]
+description = "XPCS Toolkit: A comprehensive command-line tool for X-ray Photon Correlation Spectroscopy analysis"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+keywords = [
+    "XPCS", 
+    "X-ray", 
+    "photon correlation spectroscopy", 
+    "synchrotron", 
+    "visualization", 
+    "scientific computing",
+    "materials science",
+    "soft matter"
+]
+
+authors = [
+    {name = "Wei Chen", email = "weichen@anl.gov"},
+]
+maintainers = [
+    {name = "Wei Chen", email = "weichen@anl.gov"},
+]
 
 classifiers = [
-    "Development Status :: 4 - Beta",  
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Chemistry",
     "Topic :: Scientific/Engineering :: Visualization",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Operating System :: OS Independent",
-    "Natural Language :: English"
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Natural Language :: English",
+    "Environment :: Console",
+    "Environment :: X11 Applications"
 ]
 
-license = {text = "MIT"}
-keywords = ["XPCS", "X-ray", "photon correlation spectroscopy", "synchrotron", "visualization", "science"]
-
+# Core dependencies required for basic functionality
 dependencies = [
-    "numpy",
-    "scipy",
-    "h5py",
-    "hdf5plugin",
-    "matplotlib",
-    "pandas",
-    "scikit-learn",
-    "joblib",
-    "tqdm"
+    # Core scientific computing
+    "numpy>=1.20.0",
+    "scipy>=1.7.0",
+    
+    # Data handling and I/O
+    "h5py>=3.0.0",
+    "hdf5plugin>=3.0.0",
+    "pandas>=1.3.0",
+    
+    # Visualization and plotting
+    "matplotlib>=3.5.0",
+    
+    # Machine learning and data analysis
+    "scikit-learn>=1.0.0",
+    
+    # Performance and parallel processing
+    "joblib>=1.0.0",
+    
+    # Progress bars and user interaction
+    "tqdm>=4.60.0",
+    
+    # File path handling
+    "pathlib2>=2.3.0; python_version<'3.6'",
 ]
 
 [project.scripts]
@@ -48,50 +90,246 @@ xpcs-toolkit = "xpcs_toolkit.cli_headless:main"
 xpcs = "xpcs_toolkit.cli_headless:main"
 
 [project.optional-dependencies]
+# Development dependencies
 dev = [
-    "coverage",
-    "pytest",
-    "pytest-cov",
-    "mypy",
-    "ruff"
+    # Testing framework
+    "pytest>=6.0.0",
+    "pytest-cov>=3.0.0",
+    "pytest-xdist>=2.5.0",  # Parallel test execution
+    "pytest-mock>=3.6.0",   # Mocking support
+    
+    # Code coverage
+    "coverage[toml]>=6.0.0",
+    
+    # Code quality and linting
+    "ruff>=0.1.0",           # Fast linter and formatter
+    "mypy>=1.0.0",           # Type checking
+    "pre-commit>=2.15.0",    # Git hooks
+    
+    # Security scanning
+    "bandit>=1.7.0",         # Security linter
+    "safety>=2.0.0",         # Security vulnerabilities scanner
+    
+    # Performance profiling
+    "line_profiler>=3.5.0",  # Line-by-line profiling
+    "memory_profiler>=0.60.0", # Memory usage profiling
+    
+    # Build tools
+    "build>=0.8.0",          # Modern build tool
+    "twine>=4.0.0",          # Package uploading
+    "wheel>=0.37.0",         # Wheel building
 ]
+
+# Documentation dependencies
 docs = [
-    "sphinx",
-    "sphinx-rtd-theme"
+    "sphinx>=4.0.0",
+    "sphinx-rtd-theme>=1.0.0",
+    "sphinx-autodoc-typehints>=1.12.0",
+    "myst-parser>=0.18.0",   # Markdown support
+    "sphinx-copybutton>=0.5.0", # Copy code buttons
+    "nbsphinx>=0.8.0",       # Jupyter notebook support
+]
+
+# GUI and interactive features (optional)
+gui = [
+    "pyqtgraph>=0.12.0",     # Fast plotting for GUI
+    "PyQt5>=5.15.0",         # Qt GUI framework
+    "ipywidgets>=7.6.0",     # Interactive widgets
+]
+
+# Performance optimization packages
+performance = [
+    "numba>=0.56.0",         # JIT compilation
+    "psutil>=5.8.0",         # System resource monitoring
+    "cython>=0.29.0",        # C extensions
+]
+
+# Extended scientific computing
+extended = [
+    "xarray>=0.20.0",        # Labeled arrays
+    "netcdf4>=1.5.0",        # NetCDF file support  
+    "zarr>=2.10.0",          # Chunked arrays
+    "dask>=2021.0.0",        # Parallel computing
+]
+
+# All optional dependencies for complete installation
+all = [
+    "xpcs-toolkit[dev,docs,gui,performance,extended]"
 ]
 
 [project.urls]
-bugs = "https://github.com/AZjk/pyxpcsviewer/issues"
-changelog = "https://github.com/AZjk/pyxpcsviewer/blob/master/changelog.md"
-homepage = "https://github.com/AZjk/pyxpcsviewer"
+"Homepage" = "https://github.com/imewei/xpcs-toolkit"
+"Documentation" = "https://xpcs-toolkit.readthedocs.io/"
+"Repository" = "https://github.com/imewei/xpcs-toolkit.git"
+"Bug Reports" = "https://github.com/imewei/xpcs-toolkit/issues"
+"Changelog" = "https://github.com/imewei/xpcs-toolkit/blob/main/CHANGELOG.md"
+"Funding" = "https://www.anl.gov/"
 
 [tool.setuptools]
-# Package is now in root directory
+# Automatic package discovery
 packages = ["xpcs_toolkit", "xpcs_toolkit.module", "xpcs_toolkit.fileIO", "xpcs_toolkit.helper", "xpcs_toolkit.configure"]
-# Exclude tests from installed package
+
+[tool.setuptools.package-data]
+"xpcs_toolkit" = ["configure/*.json", "py.typed"]
+"xpcs_toolkit.configure" = ["*.json"]
 
 [tool.setuptools_scm]
 version_scheme = "post-release"
 local_scheme = "node-and-timestamp"
+write_to = "xpcs_toolkit/_version.py"
 
-[tool.setuptools.package-data]
-"*" = ["*.*"]
+# =============================================================================
+# TOOL CONFIGURATIONS
+# =============================================================================
 
-# Pytest
+# Pytest Configuration
 [tool.pytest.ini_options]
 testpaths = ["xpcs_toolkit/tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+    "--tb=short",
+    "--cov=xpcs_toolkit",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "gui: marks tests as GUI tests (require display)",
+]
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
 
-# Mypy
+# Coverage Configuration
+[tool.coverage.run]
+source = ["xpcs_toolkit"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/.venv/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+show_missing = true
+precision = 2
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+# MyPy Configuration
 [tool.mypy]
-files = "."
-strict = true
-warn_unreachable = true
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
 warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "h5py.*",
+    "hdf5plugin.*",
+    "sklearn.*",
+    "pyqtgraph.*",
+    "tqdm.*",
+    "joblib.*",
+    "matplotlib.*",
+]
+ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "xpcs_toolkit.tests.*"
-allow_untyped_defs = true
-disable_error_code = "attr-defined"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_decorators = false
+
+# Ruff Configuration
+[tool.ruff]
+target-version = "py39"
+line-length = 88
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+    "ARG", # flake8-unused-arguments
+    "SIM", # flake8-simplify
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+    "ARG002", # unused method argument
+    "ARG001", # unused function argument
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/*.py" = ["ARG", "FBT"]
+
+[tool.ruff.mccabe]
+max-complexity = 10
+
+[tool.ruff.isort]
+known-first-party = ["xpcs_toolkit"]
+force-sort-within-sections = true
+
+# Bandit Security Configuration
+[tool.bandit]
+exclude_dirs = ["tests", "xpcs_toolkit/tests"]
+skips = ["B101", "B601"]
+
+# Black Configuration (if using black instead of ruff format)
+[tool.black]
+line-length = 88
+target-version = ['py39']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''

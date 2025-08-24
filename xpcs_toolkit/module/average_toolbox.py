@@ -1,16 +1,189 @@
-import os
-from ..mpl_compat import MockSignal
+"""
+XPCS Toolkit - Data Averaging and Quality Control Toolbox (average_toolbox)
 
+This module provides comprehensive tools for averaging multiple XPCS/SAXS datasets
+with quality control, statistical validation, and batch processing capabilities.
+Data averaging is essential for improving signal-to-noise ratios, removing outliers,
+and combining measurements from equivalent samples or conditions.
+
+## Scientific Background
+
+Data averaging in X-ray scattering experiments serves multiple purposes:
+
+### Statistical Enhancement
+- **Signal-to-noise improvement**: √N enhancement from N averaged datasets
+- **Statistical reliability**: Reduced impact of measurement fluctuations
+- **Outlier mitigation**: Robust averaging excludes corrupted or anomalous data
+- **Reproducibility assessment**: Quantify measurement consistency across samples
+
+### Quality Control Metrics
+- **Baseline validation**: Ensure proper correlation function normalization
+- **Data consistency**: Check for systematic variations or drift
+- **Temporal stability**: Monitor sample stability during measurements
+- **Instrumental reliability**: Detect systematic errors or hardware issues
+
+### Physical Interpretation
+- **Equilibrium properties**: Time-averaged behavior of stable systems
+- **Ensemble averaging**: Statistical mechanics quantities from multiple realizations
+- **Sample heterogeneity**: Assess variability across different sample preparations
+- **Measurement precision**: Quantify experimental uncertainties and reproducibility
+
+## Analysis Capabilities
+
+### Automatic Quality Assessment
+- **G₂ baseline validation**: Check correlation function normalization (g₂→1 at long times)
+- **Statistical clustering**: Identify and group similar measurements using k-means
+- **Outlier detection**: Automatically exclude anomalous datasets
+- **Intensity consistency**: Monitor scattered intensity levels across measurements
+
+### Flexible Averaging Options
+- **Multi-field support**: Average 2D images, 1D profiles, correlation functions simultaneously
+- **Weighted averaging**: Account for different measurement times or statistics
+- **Error propagation**: Proper statistical uncertainty calculation for averaged quantities
+- **Selective inclusion**: Manual or automatic selection of datasets to include
+
+### Batch Processing
+- **Large dataset handling**: Efficient processing of hundreds of files
+- **Memory optimization**: Chunk-based processing for large datasets
+- **Progress monitoring**: Real-time status updates and completion estimates
+- **Robust error handling**: Continue processing despite individual file failures
+
+### Real-time Monitoring
+- **Live quality plots**: Monitor baseline values during processing
+- **Progress visualization**: Track completion status and estimated time
+- **Interactive controls**: Pause, resume, or cancel operations
+- **Result preview**: Inspect averaged data before final save
+
+## Typical Analysis Workflow
+
+1. **File Selection**: Choose datasets for averaging based on experimental conditions
+2. **Quality Assessment**: Set baseline validation criteria for correlation functions
+3. **Clustering Analysis**: Group similar measurements and identify outliers
+4. **Parameter Configuration**: Set averaging windows, field selection, and output options
+5. **Batch Processing**: Execute averaging with real-time monitoring
+6. **Result Validation**: Inspect averaged data quality and statistics
+7. **Data Export**: Save averaged results with proper metadata preservation
+
+## Applications
+
+### Experimental Design
+- **Sample optimization**: Determine minimum measurement time per dataset
+- **Statistical planning**: Calculate required number of measurements for target precision
+- **Quality thresholds**: Establish acceptance criteria for data inclusion
+- **Protocol validation**: Verify measurement reproducibility across conditions
+
+### Data Analysis
+- **Enhanced correlation functions**: Improve g₂(q,τ) signal quality for fitting
+- **Structure determination**: Average SAXS patterns for reliable size/shape analysis  
+- **Dynamics characterization**: Reduce noise in dynamic light scattering measurements
+- **Comparative studies**: Create high-quality reference datasets for comparisons
+
+### Quality Control
+- **Instrument monitoring**: Track detector stability and beam consistency
+- **Sample screening**: Identify samples with anomalous behavior
+- **Method validation**: Assess measurement precision and accuracy
+- **Publication standards**: Generate high-quality averaged data for publication
+
+### High-throughput Analysis
+- **Automated processing**: Process large datasets with minimal supervision
+- **Screening studies**: Rapidly assess many samples or conditions
+- **Time-series analysis**: Average over temporal windows for evolution studies
+- **Multi-sample comparisons**: Generate consistent datasets for statistical analysis
+
+## Module Components
+
+### AverageToolbox Class
+Main class providing comprehensive averaging functionality with:
+- File management and validation
+- Quality control and clustering
+- Real-time progress monitoring  
+- Interactive visualization
+
+### Standalone Functions
+- `do_average()`: Simple batch averaging function
+- `average_plot_cluster()`: K-means clustering for quality assessment
+
+## Usage Examples
+
+```python
+# Basic averaging workflow
+from xpcs_toolkit.module.average_toolbox import AverageToolbox
+
+# Initialize averaging job
+avg_job = AverageToolbox(
+    work_dir='/path/to/data/',
+    flist=['file001.h5', 'file002.h5', 'file003.h5']
+)
+
+# Configure averaging parameters
+avg_job.setup(
+    chunk_size=256,           # Process in chunks for memory efficiency
+    avg_window=3,             # Baseline validation window (last 3 points)
+    avg_qindex=0,             # Q-bin for baseline check
+    avg_blmin=0.95,           # Minimum acceptable baseline
+    avg_blmax=1.05,           # Maximum acceptable baseline
+    fields=['saxs_2d', 'g2']  # Data fields to average
+)
+
+# Execute averaging
+results = avg_job.do_average(save_path='averaged_data.h5')
+
+# Simple standalone averaging
+from xpcs_toolkit.module.average_toolbox import do_average
+
+baseline_values = do_average(
+    flist=['file001.h5', 'file002.h5'],
+    work_dir='/data/',
+    save_path='average.h5',
+    avg_blmin=0.98,
+    avg_blmax=1.02
+)
+```
+
+## Quality Metrics
+
+### G₂ Baseline Validation
+The correlation function baseline g₂(τ→∞) should approach 1.0 for properly normalized data:
+- **Acceptable range**: Typically 0.95 ≤ g₂(∞) ≤ 1.05
+- **Physical meaning**: Values outside this range may indicate systematic errors
+- **Validation window**: Average over last few lag time points for stability
+
+### Statistical Clustering
+K-means clustering on intensity statistics helps identify:
+- **Consistent measurements**: Main cluster represents typical behavior  
+- **Outliers**: Points outside main cluster may have experimental issues
+- **Systematic variations**: Separate clusters may indicate different conditions
+
+## References
+
+- Schätzel, "Suppression of multiple scattering by photon cross-correlation techniques" (1993)
+- Pusey & van Megen, "Dynamic light scattering by non-ergodic media" (1989)
+- Cipelletti & Weitz, "Ultralow-angle dynamic light scattering with a charge coupled device camera based multispeckle, multitau correlator" (1999)
+- Fluerasu et al., "Slow dynamics and aging in colloidal gels studied by x-ray photon correlation spectroscopy" (2007)
+
+## Author
+
+XPCS Toolkit Development Team
+Advanced Photon Source, Argonne National Laboratory
+"""
+
+import os
 import logging
 import uuid
 import time
-import numpy as np
+import traceback
+from shutil import copyfile
+
+# Use lazy imports for heavy dependencies
+from .._lazy_imports import lazy_import
+from ..mpl_compat import MockSignal
+
+np = lazy_import('numpy')
+trange = lazy_import('tqdm', 'trange')
+
 from ..fileIO.hdf_reader import put
 from ..xpcs_file import XpcsDataFile as XF
-from shutil import copyfile
 from ..helper.listmodel import ListDataModel
-from tqdm import trange
-import traceback
 
 # Optional imports
 try:
@@ -147,17 +320,14 @@ class AverageToolbox:
         prev_percentage = 0
 
         def validate_g2_baseline(g2_data, q_idx):
-            if q_idx >= g2_data.shape[1]:
-                idx = 0
-                logger.info("q_index is out of range; using 0 instead")
-            else:
-                idx = q_idx
+            # Use min to avoid bounds checking
+            idx = min(q_idx, g2_data.shape[1] - 1) if g2_data.shape[1] > 0 else 0
+            if idx != q_idx:
+                logger.info("q_index is out of range; using %d instead", idx)
 
-            g2_baseline = np.mean(g2_data[-avg_window:, idx])
-            if avg_blmax >= g2_baseline >= avg_blmin:
-                return True, g2_baseline
-            else:
-                return False, g2_baseline
+            # More efficient slicing and calculation
+            g2_baseline = g2_data[-avg_window:, idx].mean()
+            return avg_blmin <= g2_baseline <= avg_blmax, g2_baseline
 
         result = {}
         for key in fields:
@@ -196,26 +366,40 @@ class AverageToolbox:
                     flag, val = validate_g2_baseline(xf.g2, avg_qindex)
                     self.baseline[self.ptr] = val
                     self.ptr += 1
-                except:
-                    traceback.print_exc()
+                except (OSError, IOError, ValueError) as e:
+                    # Specific exception handling for file and data errors
                     flag, val = False, 0
-                    logger.error("file %s is damaged, skip", fname)
+                    logger.error("Failed to process file %s: %s", fname, str(e))
+                except Exception as e:
+                    # Catch-all for unexpected errors with more detail
+                    flag, val = False, 0
+                    logger.error("Unexpected error processing file %s: %s", fname, str(e))
+                    if logger.isEnabledFor(logging.DEBUG):
+                        logger.debug("Full traceback:", exc_info=True)
 
                 if flag and xf is not None:
                     for key in fields:
-                        if key != "saxs_1d":
-                            data = xf.__getattr__(key)
+                        # More efficient attribute access
+                        if key == "saxs_1d":
+                            data = getattr(xf, "saxs_1d", {}).get("data_raw")
+                            if data is None:
+                                continue
                         else:
-                            data = xf.__getattr__("saxs_1d")["data_raw"]
+                            data = getattr(xf, key, None)
+                            if data is None:
+                                continue
+                        
                         if result[key] is None:
-                            result[key] = data
+                            # Use copy to avoid memory aliasing issues
+                            result[key] = data.copy() if hasattr(data, 'copy') else data
                             mask[m] = 1
                         elif result[key].shape == data.shape:
+                            # In-place addition for memory efficiency
                             result[key] += data
                             mask[m] = 1
                         else:
                             logger.info(
-                                f"data shape does not match for key {key}, {fname}"
+                                "data shape does not match for key %s, %s", key, fname
                             )
 
                 self.signals.values.emit((self.jid, val))
@@ -250,7 +434,7 @@ class AverageToolbox:
         
         # Ensure save_path is a string
         if save_path is not None:
-            put(str(save_path), result, ftype="nexus", mode="alias")
+            put(str(save_path), result, file_type="nexus", mode="alias")
         else:
             logger.warning("No save path provided for putting results")
 
@@ -343,17 +527,14 @@ def do_average(
     mask = np.zeros(tot_num, dtype=np.int64)
 
     def validate_g2_baseline(g2_data, q_idx):
-        if q_idx >= g2_data.shape[1]:
-            idx = 0
-            logger.info("q_index is out of range; using 0 instead")
-        else:
-            idx = q_idx
+        # Use min to avoid bounds checking (consistent with class method)
+        idx = min(q_idx, g2_data.shape[1] - 1) if g2_data.shape[1] > 0 else 0
+        if idx != q_idx:
+            logger.info("q_index is out of range; using %d instead", idx)
 
-        g2_baseline = np.mean(g2_data[-avg_window:, idx])
-        if avg_blmax >= g2_baseline >= avg_blmin:
-            return True, g2_baseline
-        else:
-            return False, g2_baseline
+        # More efficient slicing and calculation
+        g2_baseline = g2_data[-avg_window:, idx].mean()
+        return avg_blmin <= g2_baseline <= avg_blmax, g2_baseline
 
     result = {}
     for key in fields:
@@ -370,10 +551,16 @@ def do_average(
                 xf = XF(str(fname), fields=fields)
             flag, val = validate_g2_baseline(xf.g2, avg_qindex)
             baseline[m] = val
-        except Exception:
+        except (OSError, IOError, ValueError) as e:
+            # Specific exception handling for file and data errors
             flag, val = False, 0
-            traceback.print_exc()
-            logger.error("file %s is damaged, skip", fname)
+            logger.error("Failed to process file %s: %s", fname, str(e))
+        except Exception as e:
+            # Catch-all for unexpected errors with more detail
+            flag, val = False, 0
+            logger.error("Unexpected error processing file %s: %s", fname, str(e))
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug("Full traceback:", exc_info=True)
 
         if flag and xf is not None:
             for key in fields:
@@ -421,6 +608,6 @@ def do_average(
         logger.warning("No original file available for copying")
     
     # Ensure save_path is a string
-    put(str(save_path) if save_path is not None else '', result, ftype="nexus", mode="alias")
+    put(str(save_path) if save_path is not None else '', result, file_type="nexus", mode="alias")
 
     return baseline

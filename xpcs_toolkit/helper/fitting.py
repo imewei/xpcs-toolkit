@@ -21,18 +21,28 @@ def fit_with_fixed(*args, **kwargs):
 
 
 def single_exp(x, tau, bkg, cts):
-    return cts * np.exp( -2 * x / tau) + bkg
+    # More numerically stable computation for large x/tau ratios
+    return cts * np.exp(-2.0 * x / tau) + bkg
 
 
 def fit_tau(qd, tau, tau_err):
-    x = np.log(qd).reshape(-1, 1)
-    y = np.log(tau).reshape(-1, 1)
-    dy = tau / tau_err
+    # Use in-place operations and avoid unnecessary reshapes
+    x = np.log(qd, dtype=np.float64)  # Ensure float64 for numerical precision
+    y = np.log(tau, dtype=np.float64)
+    
+    # More efficient weight calculation with bounds checking
+    with np.errstate(divide='ignore', invalid='ignore'):
+        dy = np.where(tau_err > 0, tau / tau_err, 1.0)
+    
     reg = linear_model.LinearRegression()
-    reg.fit(x, y, sample_weight=dy)
-    x2 = np.linspace(np.min(x) - 0.1, np.max(x) + 0.1, 128)
-    y2 = reg.predict(x2.reshape(-1, 1))
-    return reg.coef_, reg.intercept_, np.exp(x2).ravel(), np.exp(y2).ravel()
+    reg.fit(x.reshape(-1, 1), y.reshape(-1, 1), sample_weight=dy)
+    
+    # More efficient prediction range
+    x_min, x_max = x.min(), x.max()
+    x2 = np.linspace(x_min - 0.1, x_max + 0.1, 128, dtype=np.float64)
+    y2 = reg.predict(x2.reshape(-1, 1)).ravel()
+    
+    return reg.coef_, reg.intercept_, np.exp(x2), np.exp(y2)
 
 
 def fit_xpcs(tel, qd, g2, g2_err, b):

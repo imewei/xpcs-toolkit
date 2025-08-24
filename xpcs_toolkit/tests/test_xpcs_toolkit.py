@@ -14,7 +14,7 @@ from xpcs_toolkit.analysis_kernel import AnalysisKernel
 from xpcs_toolkit.helper.listmodel import ListDataModel
 
 # Also import old class names to test backward compatibility
-from xpcs_toolkit.viewer_kernel import ViewerKernel  # This should issue deprecation warning
+from xpcs_toolkit.analysis_kernel import ViewerKernel  # This should issue deprecation warning
 
 
 def test_new_package_imports():
@@ -107,7 +107,7 @@ def test_new_package_structure():
     
     # Check that key files exist in new structure
     assert (package_dir / "cli_headless.py").exists()
-    assert (package_dir / "viewer_kernel.py").exists()
+    assert (package_dir / "analysis_kernel.py").exists()
     assert (package_dir / "xpcs_file.py").exists()
     assert (package_dir / "mpl_compat.py").exists()
     

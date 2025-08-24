@@ -18,8 +18,9 @@ logger = logging.getLogger(__name__)
 
 def put(save_path: Union[str, Path], 
         result: Dict[str, Any], 
-        ftype: str = "nexus", 
-        mode: str = "raw") -> None:
+        file_type: str = "nexus", 
+        mode: str = "raw",
+        ftype: str = None) -> None:
     """
     Save analysis results to HDF5 file with comprehensive logging.
     
@@ -51,9 +52,19 @@ def put(save_path: Union[str, Path],
     - DEBUG: Individual key details and transformations
     - ERROR: File access failures with full context
     """
+    # Handle backward compatibility for ftype parameter
+    if ftype is not None and file_type == "nexus":
+        import warnings
+        warnings.warn(
+            "Parameter 'ftype' is deprecated, use 'file_type' instead",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        file_type = ftype
+    
     # Input validation
-    if ftype not in hdf_key:
-        raise ValueError(f"Unsupported file type: {ftype}. Available: {list(hdf_key.keys())}")
+    if file_type not in hdf_key:
+        raise ValueError(f"Unsupported file type: {file_type}. Available: {list(hdf_key.keys())}")
     if mode not in ["raw", "alias"]:
         raise ValueError(f"Unsupported mode: {mode}. Must be 'raw' or 'alias'")
     
@@ -61,7 +72,7 @@ def put(save_path: Union[str, Path],
     context_logger = get_logger(__name__, 
                                file_path=str(save_path),
                                operation="put",
-                               ftype=ftype,
+                               ftype=file_type,
                                mode=mode)
     
     # Calculate total data size for logging
@@ -91,13 +102,13 @@ def put(save_path: Union[str, Path],
                     
                     # Transform key if using alias mode
                     if mode == "alias":
-                        if key not in hdf_key[ftype]:
+                        if key not in hdf_key[file_type]:
                             context_logger.warning(
                                 "Unknown alias key, using raw key",
-                                extra={"key": key, "available_keys": list(hdf_key[ftype].keys())}
+                                extra={"key": key, "available_keys": list(hdf_key[file_type].keys())}
                             )
                         else:
-                            key = hdf_key[ftype][key]
+                            key = hdf_key[file_type][key]
                             context_logger.debug(
                                 "Key alias translation",
                                 extra={"original_key": original_key, "hdf_key": key}

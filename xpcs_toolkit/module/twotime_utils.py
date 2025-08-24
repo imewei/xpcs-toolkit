@@ -1,8 +1,12 @@
-import h5py
-import numpy as np
 from functools import lru_cache
 from multiprocessing import Pool
 from typing import List, Any
+
+# Use lazy imports for heavy dependencies
+from .._lazy_imports import lazy_import
+h5py = lazy_import('h5py')
+np = lazy_import('numpy')
+
 from ..fileIO.aps_8idi import key as key_map
 
 key_map = key_map["nexus"]

@@ -1,8 +1,11 @@
-import numpy as np
-from typing import Optional, List, Tuple, Dict, Any
 import os
 import logging
 import warnings
+from typing import Optional, List, Tuple, Dict, Any
+
+# Use lazy imports for heavy dependencies
+from ._lazy_imports import lazy_import
+np = lazy_import('numpy')
 
 from .data_file_locator import DataFileLocator
 from .module import saxs2d, saxs1d, intt, stability, g2mod, tauq, twotime
@@ -131,8 +134,8 @@ class AnalysisKernel(DataFileLocator):
         Path to the directory containing XPCS data files.
         The kernel will automatically discover and index all compatible files.
     statusbar : object, optional
-        Status bar widget for displaying progress updates during analysis.
-        Used primarily in GUI applications for user feedback.
+        Status bar object for displaying progress updates during analysis.
+        Used primarily in interactive applications for user feedback.
 
     Attributes
     ----------

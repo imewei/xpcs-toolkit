@@ -379,7 +379,7 @@ class XpcsDataFile:
         # avoid duplicated keys
         fields = list(set(fields))
 
-        result_data = get(self.filename, fields, "alias", ftype="nexus")
+        result_data = get(self.filename, fields, "alias", file_type="nexus")
 
         if result_data is None:
             # Return empty dict if get() returns None
@@ -443,32 +443,35 @@ class XpcsDataFile:
         # delayed loading of saxs_2d due to its large size
         elif key == "saxs_2d":
             if self.saxs_2d_data is None:
-                result_data = get(self.filename, ["saxs_2d"], "alias", ftype="nexus")
+                result_data = get(self.filename, ["saxs_2d"], "alias", file_type="nexus")
                 if result_data is not None and isinstance(result_data, dict) and "saxs_2d" in result_data:
                     self.saxs_2d_data = result_data["saxs_2d"]
             return self.saxs_2d_data
         elif key == "saxs_2d_log":
             if self.saxs_2d_log_data is None:
-                saxs = np.copy(self.saxs_2d)
-                roi = saxs > 0
-                if np.sum(roi) == 0:
-                    self.saxs_2d_log_data = np.zeros_like(saxs, dtype=np.uint8)
+                saxs = self.saxs_2d.copy()  # More idiomatic numpy copy
+                # Use np.any for faster check
+                if not np.any(saxs > 0):
+                    self.saxs_2d_log_data = np.zeros_like(saxs, dtype=np.float32)
                 else:
-                    min_val = np.min(saxs[roi])
-                    saxs[~roi] = min_val
-                    self.saxs_2d_log_data = np.log10(saxs).astype(np.float32)
+                    # More efficient masking and log computation
+                    min_val = saxs[saxs > 0].min()
+                    saxs = np.where(saxs > 0, saxs, min_val)
+                    self.saxs_2d_log_data = np.log10(saxs, dtype=np.float32)
             return self.saxs_2d_log_data
         elif key == "Int_t_fft":
             Int_t = getattr(self, 'Int_t', None)
             if Int_t is None:
                 return None
-            y = np.abs(np.fft.fft(Int_t[1]))
+            # Use rfft for real input data (more efficient)
+            y = np.abs(np.fft.rfft(Int_t[1]))
             t0 = getattr(self, 't0', 1)
-            x = np.arange(y.size) / (y.size * t0)
-            x = x[0 : y.size // 2]
-            y = y[0 : y.size // 2]
-            y[0] = 0
-            return np.stack((x, y), axis=1).astype(np.float32).T
+            # More efficient array generation
+            n_half = y.size
+            x = np.arange(n_half, dtype=np.float32) / (2 * (n_half - 1) * t0)
+            y = y.astype(np.float32)
+            y[0] = 0  # Set DC component to zero
+            return np.vstack((x, y))
         elif key in self.__dict__:
             return self.__dict__[key]
         else:
@@ -588,12 +591,23 @@ class XpcsDataFile:
         self,
         bkg_xf=None,
         bkg_weight=1.0,
-        qrange=None,
+        q_range=None,
         sampling=1,
         use_absolute_crosssection=False,
         norm_method=None,
         target="saxs1d",
+        qrange=None,  # Deprecated: use q_range instead
     ):
+        # Handle backward compatibility for qrange parameter
+        if qrange is not None and q_range is None:
+            import warnings
+            warnings.warn(
+                "Parameter 'qrange' is deprecated, use 'q_range' instead",
+                DeprecationWarning,
+                stacklevel=2
+            )
+            q_range = qrange
+            
         assert target in ["saxs1d", "saxs1d_partial"]
         saxs_1d = getattr(self, 'saxs_1d', None)
         if saxs_1d is None:
@@ -614,13 +628,13 @@ class XpcsDataFile:
                 logger.warning(
                     "background subtraction is not applied because q is not matched"
                 )
-        if qrange is not None:
-            q_roi = (q >= qrange[0]) * (q <= qrange[1])
+        if q_range is not None:
+            q_roi = (q >= q_range[0]) * (q <= q_range[1])
             if q_roi.sum() > 0:
                 q = q[q_roi]
                 Iq = Iq[:, q_roi]
             else:
-                logger.warning("qrange is not applied because it is out of range")
+                logger.warning("q_range is not applied because it is out of range")
         if use_absolute_crosssection and self.abs_cross_section_scale is not None:
             Iq *= self.abs_cross_section_scale
 

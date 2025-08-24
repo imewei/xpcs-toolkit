@@ -94,8 +94,11 @@ import sys
 import logging
 import os
 import warnings
-import matplotlib.pyplot as plt
-import numpy as np
+
+# Use lazy imports for heavy dependencies
+from ._lazy_imports import lazy_import
+plt = lazy_import('matplotlib.pyplot')
+np = lazy_import('numpy')
 
 from xpcs_toolkit import __version__
 from xpcs_toolkit.data_file_locator import DataFileLocator
@@ -127,13 +130,79 @@ def configure_logging(enable_verbose_output=False):
 
 
 def plot_saxs_2d(arguments):
-    """Plot 2D SAXS scattering patterns from XPCS data.
-
+    """
+    Generate publication-ready 2D Small-Angle X-ray Scattering (SAXS) pattern visualizations.
+    
+    This function creates high-quality 2D scattering pattern visualizations from XPCS data files,
+    supporting both linear and logarithmic intensity scaling. The 2D SAXS patterns reveal 
+    structural information about materials on nanometer length scales through:
+    
+    - **Isotropic samples**: Circular scattering rings indicating uniform structure
+    - **Anisotropic samples**: Oriented features revealing directional ordering  
+    - **Particle sizes**: Inverse relationship between feature size and scattering angle
+    - **Sample homogeneity**: Intensity variations across the detector
+    
+    Scientific Background:
+        The 2D scattering intensity I(qx, qy) is recorded on a 2D detector where:
+        - qx, qy: Components of the scattering wavevector q = 4π sin(θ/2)/λ
+        - θ: Scattering angle, λ: X-ray wavelength
+        - |q|: Magnitude related to characteristic length scale d = 2π/q
+    
+    Features:
+        - Automatic detector geometry correction
+        - Beam center determination and verification
+        - Logarithmic and linear intensity scaling
+        - Bad pixel masking and interpolation
+        - Publication-quality figure generation
+        - Batch processing capabilities
+    
     Args:
-        arguments: Command line arguments containing path, output settings, etc.
-
+        arguments (argparse.Namespace): Command line arguments containing:
+            - path (str): Directory containing XPCS HDF5 files
+            - output (str): Output filename for the generated figure
+            - log_scale (bool): Use logarithmic intensity scaling
+            - max_files (int): Maximum number of files to process
+            - Additional visualization parameters from CLI
+    
     Returns:
         int: Exit code (0 for success, 1 for error)
+    
+    Raises:
+        FileNotFoundError: If no valid XPCS files found in specified path
+        ValueError: If SAXS 2D data is not available in the files
+        IOError: If output file cannot be written
+    
+    Examples:
+        >>> # Basic 2D SAXS visualization
+        >>> args = argparse.Namespace(
+        ...     path='/data/sample_001/',
+        ...     output='saxs2d.png',
+        ...     log_scale=False,
+        ...     max_files=None
+        ... )
+        >>> plot_saxs_2d(args)
+        0
+        
+        >>> # High-quality logarithmic scaling
+        >>> args.log_scale = True
+        >>> args.output = 'saxs2d_log.png'
+        >>> plot_saxs_2d(args)
+        0
+    
+    Notes:
+        - Automatically detects APS 8-ID-I NeXus and legacy HDF5 formats
+        - Supports detector geometry correction and calibration
+        - Handles missing data and bad pixels gracefully
+        - Optimized for both real-time analysis and batch processing
+        
+    See Also:
+        plot_saxs1d: Generate 1D radial profiles from 2D patterns
+        plot_g2_function: Analyze dynamic information from correlation functions
+        
+    References:
+        - Chu et al. "pyXPCSviewer: an open-source interactive tool for X-ray photon 
+          correlation spectroscopy visualization and analysis" J. Synchrotron Rad. (2022)
+        - Glatter & Kratky "Small Angle X-ray Scattering" Academic Press (1982)
     """
     logger.info(f"Processing 2D scattering analysis for path: {arguments.path}")
 
@@ -190,13 +259,108 @@ def plot_saxs_2d(arguments):
 
 
 def plot_g2_function(arguments):
-    """Plot G2 correlation functions from XPCS data.
-
+    """
+    Analyze and visualize intensity correlation functions g₂(q,τ) from XPCS measurements.
+    
+    This function extracts and analyzes the intensity correlation function g₂(q,τ), which is
+    the fundamental quantity in X-ray Photon Correlation Spectroscopy. The correlation 
+    function reveals dynamic information about sample fluctuations and provides access to:
+    
+    - **Relaxation timescales**: Characteristic times of structural rearrangements
+    - **Dynamic heterogeneity**: Spatial variations in local dynamics
+    - **Diffusion coefficients**: Through Einstein-Stokes relation D = kT/(6πηr)
+    - **Non-ergodic behavior**: Aging effects and glassy dynamics
+    - **Active processes**: Non-equilibrium fluctuations in living systems
+    
+    Scientific Background:
+        The intensity correlation function is defined as:
+        
+        g₂(q,τ) = ⟨I(q,t)I(q,t+τ)⟩ / ⟨I(q,t)⟩²
+        
+        Where:
+        - I(q,t): Scattered intensity at wavevector q and time t
+        - τ: Correlation delay time (lag time)
+        - ⟨⟩: Time ensemble average
+        - q = 4π sin(θ/2)/λ: Magnitude of scattering wavevector
+        
+        For ergodic systems, g₂(q,τ) approaches unity at long times. Deviations reveal:
+        - Exponential decay: g₂(τ) = 1 + β exp(-2Γτ) for Brownian motion
+        - Stretched exponentials: Non-exponential relaxation in complex systems
+        - Multiple timescales: Multi-component dynamics
+    
+    Analysis Features:
+        - Multi-tau correlation algorithm for extended time range
+        - Statistical error analysis and propagation
+        - Multiple fitting models (single/double exponential, stretched)
+        - Q-dependent analysis revealing length-scale dependent dynamics
+        - Automatic baseline correction and normalization
+        - Non-ergodicity parameter extraction
+    
     Args:
-        arguments: Command line arguments containing path, q-range, output settings, etc.
-
+        arguments (argparse.Namespace): Command line arguments containing:
+            - path (str): Directory containing XPCS HDF5 files
+            - qmin (float): Minimum q-value for analysis (Å⁻¹)
+            - qmax (float): Maximum q-value for analysis (Å⁻¹)
+            - outfile (str): Output filename for correlation function plot
+            - Additional analysis parameters from CLI parser
+    
     Returns:
         int: Exit code (0 for success, 1 for error)
+    
+    Raises:
+        FileNotFoundError: If no valid XPCS files found in specified path
+        ValueError: If correlation data is not available or invalid q-range
+        RuntimeError: If correlation analysis fails due to insufficient statistics
+    
+    Examples:
+        >>> # Basic g2 analysis with automatic q-range
+        >>> args = argparse.Namespace(
+        ...     path='/data/brownian_motion/',
+        ...     qmin=None, qmax=None,
+        ...     outfile='g2_auto.png'
+        ... )
+        >>> plot_g2_function(args)
+        0
+        
+        >>> # Specific q-range for diffusion analysis
+        >>> args = argparse.Namespace(
+        ...     path='/data/colloids/',
+        ...     qmin=0.01, qmax=0.05,
+        ...     outfile='g2_diffusion.png'
+        ... )
+        >>> plot_g2_function(args)
+        0
+    
+    Applications:
+        - **Brownian motion**: Extract diffusion coefficients from particle suspensions
+        - **Gelation studies**: Monitor sol-gel transitions and network formation
+        - **Glass dynamics**: Study slow dynamics near glass transition temperature
+        - **Active matter**: Investigate non-equilibrium fluctuations in living systems
+        - **Phase transitions**: Track critical fluctuations and ordering kinetics
+    
+    Output Information:
+        The generated plot typically shows:
+        - g₂(τ) vs correlation time τ for multiple q-values
+        - Logarithmic time axis spanning microseconds to seconds
+        - Statistical error bars indicating measurement precision
+        - Fitted curves with extracted relaxation parameters
+        - Color coding for different q-values
+    
+    Notes:
+        - Requires sufficient photon statistics for reliable correlation analysis
+        - Multi-tau algorithm enables analysis over 6-8 decades in time
+        - Error bars represent statistical uncertainties from finite sampling
+        - Fitting quality depends on signal-to-noise ratio and time range
+        
+    See Also:
+        plot_saxs_2d: Visualize scattering patterns providing q-space information
+        plot_saxs1d: Generate radial profiles for structure analysis
+        
+    References:
+        - Brown & Pusey "Dynamic Light Scattering" in "Photon Correlation Spectroscopy" (1991)
+        - Cipelletti & Weitz "Ultralow-angle dynamic light scattering" Rev. Sci. Instrum. (1999)
+        - Chu et al. "pyXPCSviewer" J. Synchrotron Rad. (2022)
+        - Fluerasu et al. "Slow dynamics and aging in colloidal gels" Phys. Rev. E (2007)
     """
     logger.info(f"Processing correlation function analysis for path: {arguments.path}")
 
@@ -300,7 +464,7 @@ def plot_saxs1d(args):
     for i, xf in enumerate(xf_list):
         # Get 1D scattering data
         q_range = (args.qmin, args.qmax) if args.qmin is not None and args.qmax is not None else None
-        saxs_data = xf.get_saxs1d_data(qrange=q_range) if hasattr(xf, 'get_saxs1d_data') else None
+        saxs_data = xf.get_saxs1d_data(q_range=q_range) if hasattr(xf, 'get_saxs1d_data') else None
         if saxs_data is None:
             print(f"Warning: Cannot get SAXS 1D data for {xf.label}")
             continue
@@ -473,7 +637,7 @@ SYNCHROTRON INTEGRATION:
   • Quality control: Immediate feedback on data quality
   • Archive processing: Batch analysis of stored datasets
 
-For interactive analysis and advanced features, use the full XPCS Toolkit GUI.
+For interactive analysis and advanced features, use the full XPCS Toolkit Python API.
 For technical support: https://github.com/imewei/xpcs-toolkit
         """
     )

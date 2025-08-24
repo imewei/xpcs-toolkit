@@ -72,7 +72,7 @@ q_vals, t_vals, g2, g2_err, labels = xpcs_data.get_g2_data(q_range=(0.01, 0.1))
 
 ## Installation and Setup
 
-The toolkit supports both interactive GUI-based analysis and headless
+The toolkit supports both interactive Python-based analysis and headless
 command-line operation, making it suitable for both exploratory data
 analysis and automated processing workflows.
 

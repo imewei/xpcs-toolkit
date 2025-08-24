@@ -1,0 +1,62 @@
+# XPCS Toolkit - Documentation Dependencies
+# =========================================
+# This file contains dependencies needed to build the documentation.
+# Install with: pip install -r requirements-docs.txt
+
+# Include core dependencies (documentation examples may need them)
+-r requirements.txt
+
+# Core Sphinx Documentation
+sphinx>=4.0.0
+sphinx-rtd-theme>=1.0.0       # Read the Docs theme
+sphinx-autodoc-typehints>=1.12.0  # Type hints in documentation
+
+# Markdown Support
+myst-parser>=0.18.0           # Markdown files in Sphinx
+recommonmark>=0.7.0           # CommonMark parser
+
+# Enhanced Documentation Features  
+sphinx-copybutton>=0.5.0      # Copy buttons for code blocks
+sphinx-togglebutton>=0.3.0    # Collapsible content
+sphinx-tabs>=3.4.0            # Tabbed content
+sphinx-gallery>=0.10.0        # Example galleries
+sphinx-autoapi>=2.0.0         # Automatic API documentation
+
+# Jupyter Notebook Support
+nbsphinx>=0.8.0               # Jupyter notebooks in Sphinx  
+jupyter>=1.0.0                # Jupyter for notebook execution
+ipykernel>=6.0.0              # IPython kernel
+
+# PlantUML for Diagrams (optional)
+sphinxcontrib-plantuml>=0.24   # PlantUML integration
+
+# API Documentation
+sphinx-jsonschema>=1.16.0     # JSON schema documentation
+
+# Documentation Testing and Validation
+doc8>=0.11.0                  # Documentation style checker
+sphinx-lint>=0.6.0            # Sphinx linter
+
+# Documentation Building and Deployment
+sphinx-autobuild>=2021.3.14   # Auto-rebuild docs during development
+ghp-import>=2.1.0             # GitHub Pages deployment
+
+# Enhanced Formatting and Styling
+sphinx-design>=0.3.0          # Design elements for Sphinx
+sphinx-book-theme>=0.3.0      # Alternative book-style theme (optional)
+
+# API Reference Generation
+sphinx-apidoc                  # Automatic API documentation generation (part of Sphinx)
+
+# Cross-references and Links
+sphinx-external-toc>=0.3.0    # External table of contents
+sphinx-panels>=0.6.0          # Panel layouts (deprecated, use sphinx-design)
+
+# Documentation Metrics and Analytics
+sphinx-sitemap>=2.2.0         # Generate sitemap.xml
+
+# Internationalization (if needed)
+sphinx-intl>=2.0.0            # Internationalization support
+
+# Documentation Search
+sphinx-search>=0.1.0          # Enhanced search functionality

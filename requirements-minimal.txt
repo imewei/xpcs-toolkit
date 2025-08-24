@@ -1,0 +1,27 @@
+# XPCS Toolkit - Minimal Dependencies
+# ====================================
+# This file contains the absolute minimum dependencies needed to run XPCS Toolkit
+# in a resource-constrained environment. Use this for Docker containers,
+# embedded systems, or when you want the smallest possible installation.
+
+# Minimal Scientific Computing
+numpy>=1.20.0,<2.0.0
+scipy>=1.7.0,<2.0.0
+
+# Essential Data I/O (HDF5 support is core to XPCS)
+h5py>=3.0.0,<4.0.0
+
+# Minimal plotting capability
+matplotlib>=3.5.0,<4.0.0
+
+# Progress indication (lightweight)
+tqdm>=4.60.0,<5.0.0
+
+# Note: This minimal installation may not support all XPCS Toolkit features.
+# Features that may be limited or unavailable:
+# - Advanced file format support (hdf5plugin)
+# - Machine learning analysis (scikit-learn) 
+# - Data analysis with pandas
+# - Parallel processing with joblib
+# - GUI features
+# - Performance optimizations

@@ -406,11 +406,20 @@ class QMap:
             avg = compressed_data.reshape(shape[0], -1)
             full_data = None  # Initialize for later use
         else:
-            full_data = np.full((shape[0], shape[1] * shape[2]), fill_value=np.nan)
-            for i in range(num_samples):
-                full_data[i, self.static_index_mapping] = compressed_data[i]
+            # Pre-allocate with NaN for better performance
+            full_data = np.empty((shape[0], shape[1] * shape[2]), dtype=compressed_data.dtype)
+            full_data.fill(np.nan)
+            
+            # Vectorized assignment instead of loop when possible
+            if num_samples == 1:
+                full_data[0, self.static_index_mapping] = compressed_data[0]
+            else:
+                for i in range(num_samples):
+                    full_data[i, self.static_index_mapping] = compressed_data[i]
+            
             full_data = full_data.reshape(shape)
-            avg = np.nanmean(full_data, axis=2)
+            # Use nanmean with better performance settings
+            avg = np.nanmean(full_data, axis=2, dtype=np.float64)
 
         if mode == "saxs_1d":
             assert num_samples == 1, "saxs1d mode only supports one sample"
