@@ -1,11 +1,19 @@
 # XPCS Toolkit - Git Ignore Configuration
 # This file specifies which files and directories should be ignored by Git
 
-# Python
+# ==============================================================================
+# PYTHON CORE
+# ==============================================================================
+
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+
+# C extensions
 *.so
+
+# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -34,6 +42,10 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
+# ==============================================================================
+# TESTING & COVERAGE
+# ==============================================================================
+
 # Unit test / coverage reports
 htmlcov/
 .tox/
@@ -48,53 +60,17 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
-# Translations
-*.mo
-*.pot
+# Test artifacts
+test_output/
+test_results/
+temp_test_*/
+*_test_temp/
 
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
+# ==============================================================================
+# ENVIRONMENTS & DEPENDENCIES
+# ==============================================================================
 
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# IPython
-profile_default/
-ipython_config.py
-
-# pyenv
-.python-version
-
-# pipenv
-Pipfile.lock
-
-# PEP 582
-__pypackages__/
-
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
-
-# Environments
+# Virtual environments
 .env
 .venv
 env/
@@ -102,129 +78,281 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+virtualenv/
+.conda/
+conda-env/
 
-# Spyder project settings
-.spyderproject
-.spyproject
+# Python version management
+.python-version
 
-# Rope project settings
-.ropeproject
+# Package management
+Pipfile.lock
+poetry.lock
 
-# mkdocs documentation
-/site
+# PEP 582 - Python local packages directory
+__pypackages__/
+
+# ==============================================================================
+# DEVELOPMENT TOOLS & LINTING
+# ==============================================================================
 
 # mypy
 .mypy_cache/
 .dmypy.json
 dmypy.json
 
-# ruff
-.ruff_cache/
-
 # Pyre type checker
 .pyre/
 
-# Operating System Files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# ruff
+.ruff_cache/
 
-# IDE and Editor Files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# Black formatter
+.black.cache/
 
-# XPCS Toolkit Specific
-# Log files from logging system
-*.log
-xpcs_toolkit.log
-xpcs_toolkit_fallback.log
+# isort
+.isort.cfg
 
-# Performance testing artifacts
-perf/
-*.prof
-*.pstats
+# flake8
+.flake8
 
-# Cache directories
-.cache/
-__pycache__/
-.pytest_cache/
+# pylint
+.pylintrc
 
-# Temporary test files
-test_*.hdf
-test_output/
-temp_*/
+# ==============================================================================
+# DOCUMENTATION
+# ==============================================================================
 
-# Analysis output files (examples)
-*.png
-*.pdf
-*.svg
-*.eps
-output/
-results/
-
-# Data files (typically large and shouldn't be in repo)
-*.hdf
-*.h5
-*.hdf5
-*.dat
-*.bin
-
-# Configuration files that might contain sensitive info
-*_config.local.*
-secrets.*
-
-# Documentation build artifacts
+# Sphinx documentation
 docs/_build/
+docs/build/
 docs/api/
+docs/source/_autosummary/
 
-# Jupyter notebook outputs
+# mkdocs documentation
+/site
+
+# Jupyter Book
+_build/
+
+# ==============================================================================
+# JUPYTER & IPYTHON
+# ==============================================================================
+
+# Jupyter Notebook
+.ipynb_checkpoints
 *.nbconvert.py
 
-# Profiling outputs
-profile_output.*
+# IPython
+profile_default/
+ipython_config.py
 
-# Backup files
-*.bak
-*.orig
-
-# Local development
-local/
-scratch/
-sandbox/
-
-# Distribution / packaging artifacts
-*.tar.gz
-*.whl
-
-# Virtual environments (common names)
-venv/
-virtualenv/
-.conda/
-conda-env/
-
-# PyCharm
-.idea/
+# ==============================================================================
+# IDE & EDITOR FILES
+# ==============================================================================
 
 # Visual Studio Code
 .vscode/
 *.code-workspace
 
-# macOS specific
-.Ds_Store
+# PyCharm
+.idea/
 
-# Windows specific
-Desktop.ini
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
 
-# Linux specific
+# Vim
+*.swp
+*.swo
 *~
 
-# Temporary directories
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+
+# Spyder
+.spyderproject
+.spyproject
+
+# Rope
+.ropeproject
+
+# ==============================================================================
+# OPERATING SYSTEM FILES
+# ==============================================================================
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# ==============================================================================
+# XPCS TOOLKIT SPECIFIC
+# ==============================================================================
+
+# Logging system outputs
+*.log
+xpcs_toolkit.log
+xpcs_toolkit_*.log
+logs/
+log_*.txt
+
+# Analysis outputs
+output/
+results/
+analysis_results/
+plots/
+
+# Image outputs (plots and visualizations)
+*.png
+*.pdf
+*.svg
+*.eps
+*.jpg
+*.jpeg
+*.tiff
+*.gif
+
+# Data files (typically large HDF5 files)
+*.hdf
+*.h5
+*.hdf5
+*.dat
+*.bin
+data/
+datasets/
+sample_data/
+test_data/
+
+# Configuration files with sensitive information
+*_config.local.*
+secrets.*
+.secrets/
+local_config/
+
+# Performance and profiling
+*.prof
+*.pstats
+profile_output.*
+performance_*.txt
+benchmark_results/
+
+# Cache directories
+.cache/
+cache/
+__pycache__/
+.pytest_cache/
+
+# Temporary files and directories
 tmp/
 temp/
+temp_*/
+scratch/
+sandbox/
+local/
+
+# Backup files
+*.bak
+*.backup
+*.orig
+*.rej
+
+# ==============================================================================
+# SCIENTIFIC COMPUTING SPECIFIC
+# ==============================================================================
+
+# NumPy
+*.npy
+*.npz
+
+# Matplotlib
+matplotlibrc
+
+# IPython/Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# ==============================================================================
+# BUILD & PACKAGING
+# ==============================================================================
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Wheel files
+*.whl
+
+# Source distributions
+*.tar.gz
+
+# ==============================================================================
+# CONTINUOUS INTEGRATION
+# ==============================================================================
+
+# Coverage reports
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Tox
+.tox/
+
+# GitHub Actions artifacts
+.github/workflows/artifacts/
+
+# ==============================================================================
+# MISCELLANEOUS
+# ==============================================================================
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath
+*.sage.py
+
+# Translations
+*.mo
+*.pot
+
+# Local development notes
+TODO.local
+NOTES.local
+notes/
+todo/
+
+# User-specific files
+.user_config
+user_settings.*
+
+# Version control
+.git/
+.gitattributes.local
+
+# Large files that shouldn't be tracked
+*.large
+big_files/
+large_data/
+
+# claude
+*.claude
