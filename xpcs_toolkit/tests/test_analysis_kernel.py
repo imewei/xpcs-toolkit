@@ -178,7 +178,7 @@ class TestAnalysisKernelMethods:
         """Test error handling in AnalysisKernel."""
         # Test with invalid directory
         try:
-            kernel = AnalysisKernel(None)
+            kernel = AnalysisKernel(None)  # type: ignore[arg-type]
         except (TypeError, ValueError, AttributeError):
             pass  # Expected behavior for invalid input
         

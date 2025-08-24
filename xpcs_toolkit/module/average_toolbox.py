@@ -564,23 +564,33 @@ def do_average(
 
         if flag and xf is not None:
             for key in fields:
+                scale = 1.0  # Default scale value
                 if key != "saxs_1d":
-                    data = xf.at(key)
+                    data = xf.at(key) if hasattr(xf, 'at') else None  # type: ignore[union-attr]
                 else:
-                    data = xf.at("saxs_1d")["data_raw"]
-                    scale = xf.abs_cross_section_scale
-                    if scale is None:
+                    if hasattr(xf, 'at'):
+                        saxs_1d_data = xf.at("saxs_1d")  # type: ignore[union-attr]
+                        if saxs_1d_data is not None:
+                            data = saxs_1d_data["data_raw"]
+                            scale = xf.abs_cross_section_scale
+                            if scale is None:
+                                scale = 1.0
+                            data *= scale
+                        else:
+                            data = None
+                            scale = 1.0  # Keep default scale
+                    else:
+                        data = None
                         scale = 1.0
-                    data *= scale
                     abs_cs_scale_tot += scale
 
                 if result[key] is None:
                     result[key] = data
                     mask[m] = 1
-                elif result[key].shape == data.shape:
+                elif data is not None and result[key].shape == data.shape:
                     result[key] += data
                     mask[m] = 1
-                else:
+                elif data is not None:
                     logger.info(f"data shape does not match for key {key}, {fname}")
 
     if np.sum(mask) == 0:

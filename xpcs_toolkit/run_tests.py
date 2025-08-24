@@ -67,16 +67,42 @@ try:
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
+    # Create dummy psutil module for when it's not available
+    class DummyProcess:
+        def memory_info(self):
+            class MemInfo:
+                rss = 0
+            return MemInfo()
+    
+    class DummyPsutil:
+        NoSuchProcess = Exception
+        AccessDenied = Exception
+        
+        @staticmethod
+        def Process():
+            return DummyProcess()
+    
+    psutil = DummyPsutil()
 
 try:
-    from watchdog.observers import Observer
-    from watchdog.events import FileSystemEventHandler
+    from watchdog.observers import Observer  # type: ignore[import-untyped]
+    from watchdog.events import FileSystemEventHandler  # type: ignore[import-untyped]
     WATCHDOG_AVAILABLE = True
 except ImportError:
     WATCHDOG_AVAILABLE = False
-    # Create dummy class for when watchdog is not available
+    # Create dummy classes for when watchdog is not available
     class FileSystemEventHandler:
         def on_modified(self, event):
+            pass
+    
+    class Observer:
+        def schedule(self, *args, **kwargs):
+            pass
+        def start(self):
+            pass
+        def stop(self):
+            pass
+        def join(self):
             pass
 
 
@@ -194,7 +220,7 @@ class MemoryMonitor:
                 break
 
 
-class TestWatcher(FileSystemEventHandler):
+class TestWatcher(FileSystemEventHandler):  # type: ignore[misc]
     """File system watcher for automatic test rerunning."""
     
     def __init__(self, test_runner):
@@ -693,7 +719,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(
         description='XPCS Toolkit Advanced Test Runner',
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=__doc__.split('\n\n')[1]  # Use examples from docstring
+        epilog=__doc__.split('\n\n')[1] if __doc__ else None  # Use examples from docstring
     )
     
     # Test selection

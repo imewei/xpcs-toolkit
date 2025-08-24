@@ -38,7 +38,7 @@ def get_long_description():
 def get_version():
     """Get version from setuptools_scm or fallback."""
     try:
-        from setuptools_scm import get_version
+        from setuptools_scm import get_version  # type: ignore[import-untyped]
         return get_version(root='..', relative_to=__file__)
     except (ImportError, LookupError):
         # Fallback version if setuptools_scm is not available or no git

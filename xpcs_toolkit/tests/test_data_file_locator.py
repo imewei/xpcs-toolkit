@@ -56,13 +56,19 @@ class TestDataFileLocator:
         # Test with relative path
         original_cwd = os.getcwd()
         try:
+            # Create a subdirectory to test relative paths
+            subdir = os.path.join(temp_dir, 'subdir')
+            os.makedirs(subdir, exist_ok=True)
             os.chdir(temp_dir)
-            parent_dir = os.path.dirname(temp_dir)
-            relative_path = os.path.relpath(temp_dir, parent_dir)
-            if relative_path != '.':
-                locator = DataFileLocator(relative_path)
-                # Should resolve to absolute path or handle gracefully
-                assert locator.directory is not None
+            
+            # Use current directory
+            locator = DataFileLocator('.')
+            # Use os.path.realpath to resolve symlinks
+            assert os.path.realpath(locator.directory) == os.path.realpath(temp_dir)
+            
+            # Use subdirectory with relative path
+            locator = DataFileLocator('subdir')
+            assert os.path.realpath(locator.directory) == os.path.realpath(subdir)
         finally:
             os.chdir(original_cwd)
 
@@ -135,10 +141,10 @@ class TestDataFileLocatorFileMethods:
         
         # Should have methods for file discovery
         if hasattr(locator, 'get_files'):
-            files = locator.get_files()
+            files = locator.get_files()  # type: ignore[attr-defined]
             assert isinstance(files, (list, tuple))
         elif hasattr(locator, 'scan_directory'):
-            locator.scan_directory()
+            locator.scan_directory()  # type: ignore[attr-defined]
         elif hasattr(locator, 'build_file_list'):
             locator.build_file_list()
     
@@ -367,7 +373,7 @@ class TestDataFileLocatorIntegration:
             
             # Try to trigger file scanning
             if hasattr(locator, 'scan_directory'):
-                locator.scan_directory()
+                locator.scan_directory()  # type: ignore[attr-defined]
             elif hasattr(locator, 'build_file_list'):
                 locator.build_file_list()
             
@@ -388,7 +394,7 @@ class TestDataFileLocatorIntegration:
             # Perform operations multiple times
             for _ in range(10):
                 if hasattr(locator, 'scan_directory'):
-                    locator.scan_directory()
+                    locator.scan_directory()  # type: ignore[attr-defined]
                 elif hasattr(locator, 'build_file_list'):
                     locator.build_file_list()
             

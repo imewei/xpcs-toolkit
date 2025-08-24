@@ -52,13 +52,47 @@ class DataFileLocator:
     """
     
     def __init__(self, path: str):
-        self.path = path
+        # Validate path
+        if not path:
+            raise ValueError("Directory path cannot be empty")
+        if not isinstance(path, str):
+            raise TypeError(f"Directory must be a string, not {type(path)}")
+        
+        # Convert to absolute path
+        abs_path = os.path.abspath(path)
+        
+        if not os.path.exists(abs_path):
+            raise FileNotFoundError(f"Directory not found: {abs_path}")
+        if not os.path.isdir(abs_path):
+            raise ValueError(f"Path is not a directory: {abs_path}")
+            
+        self.path = abs_path
         self.source_files = ListDataModel()
         self.search_results = ListDataModel()
         self.target_files = ListDataModel()
         self.qmap_manager = QMapManager()
         self.file_cache = {}
         self.last_modified_time = None
+
+    @property
+    def directory(self) -> str:
+        """Get the current directory path (alias for path)."""
+        return self.path
+    
+    @directory.setter
+    def directory(self, value: str) -> None:
+        """Set the directory path (alias for path)."""
+        # Add validation
+        if not value:
+            raise ValueError("Directory path cannot be empty")
+        if not isinstance(value, str):
+            raise TypeError(f"Directory must be a string, not {type(value)}")
+        if not os.path.exists(value):
+            raise FileNotFoundError(f"Directory not found: {value}")
+        if not os.path.isdir(value):
+            raise ValueError(f"Path is not a directory: {value}")
+        self.path = value
+        self.set_directory_path(value)
 
     def set_directory_path(self, path: str) -> None:
         """Set the directory path for file location.

@@ -4,16 +4,22 @@ from typing import Union
 
 
 def isNeXusFile(filename: str) -> bool:
-    with h5py.File(filename, "r") as f:
-        if "/entry/instrument/bluesky/metadata/" in f:
-            return True
+    try:
+        with h5py.File(filename, "r") as f:
+            if "/entry/instrument/bluesky/metadata/" in f:
+                return True
+    except (OSError, FileNotFoundError, PermissionError):
+        return False
     return False
 
 
 def isLegacyFile(filename: str) -> bool:
-    with h5py.File(filename, "r") as f:
-        if "/xpcs/Version" in f:
-            return True
+    try:
+        with h5py.File(filename, "r") as f:
+            if "/xpcs/Version" in f:
+                return True
+    except (OSError, FileNotFoundError, PermissionError):
+        return False
     return False
 
 

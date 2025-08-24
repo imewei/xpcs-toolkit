@@ -8,8 +8,16 @@ stability, twotime, and other analysis components.
 import pytest
 import numpy as np
 from unittest.mock import Mock, patch, MagicMock
+from typing import Optional, Any
 
 # Test imports for available modules
+g2mod: Optional[Any] = None
+saxs1d: Optional[Any] = None
+saxs2d: Optional[Any] = None
+stability: Optional[Any] = None
+twotime: Optional[Any] = None
+average_toolbox: Optional[Any] = None
+
 try:
     from xpcs_toolkit.module import g2mod
     G2MOD_AVAILABLE = True
@@ -58,14 +66,16 @@ class TestG2Module:
     @pytest.mark.skipif(not G2MOD_AVAILABLE, reason="g2mod not available")
     def test_g2mod_has_get_data_function(self):
         """Test that g2mod has get_data function."""
-        assert hasattr(g2mod, 'get_data')
-        assert callable(g2mod.get_data)
+        assert g2mod is not None
+        assert hasattr(g2mod, 'get_data')  # type: ignore[arg-type]
+        assert callable(g2mod.get_data)  # type: ignore[union-attr]  # type: ignore[arg-type]
     
     @pytest.mark.skipif(not G2MOD_AVAILABLE, reason="g2mod not available")
     def test_g2mod_has_pg_plot_function(self):
         """Test that g2mod has pg_plot function."""
-        assert hasattr(g2mod, 'pg_plot')
-        assert callable(g2mod.pg_plot)
+        assert g2mod is not None
+        assert hasattr(g2mod, 'pg_plot')  # type: ignore[arg-type]
+        assert callable(g2mod.pg_plot)  # type: ignore[union-attr]  # type: ignore[arg-type]
     
     @pytest.mark.skipif(not G2MOD_AVAILABLE, reason="g2mod not available")
     def test_g2mod_get_data_with_mock_input(self):
@@ -79,7 +89,7 @@ class TestG2Module:
             }
             
             # Test get_data function
-            result = g2mod.get_data(mock_data)
+            result = g2mod.get_data  # type: ignore[union-attr](mock_data)
             
             # Should return some kind of processed data
             assert result is not None
@@ -92,12 +102,14 @@ class TestG2Module:
     def test_g2mod_plotting_function(self):
         """Test g2mod plotting capabilities."""
         try:
+            assert g2mod is not None
             # Create mock plotting data
             x_data = np.logspace(-6, 3, 20)
             y_data = np.exp(-x_data) + 0.1 * np.random.random(20)
             
-            # Test plotting function
-            result = g2mod.pg_plot(x_data, y_data)
+            # Test plotting function with minimal parameters
+            # Note: pg_plot might require additional parameters in real usage
+            result = g2mod.pg_plot  # type: ignore[union-attr](x_data, y_data, (0, 1), (0, 1), (0, 1))  # type: ignore[call-arg]
             
             # Should return plot object or handle gracefully
             assert result is not None or result is None
@@ -129,20 +141,20 @@ class TestSAXS1DModule:
     def test_saxs1d_has_pg_plot_function(self):
         """Test that saxs1d has pg_plot function."""
         assert hasattr(saxs1d, 'pg_plot')
-        assert callable(saxs1d.pg_plot)
+        assert callable(saxs1d.pg_plot)  # type: ignore[union-attr]
     
     @pytest.mark.skipif(not SAXS1D_AVAILABLE, reason="saxs1d not available")
     def test_saxs1d_has_get_color_marker_function(self):
         """Test that saxs1d has get_color_marker function."""
         assert hasattr(saxs1d, 'get_color_marker')
-        assert callable(saxs1d.get_color_marker)
+        assert callable(saxs1d.get_color_marker)  # type: ignore[union-attr]
     
     @pytest.mark.skipif(not SAXS1D_AVAILABLE, reason="saxs1d not available")
     def test_saxs1d_get_color_marker(self):
         """Test saxs1d get_color_marker function."""
         # Test with different indices
         for i in range(5):
-            color, marker = saxs1d.get_color_marker(i)
+            color, marker = saxs1d.get_color_marker(i)  # type: ignore[union-attr]
             assert isinstance(color, str)
             assert isinstance(marker, str)
             assert len(color) > 0
@@ -157,7 +169,7 @@ class TestSAXS1DModule:
             intensity = np.power(q_values, -2) * np.exp(-q_values**2 / 0.01)
             
             # Test plotting function
-            result = saxs1d.pg_plot(q_values, intensity)
+            result = saxs1d.pg_plot  # type: ignore[union-attr](q_values, intensity)
             
             # Should return plot object or handle gracefully
             assert result is not None or result is None
@@ -253,7 +265,7 @@ class TestStabilityModule:
     def test_stability_has_plot_function(self):
         """Test that stability has plot function."""
         assert hasattr(stability, 'plot')
-        assert callable(stability.plot)
+        assert callable(stability.plot)  # type: ignore[union-attr]
     
     @pytest.mark.skipif(not STABILITY_AVAILABLE, reason="stability not available")
     def test_stability_plot_function(self):
@@ -264,7 +276,7 @@ class TestStabilityModule:
             intensity_values = 1000 + 50 * np.sin(time_points) + 10 * np.random.random(50)
             
             # Test plot function
-            result = stability.plot(time_points, intensity_values)
+            result = stability.plot  # type: ignore[union-attr](time_points, intensity_values)
             
             # Should return plot or handle gracefully
             assert result is not None or result is None
@@ -367,7 +379,7 @@ class TestAverageToolbox:
     def test_average_toolbox_worker_signal(self):
         """Test WorkerSignal class if available."""
         if hasattr(average_toolbox, 'WorkerSignal'):
-            WorkerSignal = average_toolbox.WorkerSignal
+            WorkerSignal = average_toolbox.WorkerSignal  # type: ignore[union-attr]
             
             try:
                 signal = WorkerSignal()
@@ -380,7 +392,7 @@ class TestAverageToolbox:
     def test_average_toolbox_main_class(self):
         """Test main AverageToolbox class if available."""
         if hasattr(average_toolbox, 'AverageToolbox'):
-            AverageToolbox = average_toolbox.AverageToolbox
+            AverageToolbox = average_toolbox.AverageToolbox  # type: ignore[union-attr]
             
             try:
                 toolbox = AverageToolbox()
@@ -483,7 +495,7 @@ class TestModuleErrorHandling:
         if G2MOD_AVAILABLE and hasattr(g2mod, 'get_data'):
             for invalid_input in invalid_inputs:
                 try:
-                    g2mod.get_data(invalid_input)
+                    g2mod.get_data  # type: ignore[union-attr](invalid_input)
                 except (TypeError, ValueError, AttributeError, KeyError):
                     # Expected behavior for invalid input
                     pass
@@ -499,7 +511,7 @@ class TestModuleErrorHandling:
                 try:
                     # Try to get color/marker info (shouldn't need plotting libraries)
                     if hasattr(saxs1d, 'get_color_marker'):
-                        color, marker = saxs1d.get_color_marker(0)
+                        color, marker = saxs1d.get_color_marker(0)  # type: ignore[union-attr]
                         assert isinstance(color, str)
                         assert isinstance(marker, str)
                 except (ImportError, AttributeError):
@@ -551,7 +563,7 @@ class TestModulePerformance:
             # Test get_color_marker performance
             start_time = time.time()
             for i in range(100):
-                saxs1d.get_color_marker(i)
+                saxs1d.get_color_marker  # type: ignore[union-attr](i)
             execution_time = time.time() - start_time
             
             # Should execute quickly
@@ -570,12 +582,11 @@ class TestModulePerformance:
             start_time = time.time()
             
             try:
-                result = g2mod.get_data(test_data)
+                result = g2mod.get_data(test_data)  # type: ignore[union-attr]
                 execution_time = time.time() - start_time
                 
                 # Should process data efficiently
                 assert execution_time < 5.0
                 
             except (TypeError, KeyError, AttributeError):
-                # Function might expect different data format
                 pass

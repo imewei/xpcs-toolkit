@@ -1,1 +1,1 @@
-"""Unit test package for pyxpcsviewer."""
+"""Unit test package for xpcs-toolkit."""

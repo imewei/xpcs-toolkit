@@ -164,6 +164,49 @@ class AnalysisKernel(DataFileLocator):
         self.average_job_id = 0
         self.average_worker_active = {}
         self.current_dataset = None
+        
+        # Initialize file management attributes for compatibility
+        self.file_list = []
+        self.selected_files = []
+
+    @property
+    def directory(self) -> str:
+        """Get the current directory path (alias for path)."""
+        return self.path
+    
+    @directory.setter
+    def directory(self, value: str) -> None:
+        """Set the directory path (alias for path)."""
+        self.path = value
+        self.set_directory_path(value)
+    
+    def get_selected_files(self) -> List:
+        """Get the list of selected files."""
+        return self.selected_files
+    
+    def build_file_list(self, path: Optional[str] = None,
+                       file_extensions: Tuple[str, ...] = (".hdf", ".h5"),
+                       sort_method: str = "Filename") -> bool:
+        """
+        Build the file list from the specified directory.
+        
+        Overrides parent method to also populate file_list attribute.
+        """
+        result = super().build_file_list(path, file_extensions, sort_method)
+        # Update file_list attribute for compatibility
+        # Convert ListDataModel to list if needed
+        if hasattr(self, 'source_files') and self.source_files is not None:
+            if hasattr(self.source_files, 'input_list'):
+                # ListDataModel has input_list attribute containing the actual data
+                self.file_list = self.source_files.input_list.copy()
+            elif hasattr(self.source_files, '__getitem__') and hasattr(self.source_files, '__len__'):
+                # If it's list-like, convert to list
+                self.file_list = [self.source_files[i] for i in range(len(self.source_files))]
+            else:
+                self.file_list = []
+        else:
+            self.file_list = []
+        return result
 
     def reset_metadata(self) -> None:
         """Reset analysis metadata to default values."""
@@ -238,7 +281,7 @@ class AnalysisKernel(DataFileLocator):
 
     def plot_g2_function(self, handler, q_range: Tuple[float, float],
                         time_range: Tuple[float, float], y_range: Tuple[float, float],
-                        rows: Optional[List[int]] = None, **kwargs) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+                        rows: Optional[List[int]] = None, **kwargs) -> Tuple[Any, Any]:
         """Plot G2 correlation function.
 
         Parameters

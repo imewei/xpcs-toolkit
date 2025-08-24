@@ -449,15 +449,20 @@ class XpcsDataFile:
             return self.saxs_2d_data
         elif key == "saxs_2d_log":
             if self.saxs_2d_log_data is None:
-                saxs = self.saxs_2d.copy()  # More idiomatic numpy copy
-                # Use np.any for faster check
-                if not np.any(saxs > 0):
-                    self.saxs_2d_log_data = np.zeros_like(saxs, dtype=np.float32)
+                saxs_2d = self.saxs_2d
+                if saxs_2d is not None:
+                    saxs = saxs_2d.copy()  # More idiomatic numpy copy
+                    # Use np.any for faster check
+                    if not np.any(saxs > 0):
+                        self.saxs_2d_log_data = np.zeros_like(saxs, dtype=np.float32)
+                    else:
+                        # More efficient masking and log computation
+                        min_val = saxs[saxs > 0].min()
+                        saxs = np.where(saxs > 0, saxs, min_val)
+                        self.saxs_2d_log_data = np.log10(saxs, dtype=np.float32)
                 else:
-                    # More efficient masking and log computation
-                    min_val = saxs[saxs > 0].min()
-                    saxs = np.where(saxs > 0, saxs, min_val)
-                    self.saxs_2d_log_data = np.log10(saxs, dtype=np.float32)
+                    # Return None if saxs_2d data is not available
+                    self.saxs_2d_log_data = None
             return self.saxs_2d_log_data
         elif key == "Int_t_fft":
             Int_t = getattr(self, 'Int_t', None)
@@ -475,7 +480,7 @@ class XpcsDataFile:
         elif key in self.__dict__:
             return self.__dict__[key]
         else:
-            raise KeyError(f"key [{key}] not found")
+            raise AttributeError(f"'{type(self).__name__}' object has no attribute '{key}'")
 
     def get_info_at_position(self, x: int, y: int) -> Optional[str]:
         """Get information at a specific detector position.
