@@ -17,14 +17,14 @@ logger = logging.getLogger(__name__)
 class AnalysisKernel(DataFileLocator):
     """
     AnalysisKernel - Advanced XPCS Data Analysis Engine
-    
+
     This comprehensive analysis kernel serves as the primary engine for processing
     and analyzing X-ray Photon Correlation Spectroscopy (XPCS) datasets. It coordinates
     multiple specialized analysis modules to provide complete analysis workflows for
     both multi-tau and two-time correlation experiments.
-    
+
     ## Core Analysis Capabilities
-    
+
     ### Multi-tau Correlation Analysis
     - **G2 Function Analysis**: Complete g2(q,t) correlation function processing
     - **Relaxation Dynamics**: Extract characteristic relaxation times and dynamics
@@ -32,14 +32,14 @@ class AnalysisKernel(DataFileLocator):
     - **Time-range Filtering**: Focus on specific time scales of interest
     - **Statistical Analysis**: Proper error propagation from photon statistics
     - **Fitting Algorithms**: Single and double exponential fitting with bounds
-    
+
     ### Two-time Correlation Analysis
     - **C2 Visualization**: Two-dimensional correlation function display
     - **Aging Studies**: Time-resolved analysis of non-stationary systems
     - **Evolution Maps**: Speckle pattern evolution over experimental time
     - **Non-equilibrium Dynamics**: Analysis of systems far from equilibrium
     - **Interactive Exploration**: Real-time correlation data examination
-    
+
     ### Small-Angle X-ray Scattering (SAXS)
     - **2D Pattern Analysis**: Complete scattering pattern visualization
     - **Radial Averaging**: 1D intensity profiles with sector integration
@@ -47,84 +47,84 @@ class AnalysisKernel(DataFileLocator):
     - **Background Subtraction**: Automated and manual background correction
     - **Region of Interest**: Customizable ROI analysis for anisotropic samples
     - **Export Capabilities**: Data export in standard formats
-    
+
     ### Experimental Quality Assessment
     - **Beam Stability**: Monitor intensity fluctuations and beam drift
     - **Detector Performance**: Assess detector stability and noise levels
     - **Sample Drift**: Detect and quantify sample movement during measurement
     - **Statistical Metrics**: Calculate stability and quality parameters
     - **Long-term Monitoring**: Track experimental conditions over time
-    
+
     ## Advanced Features
-    
+
     ### Batch Processing
     - **Multi-file Analysis**: Process entire datasets automatically
     - **Parameter Consistency**: Maintain consistent analysis parameters
     - **Parallel Processing**: Efficient handling of large dataset collections
     - **Progress Tracking**: Real-time analysis progress monitoring
     - **Error Handling**: Robust processing with detailed error reporting
-    
+
     ### Interactive Visualization
     - **Real-time Plotting**: Dynamic plot updates during analysis
     - **Multi-panel Displays**: Simultaneous visualization of multiple analyses
     - **Zoom and Pan**: Interactive exploration of data
     - **Publication Quality**: High-resolution output suitable for publications
     - **Custom Styling**: Configurable plot appearance and formatting
-    
+
     ### Data Management
     - **File Organization**: Intelligent file discovery and organization
     - **Metadata Handling**: Complete experimental parameter preservation
     - **Format Support**: Native NeXus and legacy HDF5 format handling
     - **Memory Optimization**: Efficient handling of large datasets
     - **Caching System**: Intelligent data caching for improved performance
-    
+
     ## Typical Analysis Workflows
-    
+
     ### Standard Multi-tau Analysis
     ```python
     # Initialize analysis kernel
     kernel = AnalysisKernel('/path/to/data')
     kernel.build()
-    
+
     # Plot G2 correlation functions
     q_range = (0.01, 0.1)
     time_range = (1e-6, 1e3)
     kernel.plot_g2_function(handler, q_range, time_range, y_range=(0.9, 1.5))
-    
+
     # Perform tau vs q analysis
     fitting_results = kernel.plot_tau_vs_q(q_range=q_range)
     ```
-    
+
     ### SAXS Pattern Analysis
     ```python
     # Visualize 2D scattering patterns
     kernel.plot_saxs_2d(rows=[0], log_scale=True)
-    
+
     # Generate 1D radial profiles
     kernel.plot_saxs_1d(pg_handler, mp_handler, q_range=(0.005, 0.5))
-    
+
     # Export analysis results
     kernel.export_saxs_1d_data(pg_handler, '/output/folder')
     ```
-    
+
     ### Quality Assessment
     ```python
     # Check beam stability
     stability_info = kernel.get_info_at_mouse_position(rows=[0], x=512, y=512)
-    
+
     # Generate fitting summary
     fitting_tree = kernel.get_fitting_tree(rows=[0, 1, 2])
     ```
-    
+
     ## Integration with Synchrotron Facilities
-    
+
     Optimized for use at synchrotron beamlines, particularly APS 8-ID-I:
     - **Real-time Analysis**: Process data as it's being collected
     - **Automated Workflows**: Integration with beamline control systems
     - **Remote Access**: Support for remote analysis and monitoring
     - **High Throughput**: Handle continuous data streams efficiently
     - **Standardized Protocols**: Consistent analysis across experiments
-    
+
     Parameters
     ----------
     path : str
@@ -133,7 +133,7 @@ class AnalysisKernel(DataFileLocator):
     statusbar : object, optional
         Status bar widget for displaying progress updates during analysis.
         Used primarily in GUI applications for user feedback.
-        
+
     Attributes
     ----------
     path : str
@@ -144,9 +144,12 @@ class AnalysisKernel(DataFileLocator):
         Currently active dataset for analysis
     metadata : dict
         Analysis metadata and configuration parameters
-    
+
     """
-    
+
+    # Class-level type annotations
+    metadata: Optional[Dict[str, Any]]
+
     def __init__(self, path: str, statusbar=None):
         super().__init__(path)
         self.statusbar = statusbar
@@ -178,24 +181,25 @@ class AnalysisKernel(DataFileLocator):
 
     def select_background_file(self, filename: str) -> None:
         """Select a background file for SAXS 1D analysis.
-        
+
         Parameters
         ----------
         filename : str
             Path to the background file.
         """
         base_filename = os.path.basename(filename)
-        self.metadata["saxs_1d_background_filename"] = base_filename
-        self.metadata["saxs_1d_background_file"] = XpcsDataFile(filename)
+        if self.metadata is not None:
+            self.metadata["saxs_1d_background_filename"] = base_filename
+            self.metadata["saxs_1d_background_file"] = XpcsDataFile(filename)
 
     def get_data_tree(self, rows: List[int]) -> Optional[object]:
         """Get data tree widget for selected files.
-        
+
         Parameters
         ----------
         rows : list of int
             Row indices of selected files.
-            
+
         Returns
         -------
         object or None
@@ -209,12 +213,12 @@ class AnalysisKernel(DataFileLocator):
 
     def get_fitting_tree(self, rows: List[int]) -> object:
         """Get fitting results tree widget.
-        
+
         Parameters
         ----------
         rows : list of int
             Row indices of selected files.
-            
+
         Returns
         -------
         object
@@ -229,11 +233,11 @@ class AnalysisKernel(DataFileLocator):
         tree.resize(1024, 800)
         return tree
 
-    def plot_g2_function(self, handler, q_range: Tuple[float, float], 
+    def plot_g2_function(self, handler, q_range: Tuple[float, float],
                         time_range: Tuple[float, float], y_range: Tuple[float, float],
                         rows: Optional[List[int]] = None, **kwargs) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
         """Plot G2 correlation function.
-        
+
         Parameters
         ----------
         handler : object
@@ -248,7 +252,7 @@ class AnalysisKernel(DataFileLocator):
             Row indices of selected files.
         **kwargs
             Additional plotting parameters.
-            
+
         Returns
         -------
         tuple
@@ -259,15 +263,26 @@ class AnalysisKernel(DataFileLocator):
             g2mod.pg_plot(
                 handler, xpcs_file_list, q_range, time_range, y_range, rows=rows, **kwargs
             )
-            q, time_elapsed, *unused = g2mod.get_data(xpcs_file_list)
-            return q, time_elapsed
+            data_result = g2mod.get_data(xpcs_file_list)
+            if data_result and len(data_result) >= 2:
+                q, time_elapsed = data_result[0], data_result[1]
+                # Convert to numpy arrays if they're not already
+                if q is not False and q is not None:
+                    q = np.asarray(q) if not isinstance(q, np.ndarray) else q
+                else:
+                    q = None
+                if time_elapsed is not None:
+                    time_elapsed = np.asarray(time_elapsed) if not isinstance(time_elapsed, np.ndarray) else time_elapsed
+                return q, time_elapsed
+            else:
+                return None, None
         else:
             return None, None
 
-    def plot_q_space_map(self, handler, rows: Optional[List[int]] = None, 
+    def plot_q_space_map(self, handler, rows: Optional[List[int]] = None,
                         target: Optional[str] = None) -> None:
         """Plot q-space map visualization.
-        
+
         Parameters
         ----------
         handler : object
@@ -280,7 +295,10 @@ class AnalysisKernel(DataFileLocator):
         xpcs_file_list = self.get_xpcs_file_list(rows=rows)
         if xpcs_file_list:
             if target == "scattering":
-                value = np.log10(xpcs_file_list[0].saxs_2d + 1)
+                saxs_2d = xpcs_file_list[0].saxs_2d
+                if saxs_2d is None:
+                    return
+                value = np.log10(saxs_2d + 1)
                 vmin, vmax = np.percentile(value, (2, 98))
                 handler.setImage(value, levels=(vmin, vmax))
             elif target == "dynamic_roi_map":
@@ -290,7 +308,7 @@ class AnalysisKernel(DataFileLocator):
 
     def plot_tau_vs_q_preview(self, handler=None, rows: Optional[List[int]] = None) -> None:
         """Plot tau vs q preview.
-        
+
         Parameters
         ----------
         handler : object, optional
@@ -313,7 +331,7 @@ class AnalysisKernel(DataFileLocator):
         q_range: Optional[Tuple[float, float]] = None,
     ) -> Dict[str, str]:
         """Plot tau vs q analysis with fitting.
-        
+
         Parameters
         ----------
         handler : object, optional
@@ -330,7 +348,7 @@ class AnalysisKernel(DataFileLocator):
             Y-axis offset for multiple curves.
         q_range : tuple of float, optional
             (q_min, q_max) range for fitting.
-            
+
         Returns
         -------
         dict
@@ -356,14 +374,14 @@ class AnalysisKernel(DataFileLocator):
 
     def get_info_at_mouse_position(self, rows: List[int], x: int, y: int) -> Optional[str]:
         """Get information at mouse position on detector.
-        
+
         Parameters
         ----------
         rows : list of int
             Row indices of selected files.
         x, y : int
             Pixel coordinates.
-            
+
         Returns
         -------
         str or None
@@ -376,7 +394,7 @@ class AnalysisKernel(DataFileLocator):
 
     def plot_saxs_2d(self, *args, rows: Optional[List[int]] = None, **kwargs) -> None:
         """Plot 2D SAXS pattern.
-        
+
         Parameters
         ----------
         *args
@@ -392,7 +410,7 @@ class AnalysisKernel(DataFileLocator):
 
     def add_region_of_interest(self, handler, **kwargs) -> None:
         """Add region of interest to analysis.
-        
+
         Parameters
         ----------
         handler : object
@@ -401,20 +419,32 @@ class AnalysisKernel(DataFileLocator):
             ROI parameters.
         """
         xpcs_file_list = self.get_xpcs_file_list()
-        center = (xpcs_file_list[0].bcx, xpcs_file_list[0].bcy)
+        bcx = getattr(xpcs_file_list[0], 'bcx', None)
+        bcy = getattr(xpcs_file_list[0], 'bcy', None)
+
+        # Use default center if bcx or bcy are None
+        center_x = bcx if bcx is not None else 512
+        center_y = bcy if bcy is not None else 512
+        center = (center_x, center_y)
+
         if kwargs["sl_type"] == "Pie":
             handler.add_roi(cen=center, radius=100, **kwargs)
         elif kwargs["sl_type"] == "Circle":
-            radius_vertical = min(xpcs_file_list[0].mask.shape[0] - center[1], center[1])
-            radius_horizontal = min(xpcs_file_list[0].mask.shape[1] - center[0], center[0])
-            radius = min(radius_horizontal, radius_vertical) * 0.8
+            mask = getattr(xpcs_file_list[0], 'mask', None)
+            if mask is None:
+                # Use default radius if mask is not available
+                radius = 100
+            else:
+                radius_vertical = min(mask.shape[0] - center_y, center_y)
+                radius_horizontal = min(mask.shape[1] - center_x, center_x)
+                radius = min(radius_horizontal, radius_vertical) * 0.8
 
             handler.add_roi(cen=center, radius=radius, label="RingA", **kwargs)
             handler.add_roi(cen=center, radius=0.8 * radius, label="RingB", **kwargs)
 
     def plot_saxs_1d(self, pg_handler, mp_handler, **kwargs) -> None:
         """Plot 1D SAXS data.
-        
+
         Parameters
         ----------
         pg_handler : object
@@ -430,14 +460,14 @@ class AnalysisKernel(DataFileLocator):
             saxs1d.pg_plot(
                 xpcs_file_list,
                 mp_handler,
-                bkg_file=self.metadata["saxs_1d_background_file"],
+                bkg_file=self.metadata["saxs_1d_background_file"] if self.metadata is not None else None,
                 roi_list=roi_list,
                 **kwargs
             )
 
     def export_saxs_1d_data(self, pg_handler, folder: str) -> None:
         """Export 1D SAXS data to files.
-        
+
         Parameters
         ----------
         pg_handler : object
@@ -452,7 +482,7 @@ class AnalysisKernel(DataFileLocator):
 
     def switch_saxs_1d_line(self, mp_handler, line_builder_type: str) -> None:
         """Switch SAXS 1D line builder type.
-        
+
         Parameters
         ----------
         mp_handler : object
@@ -463,10 +493,10 @@ class AnalysisKernel(DataFileLocator):
         pass
         # saxs1d.switch_line_builder(mp_handler, line_builder_type)
 
-    def plot_two_time_correlation(self, handler, rows: Optional[List[int]] = None, 
+    def plot_two_time_correlation(self, handler, rows: Optional[List[int]] = None,
                                  **kwargs) -> Optional[List[str]]:
         """Plot two-time correlation function.
-        
+
         Parameters
         ----------
         handler : object
@@ -475,7 +505,7 @@ class AnalysisKernel(DataFileLocator):
             Row indices of selected files.
         **kwargs
             Plotting parameters.
-            
+
         Returns
         -------
         list of str or None
@@ -494,7 +524,7 @@ class AnalysisKernel(DataFileLocator):
 
     def plot_intensity_vs_time(self, pg_handler, rows: Optional[List[int]] = None, **kwargs) -> None:
         """Plot intensity vs time.
-        
+
         Parameters
         ----------
         pg_handler : object
@@ -509,7 +539,7 @@ class AnalysisKernel(DataFileLocator):
 
     def plot_stability_analysis(self, mp_handler, rows: Optional[List[int]] = None, **kwargs) -> None:
         """Plot stability analysis.
-        
+
         Parameters
         ----------
         mp_handler : object
@@ -524,7 +554,7 @@ class AnalysisKernel(DataFileLocator):
 
     def submit_averaging_job(self, *args, **kwargs) -> None:
         """Submit a data averaging job.
-        
+
         Parameters
         ----------
         *args
@@ -544,7 +574,7 @@ class AnalysisKernel(DataFileLocator):
 
     def remove_averaging_job(self, index: int) -> None:
         """Remove an averaging job.
-        
+
         Parameters
         ----------
         index : int
@@ -554,7 +584,7 @@ class AnalysisKernel(DataFileLocator):
 
     def update_averaging_info(self, job_id: int) -> None:
         """Update averaging job information.
-        
+
         Parameters
         ----------
         job_id : int
@@ -566,7 +596,7 @@ class AnalysisKernel(DataFileLocator):
 
     def update_averaging_values(self, data: Tuple[Any, float]) -> None:
         """Update averaging values.
-        
+
         Parameters
         ----------
         data : tuple
@@ -772,11 +802,11 @@ class AnalysisKernel(DataFileLocator):
 # Backward compatibility alias
 class ViewerKernel(AnalysisKernel):
     """Deprecated: Use AnalysisKernel instead.
-    
+
     This class is provided for backward compatibility only.
     New code should use AnalysisKernel directly.
     """
-    
+
     def __init__(self, *args, **kwargs):
         warnings.warn(
             "ViewerKernel is deprecated, use AnalysisKernel instead",

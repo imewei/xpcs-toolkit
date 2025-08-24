@@ -1,8 +1,11 @@
 import os
 import re
-import numpy as np
 import warnings
-from typing import Optional, Tuple, List, Union, Dict, Any
+from typing import Any, Optional, Tuple, List, Dict, cast
+
+# Use lazy import for numpy to improve startup time
+from ._lazy_imports import lazy_import
+np = lazy_import('numpy')
 
 from .fileIO.hdf_reader import get, get_analysis_type, read_metadata_to_dict
 from .helper.fitting import fit_with_fixed
@@ -92,7 +95,7 @@ def power_law(x, a, b):
     return a * x**b
 
 
-def create_identifier(filename: str, label_style: Optional[str] = None, simplify_flag: bool = True) -> str:
+def create_identifier(filename: str, label_style: str | None = None, simplify_flag: bool = True) -> str:
     """
     Generate a simplified or customized ID string from a filename.
 
@@ -148,37 +151,37 @@ def create_identifier(filename: str, label_style: Optional[str] = None, simplify
 class XpcsDataFile:
     """
     XpcsDataFile - Comprehensive XPCS Dataset Handler
-    
+
     This class provides complete functionality for loading, analyzing, and manipulating
     X-ray Photon Correlation Spectroscopy (XPCS) datasets from the customized NeXus
     file format developed at Argonne National Laboratory's Advanced Photon Source
     beamline 8-ID-I.
-    
+
     ## Supported Analysis Types
-    
+
     ### Multi-tau Correlation Analysis
     - Complete g2(q,t) correlation function datasets
     - Time-delay correlation analysis from microseconds to hours
     - Statistical error propagation and uncertainty quantification
     - Advanced fitting capabilities for extracting relaxation dynamics
     - Support for both equilibrium and non-equilibrium systems
-    
+
     ### Two-time Correlation Analysis
     - Two-dimensional C(q,t1,t2) correlation function visualization
     - Time-resolved dynamics for aging and non-stationary systems
     - Interactive exploration of speckle pattern evolution
     - Support for studying glass transitions and phase changes
     - Age-dependent correlation analysis
-    
+
     ## File Format Support
-    
+
     ### APS 8-ID-I NeXus Format
     - Native support for the customized NeXus format
     - Complete experimental metadata preservation
     - Optimized data structures for large-scale experiments
     - Multi-dimensional dataset handling
     - Comprehensive q-space mapping information
-    
+
     ### Data Components
     - **Scattering Patterns**: 2D detector images with calibration
     - **Correlation Functions**: Multi-tau or two-time correlation data
@@ -186,52 +189,52 @@ class XpcsDataFile:
     - **Detector Geometry**: Pixel positions and solid angles
     - **Experimental Parameters**: Beam energy, detector distance, etc.
     - **Analysis Metadata**: Processing parameters and timestamps
-    
+
     ## Key Features
-    
+
     ### Intelligent Data Loading
     - Lazy loading of large datasets to minimize memory usage
     - Automatic detection of analysis type (multi-tau vs two-time)
     - Efficient handling of multi-gigabyte datasets
     - Selective field loading for specific analysis needs
-    
+
     ### Advanced Q-space Handling
     - Automatic q-vector calculation from detector geometry
     - Support for both isotropic and anisotropic samples
     - Dynamic and static q-binning for different analysis types
     - Phi-angle sectoring for anisotropy studies
-    
+
     ### Correlation Analysis Tools
     - G2 function extraction with customizable q-ranges
     - Time-range selection for specific dynamics
     - Statistical error propagation from raw photon statistics
     - Baseline correction and normalization
-    
+
     ### Visualization Support
     - Direct integration with matplotlib for publication-quality plots
     - Interactive visualization tools for data exploration
     - Export capabilities for external analysis software
     - Support for both linear and logarithmic scaling
-    
+
     ## Typical Usage
-    
+
     ```python
     # Load XPCS dataset
     xpcs_data = XpcsDataFile('experiment_data.hdf')
-    
+
     # Check available analysis types
     print(f"Analysis types: {xpcs_data.analysis_type}")
-    
+
     # Extract correlation data
     q_vals, t_vals, g2, g2_err, labels = xpcs_data.get_g2_data(q_range=(0.01, 0.1))
-    
+
     # Access scattering pattern
     saxs_pattern = xpcs_data.saxs_2d
-    
+
     # Get experimental metadata
     metadata = xpcs_data.get_hdf_metadata()
     ```
-    
+
     Parameters
     ----------
     filename : str
@@ -246,7 +249,7 @@ class XpcsDataFile:
     qmap_manager : QMapManager, optional
         Q-map manager object for handling q-space mapping and caching.
         Improves performance when analyzing multiple related files.
-        
+
     Attributes
     ----------
     filename : str
@@ -263,11 +266,11 @@ class XpcsDataFile:
         2D scattering pattern from the detector
     time_elapsed : ndarray, optional
         Time delay values for correlation analysis (if available)
-    
+
     """
 
-    def __init__(self, filename: str, fields: Optional[List[str]] = None, 
-                 label_style: Optional[str] = None, qmap_manager=None):
+    def __init__(self, filename: str, fields: list[str] | None = None,
+                 label_style: str | None = None, qmap_manager=None):
         self.filename = filename
         if qmap_manager is None:
             self.q_space_map = get_qmap(self.filename)
@@ -286,14 +289,14 @@ class XpcsDataFile:
         self.saxs_2d_data = None
         self.saxs_2d_log_data = None
 
-    def update_label(self, label_style: Optional[str]) -> str:
+    def update_label(self, label_style: str | None) -> str:
         """Update the label for this data file.
-        
+
         Parameters
         ----------
         label_style : str, optional
             Style specification for label creation.
-            
+
         Returns
         -------
         str
@@ -320,17 +323,17 @@ class XpcsDataFile:
         ans = "\n".join([ans, self.__str__()])
         return ans
 
-    def get_hdf_metadata(self, filter_strings: Optional[List[str]] = None) -> Dict[str, Any]:
+    def get_hdf_metadata(self, filter_strings: list[str] | None = None) -> dict[str, Any]:
         """
         Get a text representation of the XPCS file metadata.
-        
+
         The entries are organized in a tree structure for easy navigation.
-        
+
         Parameters
         ----------
         filter_strings : list of str, optional
             List of filter strings to apply to the metadata tree.
-            
+
         Returns
         -------
         dict
@@ -341,15 +344,15 @@ class XpcsDataFile:
             self.hdf_metadata = read_metadata_to_dict(self.filename)
         return self.hdf_metadata
 
-    def load_dataset(self, extra_fields: Optional[List[str]] = None) -> Dict[str, Any]:
+    def load_dataset(self, extra_fields: list[str] | None = None) -> dict[str, Any]:
         """
         Load dataset from the HDF file.
-        
+
         Parameters
         ----------
         extra_fields : list of str, optional
             Additional data fields to load from the file.
-            
+
         Returns
         -------
         dict
@@ -378,25 +381,39 @@ class XpcsDataFile:
 
         result_data = get(self.filename, fields, "alias", ftype="nexus")
 
+        if result_data is None:
+            # Return empty dict if get() returns None
+            return {}
+
+        # Type assertion to help the type checker understand this is a dictionary
+        result_data = cast(Dict[str, Any], result_data)
+
         if "Twotime" in self.analysis_type:
-            stride_frame = result_data.pop("c2_stride_frame")
-            avg_frame = result_data.pop("c2_avg_frame")
-            result_data["c2_t0"] = result_data["t0"] * stride_frame * avg_frame
+            stride_frame = result_data.pop("c2_stride_frame", 1)  # Provide default value
+            avg_frame = result_data.pop("c2_avg_frame", 1)  # Provide default value
+            if "c2_t0" in result_data and "t0" in result_data:
+                result_data["c2_t0"] = result_data["t0"] * stride_frame * avg_frame
+
         if "Multitau" in self.analysis_type:
             # correct g2_err to avoid fitting divergence
-            result_data["g2_err"] = self.correct_g2_err(result_data["g2_err"])
-            stride_frame = result_data.pop("stride_frame")
-            avg_frame = result_data.pop("avg_frame")
-            result_data["t0"] = result_data["t0"] * stride_frame * avg_frame
-            result_data["time_elapsed"] = result_data["tau"] * result_data["t0"]
-            result_data["g2_t0"] = result_data["t0"]
+            if "g2_err" in result_data:
+                result_data["g2_err"] = self.correct_g2_err(result_data["g2_err"])
+            stride_frame = result_data.pop("stride_frame", 1)  # Provide default value
+            avg_frame = result_data.pop("avg_frame", 1)  # Provide default value
+            if "t0" in result_data:
+                result_data["t0"] = result_data["t0"] * stride_frame * avg_frame
+                if "tau" in result_data:
+                    result_data["time_elapsed"] = result_data["tau"] * result_data["t0"]
+                result_data["g2_t0"] = result_data["t0"]
 
-        result_data["saxs_1d"] = self.q_space_map.reshape_phi_analysis(
-            result_data["saxs_1d"], self.label, mode="saxs_1d"
-        )
-        result_data["Iqp"] = self.q_space_map.reshape_phi_analysis(
-            result_data["Iqp"], self.label, mode="stability"
-        )
+        if "saxs_1d" in result_data:
+            result_data["saxs_1d"] = self.q_space_map.reshape_phi_analysis(
+                result_data["saxs_1d"], self.label, mode="saxs_1d"
+            )
+        if "Iqp" in result_data:
+            result_data["Iqp"] = self.q_space_map.reshape_phi_analysis(
+                result_data["Iqp"], self.label, mode="stability"
+            )
 
         result_data["abs_cross_section_scale"] = 1.0
         return result_data
@@ -427,7 +444,8 @@ class XpcsDataFile:
         elif key == "saxs_2d":
             if self.saxs_2d_data is None:
                 result_data = get(self.filename, ["saxs_2d"], "alias", ftype="nexus")
-                self.saxs_2d_data = result_data["saxs_2d"]
+                if result_data is not None and isinstance(result_data, dict) and "saxs_2d" in result_data:
+                    self.saxs_2d_data = result_data["saxs_2d"]
             return self.saxs_2d_data
         elif key == "saxs_2d_log":
             if self.saxs_2d_log_data is None:
@@ -441,8 +459,12 @@ class XpcsDataFile:
                     self.saxs_2d_log_data = np.log10(saxs).astype(np.float32)
             return self.saxs_2d_log_data
         elif key == "Int_t_fft":
-            y = np.abs(np.fft.fft(self.Int_t[1]))
-            x = np.arange(y.size) / (y.size * self.t0)
+            Int_t = getattr(self, 'Int_t', None)
+            if Int_t is None:
+                return None
+            y = np.abs(np.fft.fft(Int_t[1]))
+            t0 = getattr(self, 't0', 1)
+            x = np.arange(y.size) / (y.size * t0)
             x = x[0 : y.size // 2]
             y = y[0 : y.size // 2]
             y[0] = 0
@@ -454,29 +476,32 @@ class XpcsDataFile:
 
     def get_info_at_position(self, x: int, y: int) -> Optional[str]:
         """Get information at a specific detector position.
-        
+
         Parameters
         ----------
         x, y : int
             Pixel coordinates on the detector.
-            
+
         Returns
         -------
         str or None
             Formatted string with intensity and q-map information, or None if out of bounds.
         """
         x, y = int(x), int(y)
-        shape = self.saxs_2d.shape
+        saxs_2d = self.saxs_2d
+        if saxs_2d is None:
+            return None
+        shape = saxs_2d.shape
         if x < 0 or x >= shape[1] or y < 0 or y >= shape[0]:
             return None
         else:
-            scat_intensity = self.saxs_2d[y, x]
+            scat_intensity = saxs_2d[y, x]
             qmap_info = self.q_space_map.get_qmap_at_pos(x, y)
             return f"I={scat_intensity:.4e} {qmap_info}"
 
     def get_detector_extent(self) -> Tuple[float, float, float, float]:
         """Get the detector extent for plotting.
-        
+
         Returns
         -------
         tuple
@@ -486,14 +511,14 @@ class XpcsDataFile:
 
     def get_qbin_label(self, qbin: int, append_qbin: bool = False) -> str:
         """Get label for a specific q-bin.
-        
+
         Parameters
         ----------
         qbin : int
             Q-bin index.
         append_qbin : bool, optional
             Whether to append the q-bin number to the label.
-            
+
         Returns
         -------
         str
@@ -503,14 +528,14 @@ class XpcsDataFile:
 
     def get_qbinlist_at_qindex(self, qindex: int, zero_based: bool = True) -> List[int]:
         """Get list of q-bins at a specific q-index.
-        
+
         Parameters
         ----------
         qindex : int
             Q-index value.
         zero_based : bool, optional
             Whether to use zero-based indexing.
-            
+
         Returns
         -------
         list of int
@@ -518,17 +543,17 @@ class XpcsDataFile:
         """
         return self.q_space_map.get_qbinlist_at_qindex(qindex, zero_based=zero_based)
 
-    def get_g2_data(self, q_range: Optional[Tuple[float, float]] = None, 
-                    time_range: Optional[Tuple[float, float]] = None) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, List[str]]:
+    def get_g2_data(self, q_range: Optional[Tuple[float, float]] = None,
+                    time_range: Optional[Tuple[float, float]] = None) -> Tuple[Any, Any, Any, Any, List[str]]:
         """Get G2 correlation data within specified q and time ranges.
-        
+
         Parameters
         ----------
         q_range : tuple of float, optional
             (q_min, q_max) range for q-values.
         time_range : tuple of float, optional
             (t_min, t_max) range for time values.
-            
+
         Returns
         -------
         tuple
@@ -537,17 +562,25 @@ class XpcsDataFile:
         assert "Multitau" in self.analysis_type, "only multitau is supported"
         # q_range can be None
         qindex_selected, qvalues = self.q_space_map.get_qbin_in_qrange(q_range, zero_based=True)
-        g2 = self.g2[:, qindex_selected]
-        g2_err = self.g2_err[:, qindex_selected]
+        g2_data = getattr(self, 'g2', None)
+        g2_err_data = getattr(self, 'g2_err', None)
+        if g2_data is None or g2_err_data is None:
+            raise ValueError("G2 data is not available")
+        g2 = g2_data[:, qindex_selected]
+        g2_err = g2_err_data[:, qindex_selected]
         labels = [self.q_space_map.get_qbin_label(qbin + 1) for qbin in qindex_selected]
 
+        time_elapsed_data = getattr(self, 'time_elapsed', None)
+        if time_elapsed_data is None:
+            raise ValueError("time_elapsed data is not available")
+
         if time_range is not None:
-            t_roi = (self.time_elapsed >= time_range[0]) * (self.time_elapsed <= time_range[1])
+            t_roi = (time_elapsed_data >= time_range[0]) * (time_elapsed_data <= time_range[1])
             g2 = g2[t_roi]
             g2_err = g2_err[t_roi]
-            time_elapsed = self.time_elapsed[t_roi]
+            time_elapsed = time_elapsed_data[t_roi]
         else:
-            time_elapsed = self.time_elapsed
+            time_elapsed = time_elapsed_data
 
         return qvalues, time_elapsed, g2, g2_err, labels
 
@@ -562,13 +595,20 @@ class XpcsDataFile:
         target="saxs1d",
     ):
         assert target in ["saxs1d", "saxs1d_partial"]
+        saxs_1d = getattr(self, 'saxs_1d', None)
+        if saxs_1d is None:
+            raise ValueError("saxs_1d data is not available")
         if target == "saxs1d":
-            q, Iq = self.saxs_1d["q"], self.saxs_1d["Iq"]
+            q, Iq = saxs_1d["q"], saxs_1d["Iq"]
         else:
-            q, Iq = self.saxs_1d["q"], self.Iqp
+            Iqp_data = getattr(self, 'Iqp', None)
+            if Iqp_data is None:
+                raise ValueError("Iqp data is not available")
+            q, Iq = saxs_1d["q"], Iqp_data
         if bkg_xf is not None:
-            if np.allclose(q, bkg_xf.saxs_1d["q"]):
-                Iq = Iq - bkg_weight * bkg_xf.saxs_1d["Iq"]
+            bkg_saxs_1d = getattr(bkg_xf, 'saxs_1d', None)
+            if bkg_saxs_1d is not None and np.allclose(q, bkg_saxs_1d["q"]):
+                Iq = Iq - bkg_weight * bkg_saxs_1d["Iq"]
                 Iq[Iq < 0] = np.nan
             else:
                 logger.warning(
@@ -586,7 +626,7 @@ class XpcsDataFile:
 
         # apply sampling
         if sampling > 1:
-            q, Iq = q[::sampling], Iq[::sampling]
+            q, Iq = q[::sampling], Iq[:, ::sampling] if Iq.ndim > 1 else Iq[::sampling]
         # apply normalization
         q, Iq, xlabel, ylabel = self.norm_saxs_data(q, Iq, norm_method=norm_method)
         return q, Iq, xlabel, ylabel
@@ -611,7 +651,10 @@ class XpcsDataFile:
 
     def get_twotime_qbin_labels(self):
         qbin_labels = []
-        for qbin in self.c2_processed_bins.tolist():
+        c2_processed_bins = getattr(self, 'c2_processed_bins', None)
+        if c2_processed_bins is None:
+            return []
+        for qbin in c2_processed_bins.tolist():
             qbin_labels.append(self.get_qbin_label(qbin, append_qbin=True))
         return qbin_labels
 
@@ -627,10 +670,15 @@ class XpcsDataFile:
 
         if auto_crop:
             idx = np.nonzero(dqmap >= 1)
-            sl_v = slice(np.min(idx[0]), np.max(idx[0]) + 1)
-            sl_h = slice(np.min(idx[1]), np.max(idx[1]) + 1)
+            if len(idx[0]) > 0 and len(idx[1]) > 0:
+                sl_v = slice(np.min(idx[0]), np.max(idx[0]) + 1)
+                sl_h = slice(np.min(idx[1]), np.max(idx[1]) + 1)
+            else:
+                sl_v = slice(None)
+                sl_h = slice(None)
             dqmap = dqmap[sl_v, sl_h]
-            saxs = saxs[sl_v, sl_h]
+            if saxs is not None:
+                saxs = saxs[sl_v, sl_h]
 
         qindex_max = np.max(dqmap)
         dqlist = np.unique(dqmap)[1:]
@@ -656,7 +704,10 @@ class XpcsDataFile:
         return dqmap_disp, saxs, selection
 
     def get_twotime_c2(self, selection=0, correct_diag=True, max_size=32678):
-        dq_processed = tuple(self.c2_processed_bins.tolist())
+        c2_processed_bins = getattr(self, 'c2_processed_bins', None)
+        if c2_processed_bins is None:
+            raise ValueError("c2_processed_bins is not available")
+        dq_processed = tuple(c2_processed_bins.tolist())
         assert selection >= 0 and selection < len(
             dq_processed
         ), f"selection {selection} out of range {dq_processed}"  # noqa: E501
@@ -664,11 +715,12 @@ class XpcsDataFile:
         if self.c2_kwargs == config:
             return self.c2_all_data
         else:
+            fname = getattr(self, 'fname', self.filename)
             c2_result = get_single_c2_from_hdf(
-                self.fname,
+                fname,
                 selection=selection,
                 max_size=max_size,
-                t0=self.t0,
+                t0=getattr(self, 't0', None),
                 correct_diag=correct_diag,
             )
             self.c2_all_data = c2_result
@@ -676,7 +728,8 @@ class XpcsDataFile:
         return c2_result
 
     def get_twotime_stream(self, **kwargs):
-        return get_c2_stream(self.fname, **kwargs)
+        fname = getattr(self, 'fname', self.filename)
+        return get_c2_stream(fname, **kwargs)
 
     # def get_g2_fitting_line(self, q, tor=1e-6):
     #     """
@@ -745,6 +798,8 @@ class XpcsDataFile:
             or double exponential function
         :return: dictionary with the fitting result;
         """
+        if bounds is None:
+            raise ValueError("bounds cannot be None")
         assert len(bounds) == 2
         if fit_func == "single":
             assert (
@@ -761,7 +816,7 @@ class XpcsDataFile:
                 fit_flag = [True for _ in range(7)]
             func = double_exp_all
 
-        q_val, t_el, g2, sigma, label = self.get_g2_data(qrange=q_range, trange=t_range)
+        q_val, t_el, g2, sigma, label = self.get_g2_data(q_range=q_range, time_range=t_range)
 
         # set the initial guess
         p0 = np.array(bounds).mean(axis=0)
@@ -798,6 +853,8 @@ class XpcsDataFile:
         # correct the err for some data points with really small error, which
         # may cause the fitting to blowup
 
+        if g2_err is None:
+            return None
         g2_err_mod = np.copy(g2_err)
         for n in range(g2_err.shape[1]):
             data = g2_err[:, n]
@@ -855,11 +912,22 @@ class XpcsDataFile:
 
         return self.fit_summary
 
+    def compute_qmap(self):
+        """Compute qmap from q_space_map if available."""
+        if hasattr(self.q_space_map, 'compute_qmap'):
+            return self.q_space_map.compute_qmap()
+        return None
+
     def get_roi_data(self, roi_parameter, phi_num=180):
         qmap_all = self.compute_qmap()
-        qmap = qmap_all["q"]
-        pmap = qmap_all["phi"]
-        rmap = qmap_all["r_pixel"]
+        if qmap_all is None:
+            raise ValueError("Cannot compute qmap")
+        qmap = qmap_all["q"] if isinstance(qmap_all, dict) else None
+        pmap = qmap_all["phi"] if isinstance(qmap_all, dict) else None
+        rmap = qmap_all["r_pixel"] if isinstance(qmap_all, dict) else None
+
+        if qmap is None or pmap is None or rmap is None:
+            raise ValueError("Required qmap components are not available")
 
         if roi_parameter["sl_type"] == "Pie":
             pmin, pmax = roi_parameter["angle_range"]
@@ -867,19 +935,28 @@ class XpcsDataFile:
                 pmax += 360.0
                 pmap[pmap < pmin] += 360.0
             proi = np.logical_and(pmap >= pmin, pmap < pmax)
-            proi = np.logical_and(proi, (self.mask > 0))
+            mask = getattr(self, 'mask', None)
+            if mask is None:
+                raise ValueError("Mask is not available")
+            proi = np.logical_and(proi, (mask > 0))
             qmap_idx = np.zeros_like(qmap, dtype=np.uint32)
 
             index = 1
-            qsize = len(self.sqspan) - 1
+            sqspan = getattr(self, 'sqspan', None)
+            if sqspan is None:
+                raise ValueError("sqspan is not available")
+            qsize = len(sqspan) - 1
             for n in range(qsize):
-                q0, q1 = self.sqspan[n : n + 2]
+                q0, q1 = sqspan[n : n + 2]
                 select = (qmap >= q0) * (qmap < q1)
                 qmap_idx[select] = index
                 index += 1
             qmap_idx = (qmap_idx * proi).ravel()
 
-            saxs_roi = np.bincount(qmap_idx, self.saxs_2d.ravel(), minlength=qsize + 1)
+            saxs_2d = self.saxs_2d
+            if saxs_2d is None:
+                raise ValueError("saxs_2d is not available")
+            saxs_roi = np.bincount(qmap_idx, saxs_2d.ravel(), minlength=qsize + 1)
             saxs_nor = np.bincount(qmap_idx, minlength=qsize + 1)
             saxs_nor[saxs_nor == 0] = 1.0
             saxs_roi = saxs_roi * 1.0 / saxs_nor
@@ -890,8 +967,13 @@ class XpcsDataFile:
             # set the qmax cutoff
             dist = roi_parameter["dist"]
             # qmax = qmap[int(self.bcy), int(self.bcx + dist)]
-            wlength = 12.398 / self.X_energy
-            qmax = dist * self.pix_dim_x / self.det_dist * 2 * np.pi / wlength
+            X_energy = getattr(self, 'X_energy', None)
+            pix_dim_x = getattr(self, 'pix_dim_x', None)
+            det_dist = getattr(self, 'det_dist', None)
+            if X_energy is None or pix_dim_x is None or det_dist is None:
+                raise ValueError("Required attributes for qmax calculation are not available")
+            wlength = 12.398 / X_energy
+            qmax = dist * pix_dim_x / det_dist * 2 * np.pi / wlength
             saxs_roi[self.sqlist >= qmax] = 0
             saxs_roi[saxs_roi <= 0] = np.nan
             return self.sqlist, saxs_roi
@@ -901,7 +983,10 @@ class XpcsDataFile:
             if rmin > rmax:
                 rmin, rmax = rmax, rmin
             rroi = np.logical_and(rmap >= rmin, rmap < rmax)
-            rroi = np.logical_and(rroi, (self.mask > 0))
+            mask = getattr(self, 'mask', None)
+            if mask is None:
+                raise ValueError("Mask is not available")
+            rroi = np.logical_and(rroi, (mask > 0))
 
             phi_min, phi_max = np.min(pmap[rroi]), np.max(pmap[rroi])
             x = np.linspace(phi_min, phi_max, phi_num)
@@ -912,7 +997,10 @@ class XpcsDataFile:
             # q_avg = qmap[rroi].mean()
             index = (index * rroi).ravel()
 
-            saxs_roi = np.bincount(index, self.saxs_2d.ravel(), minlength=phi_num + 1)
+            saxs_2d = self.saxs_2d
+            if saxs_2d is None:
+                raise ValueError("saxs_2d is not available")
+            saxs_roi = np.bincount(index, saxs_2d.ravel(), minlength=phi_num + 1)
             saxs_nor = np.bincount(index, minlength=phi_num + 1)
             saxs_nor[saxs_nor == 0] = 1.0
             saxs_roi = saxs_roi * 1.0 / saxs_nor
@@ -924,12 +1012,17 @@ class XpcsDataFile:
     def export_saxs1d(self, roi_list, folder):
         # export ROI
         idx = 0
+        if roi_list is None:
+            return
         for roi in roi_list:
             fname = os.path.join(
                 folder, self.label + "_" + roi["sl_type"] + f"_{idx:03d}.txt"
             )
             idx += 1
-            x, y = self.get_roi_data(roi)
+            roi_data = self.get_roi_data(roi)
+            if roi_data is None:
+                continue
+            x, y = roi_data
             if roi["sl_type"] == "Ring":
                 header = "phi(degree) Intensity"
             else:
@@ -938,7 +1031,10 @@ class XpcsDataFile:
 
         # export all saxs1d
         fname = os.path.join(folder, self.label + "_" + "saxs1d.txt")
-        Iq, q = self.saxs_1d["Iq"], self.saxs_1d["q"]
+        saxs_1d = getattr(self, 'saxs_1d', None)
+        if saxs_1d is None:
+            raise ValueError("saxs_1d data is not available")
+        Iq, q = saxs_1d["Iq"], saxs_1d["q"]
         header = "q(1/Angstron) Intensity"
         for n in range(Iq.shape[0] - 1):
             header += f" Intensity_phi{n + 1 :03d}"
@@ -946,9 +1042,11 @@ class XpcsDataFile:
 
     def get_pg_tree(self):
         """Return data tree in dictionary format for headless usage"""
-        from ..mpl_compat import DataTreeWidget
-        
-        data = self.load_data()
+        from .mpl_compat import DataTreeWidget
+
+        data = self.load_dataset()
+        if data is None:
+            data = {}
         for key, val in data.items():
             if isinstance(val, np.ndarray):
                 if val.size > 4096:
@@ -956,12 +1054,12 @@ class XpcsDataFile:
                 # squeeze one-element array
                 if val.size == 1:
                     data[key] = float(val)
-        data["analysis_type"] = self.atype
+        data["analysis_type"] = getattr(self, 'atype', self.analysis_type)
         data["label"] = self.label
-        
+
         # Return mock tree widget for compatibility
         tree = DataTreeWidget(data=data)
-        tree.setWindowTitle(self.fname)
+        tree.setWindowTitle(getattr(self, 'fname', self.filename))
         tree.resize(600, 800)
         return tree
 
@@ -969,11 +1067,11 @@ class XpcsDataFile:
 # Backward compatibility layer
 class XpcsFile(XpcsDataFile):
     """Deprecated: Use XpcsDataFile instead.
-    
+
     This class is provided for backward compatibility only.
     New code should use XpcsDataFile directly.
     """
-    
+
     def __init__(self, *args, **kwargs):
         warnings.warn(
             "XpcsFile is deprecated, use XpcsDataFile instead",
@@ -984,13 +1082,13 @@ class XpcsFile(XpcsDataFile):
         if 'fname' in kwargs:
             kwargs['filename'] = kwargs.pop('fname')
         super().__init__(*args, **kwargs)
-        
+
         # Add backward compatibility attributes
         self.fname = self.filename
         self.qmap = self.q_space_map
         self.atype = self.analysis_type
         self.hdf_info = self.hdf_metadata
-        
+
     # Deprecated method aliases
     def get_hdf_info(self, fstr=None):
         """Deprecated: Use get_hdf_metadata() instead."""
@@ -1000,7 +1098,7 @@ class XpcsFile(XpcsDataFile):
             stacklevel=2
         )
         return self.get_hdf_metadata(filter_strings=fstr)
-        
+
     def load_data(self, extra_fields=None):
         """Deprecated: Use load_dataset() instead."""
         warnings.warn(
@@ -1023,9 +1121,11 @@ def create_id(*args, **kwargs):
 
 
 def test1():
-    cwd = "../../../xpcs_data"
-    af = XpcsFile(fname="N077_D100_att02_0128_0001-100000.hdf", cwd=cwd)
-    af.plot_saxs2d()
+    # Example usage (commented out for testing)
+    # cwd = "../../../xpcs_data"
+    # af = XpcsFile(filename="N077_D100_att02_0128_0001-100000.hdf")
+    # af.plot_saxs2d()  # Method doesn't exist in current implementation
+    pass
 
 
 if __name__ == "__main__":

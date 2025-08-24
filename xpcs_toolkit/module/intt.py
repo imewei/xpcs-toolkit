@@ -2,6 +2,12 @@ import numpy as np
 from ..mpl_compat import mkPen
 import matplotlib.pyplot as plt
 
+# Optional import for pyqtgraph
+try:
+    import pyqtgraph as pg
+except ImportError:
+    pg = None
+
 colors = [
     (192, 0, 0),
     (0, 176, 80),
@@ -72,15 +78,17 @@ def plot(xf_list, pg_hdl, enable_zoom=True, xlabel="Frame Index", **kwargs):
     tz.setDownsampling(mode="peak")
 
     for n in range(len(data)):
-        t.plot(
-            data[n][0],
-            data[n][1],
-            pen=pg.mkPen(colors[n % len(colors)], width=1),
-            name=xf_list[n].label,
-        )
+        if pg is not None:
+            t.plot(
+                data[n][0],
+                data[n][1],
+                pen=pg.mkPen(colors[n % len(colors)], width=1),
+                name=xf_list[n].label,
+            )
     t.setTitle("Intensity vs %s" % xlabel)
 
-    if enable_zoom:
+    lr = None  # Initialize to avoid unbound variable
+    if enable_zoom and pg is not None:
         vmin = np.min(data[0][0])
         vmax = np.max(data[0][0])
         cen = vmin * 0.382 + vmax * 0.618
@@ -93,29 +101,35 @@ def plot(xf_list, pg_hdl, enable_zoom=True, xlabel="Frame Index", **kwargs):
 
     for n in range(len(data)):
         x, y = xf_list[n].Int_t_fft
-        tf.plot(
-            x, y, pen=pg.mkPen(colors[n % len(colors)], width=1), name=xf_list[n].label
-        )
+        if pg is not None:
+            tf.plot(
+                x, y, pen=pg.mkPen(colors[n % len(colors)], width=1), name=xf_list[n].label
+            )
 
     for n in range(len(data)):
-        tz.plot(
-            data[n][0],
-            data[n][1],
-            pen=pg.mkPen(colors[n % len(colors)], width=1),
-            name=xf_list[n].label,
-        )
+        if pg is not None:
+            tz.plot(
+                data[n][0],
+                data[n][1],
+                pen=pg.mkPen(colors[n % len(colors)], width=1),
+                name=xf_list[n].label,
+            )
 
-    def update_plot():
-        tz.setXRange(*lr.getRegion(), padding=0)
+    # Only set up zoom functionality if lr was created
+    if lr is not None:
+        def update_plot():
+            tz.setXRange(*lr.getRegion(), padding=0)
 
-    def update_region():
-        lr.setRegion(tz.getViewBox().viewRange()[0])
+        def update_region():
+            lr.setRegion(tz.getViewBox().viewRange()[0])
 
-    lr.sigRegionChanged.connect(update_plot)
-    tz.sigXRangeChanged.connect(update_region)
+        lr.sigRegionChanged.connect(update_plot)
+        tz.sigXRangeChanged.connect(update_region)
+        
+        # Initial update only if lr exists
+        update_plot()
 
     tz.setLabel("bottom", "%s" % xlabel)
     tz.setLabel("left", "Intensity (cts / pixel)")
-    update_plot()
 
     return

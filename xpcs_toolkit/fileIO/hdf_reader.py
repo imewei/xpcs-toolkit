@@ -1,37 +1,149 @@
 from .aps_8idi import key as hdf_key
-import h5py
 import os
-import numpy as np
 import logging
 import re
+from pathlib import Path
+from typing import Dict, List, Union, Optional, Tuple, Any
+
+# Use lazy imports for heavy dependencies
+from .._lazy_imports import lazy_import
+from ..helper.logging_config import get_logger
+from ..helper.logging_utils import PerformanceTimer, log_exceptions
+
+h5py = lazy_import('h5py')
+np = lazy_import('numpy')
 
 logger = logging.getLogger(__name__)
 
 
-def put(save_path, result, ftype="nexus", mode="raw"):
+def put(save_path: Union[str, Path], 
+        result: Dict[str, Any], 
+        ftype: str = "nexus", 
+        mode: str = "raw") -> None:
     """
-    save the result to hdf5 file
+    Save analysis results to HDF5 file with comprehensive logging.
+    
+    This function writes a dictionary of analysis results to an HDF5 file,
+    with support for both raw HDF5 keys and aliased field names. The operation
+    is logged with detailed timing and size information.
+    
     Parameters
     ----------
-    save_path: str
-        path to save the result
-    result: dict
-        dictionary to save
-    ftype: str
-        file type, 'nexus' or 'aps_8idi'
-    mode: str
-        'raw' or 'alias'
+    save_path : str or Path
+        Path to save the result file
+    result : dict
+        Dictionary containing data to save (key -> array/value)
+    ftype : str
+        File type format ('nexus' or 'aps_8idi')
+    mode : str
+        Key mode: 'raw' (use keys as-is) or 'alias' (translate via hdf_key)
+        
+    Raises
+    ------
+    ValueError
+        If ftype or mode are not recognized
+    OSError
+        If file cannot be opened or written
+        
+    Logging
+    -------
+    - INFO: File creation/update with key count and sizes
+    - DEBUG: Individual key details and transformations
+    - ERROR: File access failures with full context
     """
-    with h5py.File(save_path, "a") as f:
-        for key, val in result.items():
-            if mode == "alias":
-                key = hdf_key[ftype][key]
-            if key in f:
-                del f[key]
-            if isinstance(val, np.ndarray) and val.ndim == 1:
-                val = np.reshape(val, (1, -1))
-            f[key] = val
-        return
+    # Input validation
+    if ftype not in hdf_key:
+        raise ValueError(f"Unsupported file type: {ftype}. Available: {list(hdf_key.keys())}")
+    if mode not in ["raw", "alias"]:
+        raise ValueError(f"Unsupported mode: {mode}. Must be 'raw' or 'alias'")
+    
+    save_path = Path(save_path)
+    context_logger = get_logger(__name__, 
+                               file_path=str(save_path),
+                               operation="put",
+                               ftype=ftype,
+                               mode=mode)
+    
+    # Calculate total data size for logging
+    total_size_mb = 0
+    for key, val in result.items():
+        if isinstance(val, np.ndarray):
+            size_bytes = val.nbytes
+            total_size_mb += size_bytes / (1024 * 1024)
+    
+    context_logger.info(
+        "Writing HDF5 data",
+        extra={
+            "key_count": len(result),
+            "total_size_mb": round(total_size_mb, 2),
+            "file_exists": save_path.exists()
+        }
+    )
+    
+    # Use the underlying logger for log_exceptions and PerformanceTimer
+    base_logger = context_logger.logger if hasattr(context_logger, 'logger') else logger
+    
+    with log_exceptions(base_logger, "Failed to write HDF5 file"):
+        with PerformanceTimer(base_logger, "HDF5 write operation", item_count=len(result)):
+            with h5py.File(str(save_path), "a") as f:
+                for key, val in result.items():
+                    original_key = key
+                    
+                    # Transform key if using alias mode
+                    if mode == "alias":
+                        if key not in hdf_key[ftype]:
+                            context_logger.warning(
+                                "Unknown alias key, using raw key",
+                                extra={"key": key, "available_keys": list(hdf_key[ftype].keys())}
+                            )
+                        else:
+                            key = hdf_key[ftype][key]
+                            context_logger.debug(
+                                "Key alias translation",
+                                extra={"original_key": original_key, "hdf_key": key}
+                            )
+                    
+                    # Remove existing key if present
+                    if key in f:
+                        context_logger.debug("Overwriting existing key", extra={"key": key})
+                        del f[key]
+                    
+                    # Reshape 1D arrays to 2D format if needed
+                    original_shape = None
+                    if isinstance(val, np.ndarray):
+                        original_shape = val.shape
+                        if val.ndim == 1:
+                            val = np.reshape(val, (1, -1))
+                            context_logger.debug(
+                                "Reshaped 1D array",
+                                extra={
+                                    "key": key,
+                                    "original_shape": original_shape,
+                                    "new_shape": val.shape
+                                }
+                            )
+                    
+                    # Write data
+                    f[key] = val
+                    
+                    # Log details about written data
+                    if isinstance(val, np.ndarray):
+                        context_logger.debug(
+                            "Wrote array data",
+                            extra={
+                                "key": key,
+                                "dtype": str(val.dtype),
+                                "shape": val.shape,
+                                "size_mb": round(val.nbytes / (1024 * 1024), 3)
+                            }
+                        )
+                    else:
+                        context_logger.debug(
+                            "Wrote scalar data",
+                            extra={"key": key, "value_type": type(val).__name__}
+                        )
+    
+    context_logger.info("HDF5 write completed successfully")
 
 
 def get_abs_cs_scale(filename=None, file_type="nexus", fname=None, ftype=None):
@@ -125,6 +237,10 @@ def get(filename=None, fields=None, mode="raw", ret_type="dict", file_type="nexu
     assert mode in ["raw", "alias"], "mode not supported"
     assert ret_type in ["dict", "list"], "ret_type not supported"
 
+    # Handle case where fields is None
+    if fields is None:
+        fields = []
+    
     ret = {}
     with h5py.File(filename, "r") as HDF_Result:
         for key in fields:
@@ -146,6 +262,9 @@ def get(filename=None, fields=None, mode="raw", ret_type="dict", file_type="nexu
     if ret_type == "dict":
         return ret
     elif ret_type == "list":
+        # Ensure fields is not None before iterating
+        if fields is None:
+            return []
         return [ret[key] for key in fields]
 
 

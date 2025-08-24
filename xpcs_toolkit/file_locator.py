@@ -57,7 +57,9 @@ class FileLocator(object):
         for n in selected:
             if n < 0 or n >= len(self.target):
                 continue
-            full_fname = os.path.join(self.path, self.target[n])
+            if self.path is None or self.target[n] is None:
+                continue
+            full_fname = os.path.join(str(self.path), str(self.target[n]))
             if full_fname not in self.cache:
                 xf_obj = create_xpcs_dataset(full_fname, qmap_manager=self.qmap_manager)
                 self.cache[full_fname] = xf_obj
@@ -77,10 +79,15 @@ class FileLocator(object):
         :param fstr: list of filter string;
         :return: list of strings that contains the hdf information;
         """
+        if self.path is None or fname is None:
+            return []
         xf_obj = create_xpcs_dataset(
-            os.path.join(self.path, fname), qmap_manager=self.qmap_manager
+            os.path.join(str(self.path), str(fname)), qmap_manager=self.qmap_manager
         )
-        return xf_obj.get_hdf_info(filter_str)
+        if xf_obj is not None:
+            return xf_obj.get_hdf_info(filter_str)
+        else:
+            return []
 
     def add_target(self, alist, threshold=256, preload=True):
         if not alist:
@@ -90,7 +97,9 @@ class FileLocator(object):
             for fn in alist:
                 if fn in self.target:
                     continue
-                full_fname = os.path.join(self.path, fn)
+                if self.path is None or fn is None:
+                    continue
+                full_fname = os.path.join(str(self.path), str(fn))
                 xf_obj = create_xpcs_dataset(full_fname, qmap_manager=self.qmap_manager)
                 if xf_obj is not None:
                     self.target.append(fn)
@@ -111,7 +120,8 @@ class FileLocator(object):
         for x in rlist:
             if x in self.target:
                 self.target.remove(x)
-            self.cache.pop(os.path.join(self.path, x), None)
+            if self.path is not None and x is not None:
+                self.cache.pop(os.path.join(str(self.path), str(x)), None)
         if not self.target:
             self.clear_target()
         self.timestamp = str(datetime.datetime.now())
@@ -127,7 +137,7 @@ class FileLocator(object):
         item = self.target.pop(row)
         pos = row - 1 if direction == "up" else row + 1
         self.target.insert(pos, item)
-        idx = self.target.index(pos)
+        idx = pos
         self.timestamp = str(datetime.datetime.now())
         return idx
 
@@ -136,6 +146,7 @@ class FileLocator(object):
             "prefix",
             "substr",
         ], "filter_type must be prefix or substr"
+        selected = []
         if filter_type == "prefix":
             selected = [x for x in self.source if x.startswith(val)]
         elif filter_type == "substr":
@@ -156,7 +167,8 @@ class FileLocator(object):
         if sort_method.startswith("Filename"):
             flist.sort()
         elif sort_method.startswith("Time"):
-            flist.sort(key=lambda x: os.path.getmtime(os.path.join(path, x)))
+            if path is not None:
+                flist.sort(key=lambda x: os.path.getmtime(os.path.join(str(path), str(x))) if x is not None else 0)
         elif sort_method.startswith("Index"):
             pass
 

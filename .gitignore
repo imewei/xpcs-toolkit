@@ -1,0 +1,230 @@
+# XPCS Toolkit - Git Ignore Configuration
+# This file specifies which files and directories should be ignored by Git
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ruff
+.ruff_cache/
+
+# Pyre type checker
+.pyre/
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE and Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# XPCS Toolkit Specific
+# Log files from logging system
+*.log
+xpcs_toolkit.log
+xpcs_toolkit_fallback.log
+
+# Performance testing artifacts
+perf/
+*.prof
+*.pstats
+
+# Cache directories
+.cache/
+__pycache__/
+.pytest_cache/
+
+# Temporary test files
+test_*.hdf
+test_output/
+temp_*/
+
+# Analysis output files (examples)
+*.png
+*.pdf
+*.svg
+*.eps
+output/
+results/
+
+# Data files (typically large and shouldn't be in repo)
+*.hdf
+*.h5
+*.hdf5
+*.dat
+*.bin
+
+# Configuration files that might contain sensitive info
+*_config.local.*
+secrets.*
+
+# Documentation build artifacts
+docs/_build/
+docs/api/
+
+# Jupyter notebook outputs
+*.nbconvert.py
+
+# Profiling outputs
+profile_output.*
+
+# Backup files
+*.bak
+*.orig
+
+# Local development
+local/
+scratch/
+sandbox/
+
+# Distribution / packaging artifacts
+*.tar.gz
+*.whl
+
+# Virtual environments (common names)
+venv/
+virtualenv/
+.conda/
+conda-env/
+
+# PyCharm
+.idea/
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# macOS specific
+.Ds_Store
+
+# Windows specific
+Desktop.ini
+
+# Linux specific
+*~
+
+# Temporary directories
+tmp/
+temp/

@@ -80,7 +80,7 @@ class CompatPlotWidget:
         """Clear the plot"""
         self.ax.clear()
     
-    def setLabel(self, axis: str, text: str, units: str = None):
+    def setLabel(self, axis: str, text: str, units: Optional[str] = None):
         """Set axis labels"""
         label = f"{text} ({units})" if units else text
         if axis.lower() == 'left':
@@ -137,7 +137,7 @@ def ErrorBarItem(x, y, top=None, bottom=None, **kwargs):
     return fig, ax, line
 
 
-def PlotWidget(title: str = "", labels: Dict[str, str] = None):
+def PlotWidget(title: str = "", labels: Optional[Dict[str, str]] = None):
     """Create a matplotlib-based plot widget"""
     widget = CompatPlotWidget()
     

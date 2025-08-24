@@ -1,8 +1,11 @@
-import numpy as np
-from matplotlib.ticker import FormatStrFormatter
-from ..mpl_compat import mkPen
 import logging
-import matplotlib.pyplot as plt
+from ..mpl_compat import mkPen
+
+# Use lazy imports for heavy dependencies
+from .._lazy_imports import lazy_import
+np = lazy_import('numpy')
+plt = lazy_import('matplotlib.pyplot')
+FormatStrFormatter = lazy_import('matplotlib.ticker', 'FormatStrFormatter')
 logger = logging.getLogger(__name__)
 
 # colors converted from
@@ -97,7 +100,20 @@ def pg_plot(
     if y_auto:
         y_range = None
 
-    q, tel, g2, g2_err, labels = get_data(xf_list, q_range=q_range, t_range=t_range)
+    data_result = get_data(xf_list, q_range=q_range, t_range=t_range)
+    
+    # Handle the case where get_data returns False (error condition)
+    if data_result[0] is False:
+        logger.error("Invalid data type for multitau analysis")
+        return
+    
+    q, tel, g2, g2_err, labels = data_result
+    
+    # Ensure we have valid data before proceeding
+    if g2 is None or len(g2) == 0 or g2[0] is None:
+        logger.error("No valid g2 data available")
+        return
+    
     num_figs, num_lines = compute_geometry(g2, plot_type)
 
     num_data, num_qval = len(g2), g2[0].shape[1]
@@ -105,12 +121,13 @@ def pg_plot(
     col = min(num_figs, num_col)
     row = (num_figs + col - 1) // col
 
-    if len(rows) == 0:
+    if rows is not None and len(rows) == 0:
         rows = list(range(len(xf_list)))
 
     hdl.adjust_canvas_size(num_col=col, num_row=row)
     hdl.clear()
     # a bug in pyqtgraph; the log scale in x-axis doesn't apply
+    t0_range = None
     if t_range:
         t0_range = np.log10(t_range)
     axes = []
@@ -127,71 +144,106 @@ def pg_plot(
     for m in range(num_data):
         # default base line to be 1.0; used for non-fitting or fit error cases
         baseline_offset = np.ones(num_qval)
+        fit_summary = None  # Initialize to avoid unbound variable
         if show_fit:
             fit_summary = xf_list[m].fit_g2_function(
                 q_range, t_range, bounds, fit_flag, fit_func
             )
-            if fit_summary is not None and subtract_baseline:
-                # make sure the fitting is successful
-                if fit_summary["fit_line"][n].get("success", False):
-                    baseline_offset = fit_summary["fit_val"][:, 0, 3]
+            # Note: baseline_offset will be updated per q-bin in the loop below
 
         for n in range(num_qval):
+            # Update baseline offset for this q-bin if fitting is enabled
+            if show_fit and fit_summary is not None and subtract_baseline:
+                # make sure the fitting is successful for this q-bin
+                if (fit_summary.get("fit_line") is not None and 
+                    len(fit_summary["fit_line"]) > n and
+                    fit_summary["fit_line"][n].get("success", False)):
+                    baseline_offset[n] = fit_summary["fit_val"][n, 0, 3]
+            
+            # Ensure rows and related arrays have valid data
+            if rows is None or len(rows) == 0:
+                rows = list(range(len(xf_list)))
+            
             color = colors[rows[m] % len(colors)]
             label = None
+            ax = None  # Initialize to avoid unbound variable
+            
             if plot_type == "multiple":
                 ax = axes[n]
-                title = labels[m][n]
-                label = xf_list[m].label
+                if labels is not None and len(labels) > m and labels[m] is not None and len(labels[m]) > n:
+                    title = labels[m][n]
+                else:
+                    title = f"Q-bin {n}"
+                label = getattr(xf_list[m], 'label', f'Dataset {m}')
                 if m == 0:
                     ax.setTitle(title)
             elif plot_type == "single":
                 ax = axes[m]
                 # overwrite color; use the same color for the same set;
                 color = colors[n % len(colors)]
-                title = xf_list[m].label
+                title = getattr(xf_list[m], 'label', f'Dataset {m}')
                 # label = labels[m][n]
                 ax.setTitle(title)
             elif plot_type == "single-combined":
                 ax = axes[0]
-                label = xf_list[m].label + labels[m][n]
+                label_part1 = getattr(xf_list[m], 'label', f'Dataset {m}')
+                if labels is not None and len(labels) > m and labels[m] is not None and len(labels[m]) > n:
+                    label_part2 = labels[m][n]
+                else:
+                    label_part2 = f'Q-bin {n}'
+                label = label_part1 + label_part2
 
-            ax.setLabel("bottom", "tau (s)")
-            ax.setLabel("left", "g2")
+            if ax is not None:
+                ax.setLabel("bottom", "tau (s)")
+                ax.setLabel("left", "g2")
 
             symbol = symbols[rows[m] % len(symbols)]
 
-            x = tel[m]
+            if tel is not None and len(tel) > m:
+                x = tel[m]
+            else:
+                x = np.array([])
+                
             # normalize baseline
-            y = g2[m][:, n] - baseline_offset[n] + 1.0 + m * offset
-            y_err = g2_err[m][:, n]
+            if g2 is not None and len(g2) > m and g2[m] is not None:
+                y = g2[m][:, n] - baseline_offset[n] + 1.0 + m * offset
+            else:
+                y = np.array([])
+                
+            if g2_err is not None and len(g2_err) > m and g2_err[m] is not None:
+                y_err = g2_err[m][:, n]
+            else:
+                y_err = np.array([])
 
-            pg_plot_one_g2(
-                ax,
-                x,
-                y,
-                y_err,
-                color,
-                label=label,
-                symbol=symbol,
-                symbol_size=marker_size,
-            )
-            # if t_range is not None:
-            if not y_auto:
-                ax.setRange(yRange=y_range)
-            if not t_auto:
-                ax.setRange(xRange=t0_range)
+            if ax is not None:
+                pg_plot_one_g2(
+                    ax,
+                    x,
+                    y,
+                    y_err,
+                    color,
+                    label=label,
+                    symbol=symbol,
+                    symbol_size=marker_size,
+                )
+                # if t_range is not None:
+                if not y_auto:
+                    ax.setRange(yRange=y_range)
+                if not t_auto and t0_range is not None:
+                    ax.setRange(xRange=t0_range)
 
-            if show_fit and fit_summary is not None:
-                if fit_summary["fit_line"][n].get("success", False):
-                    y_fit = fit_summary["fit_line"][n]["fit_y"] + m * offset
-                    # normalize baseline
-                    y_fit = y_fit - baseline_offset[n] + 1.0
-                    ax.plot(
-                        fit_summary["fit_line"][n]["fit_x"],
-                        y_fit,
-                        **mkPen(color, width=2.5),
-                    )
+                if show_fit and fit_summary is not None:
+                    if (fit_summary.get("fit_line") is not None and 
+                        len(fit_summary["fit_line"]) > n and
+                        fit_summary["fit_line"][n].get("success", False)):
+                        y_fit = fit_summary["fit_line"][n]["fit_y"] + m * offset
+                        # normalize baseline
+                        y_fit = y_fit - baseline_offset[n] + 1.0
+                        ax.plot(
+                            fit_summary["fit_line"][n]["fit_x"],
+                            y_fit,
+                            **mkPen(color, width=int(2.5)),  # Convert to int for width
+                        )
     return
 
 

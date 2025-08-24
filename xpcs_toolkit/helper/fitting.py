@@ -1,11 +1,13 @@
-import numpy as np
-from scipy.optimize import curve_fit
 import traceback
-from sklearn import linear_model
 import os
-import traceback
 import logging
-from joblib import Memory
+
+# Use lazy imports for heavy dependencies to improve import time
+from .._lazy_imports import lazy_import
+np = lazy_import('numpy')
+curve_fit = lazy_import('scipy.optimize', 'curve_fit')
+linear_model = lazy_import('sklearn', 'linear_model')
+Memory = lazy_import('joblib', 'Memory')
 
 
 logger = logging.getLogger(__name__)
@@ -133,6 +135,8 @@ def fit_with_fixed_raw(base_func, x, y, sigma, bounds, fit_flag, fit_x,
     fit_line = []
     for n in range(y.shape[1]):
         flag = True
+        fit_y = None  # Initialize to avoid unbound variable
+        msg = ''  # Initialize to avoid unbound variable
         try:
             popt, pcov = curve_fit(func, x, y[:, n], p0=p0, sigma=sigma[:, n],
                                    bounds=bounds_fit)

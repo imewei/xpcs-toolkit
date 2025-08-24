@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "xpcs-toolkit"  # New package name
 dynamic = ["version"]
 description = "XPCS Toolkit: A headless command-line tool for X-ray Photon Correlation Spectroscopy analysis"
+requires-python = ">=3.12"
 authors = [{name = "Wei Chen", email = "weichen@anl.gov"}]
 maintainers = [{name = "Wei Chen", email = "weichen@anl.gov"}]
 
@@ -20,10 +21,8 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Operating System :: OS Independent",
     "Natural Language :: English"
 ]

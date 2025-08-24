@@ -12,6 +12,17 @@ from ..helper.listmodel import ListDataModel
 from tqdm import trange
 import traceback
 
+# Optional imports
+try:
+    from sklearn.cluster import KMeans as sk_kmeans
+except ImportError:
+    sk_kmeans = None
+
+try:
+    import pyqtgraph as pg
+except ImportError:
+    pg = None
+
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +50,8 @@ def average_plot_cluster(self, hdl1, num_clusters=2):
         logger.info("using avg cache")
         intt_minmax = self.meta["avg_intt_minmax"]
 
+    if sk_kmeans is None:
+        raise ImportError("sklearn is required for clustering functionality")
     y_pred = sk_kmeans(n_clusters=num_clusters).fit_predict(intt_minmax.T)
     freq = np.bincount(y_pred)
     self.meta["avg_intt_mask"] = y_pred == y_pred[freq.argmax()]
@@ -81,8 +94,12 @@ class AverageToolbox:
         self._progress = "0%"
         # axis to show the baseline;
         self.ax = None
-        # use one file as templelate
-        self.origin_path = os.path.join(self.work_dir, self.model[0])
+        # use one file as template
+        # Ensure work_dir and model[0] are strings for path joining
+        if self.work_dir is not None and len(self.model) > 0:
+            self.origin_path = os.path.join(str(self.work_dir), str(self.model[0]))
+        else:
+            self.origin_path = None
 
         self.is_killed = False
 
@@ -169,18 +186,22 @@ class AverageToolbox:
                     # self.signals.progress.emit((self.jid, curr_percentage))
 
                 fname = self.model[m]
+                xf = None  # Initialize to avoid unbound variable
                 try:
-                    xf = XF(os.path.join(self.work_dir, fname), fields=fields)
+                    # Ensure work_dir and fname are strings
+                    if self.work_dir is not None:
+                        xf = XF(os.path.join(str(self.work_dir), str(fname)), fields=fields)
+                    else:
+                        xf = XF(str(fname), fields=fields)
                     flag, val = validate_g2_baseline(xf.g2, avg_qindex)
                     self.baseline[self.ptr] = val
                     self.ptr += 1
-                # except Exceptionn as ec:
                 except:
                     traceback.print_exc()
                     flag, val = False, 0
                     logger.error("file %s is damaged, skip", fname)
 
-                if flag:
+                if flag and xf is not None:
                     for key in fields:
                         if key != "saxs_1d":
                             data = xf.__getattr__(key)
@@ -221,8 +242,17 @@ class AverageToolbox:
             logger.info("the valid dataset number is %d / %d" % (np.sum(mask), tot_num))
 
         logger.info("create file: {}".format(save_path))
-        copyfile(self.origin_path, save_path)
-        put(save_path, result, ftype="nexus", mode="alias")
+        # Ensure origin_path and save_path are not None before copying
+        if self.origin_path is not None and save_path is not None:
+            copyfile(self.origin_path, str(save_path))
+        else:
+            logger.warning("No origin path available for copying")
+        
+        # Ensure save_path is a string
+        if save_path is not None:
+            put(str(save_path), result, ftype="nexus", mode="alias")
+        else:
+            logger.warning("No save path provided for putting results")
 
         self.status = "finished"
         self.signals.status.emit((self.jid, self.status))
@@ -239,16 +269,18 @@ class AverageToolbox:
         t.setLabel("left", "g2 baseline")
         self.ax = t.plot(symbol="o")
         if "avg_blmin" in self.kwargs:
-            dn = pg.InfiniteLine(
-                pos=self.kwargs["avg_blmin"], angle=0, pen=pg.mkPen("r")
-            )
-            t.addItem(dn)
+            if pg is not None:
+                dn = pg.InfiniteLine(
+                    pos=self.kwargs["avg_blmin"], angle=0, pen=pg.mkPen("r")
+                )
+                t.addItem(dn)
         if "avg_blmax" in self.kwargs:
-            up = pg.InfiniteLine(
-                pos=self.kwargs["avg_blmax"], angle=0, pen=pg.mkPen("r")
-            )
-            # t.addItem(pg.FillBetweenItem(dn, up))
-            t.addItem(up)
+            if pg is not None:
+                up = pg.InfiniteLine(
+                    pos=self.kwargs["avg_blmax"], angle=0, pen=pg.mkPen("r")
+                )
+                # t.addItem(pg.FillBetweenItem(dn, up))
+                t.addItem(up)
         t.setMouseEnabled(x=False, y=False)
 
         return
@@ -282,10 +314,13 @@ class AverageToolbox:
         else:
             data["input_datasets"] = self.model[:]
 
-        tree = pg.DataTreeWidget(data=data)
-        tree.setWindowTitle("Job_%d_%s" % (self.jid, self.model[0]))
-        tree.resize(600, 800)
-        return tree
+        if pg is not None:
+            tree = pg.DataTreeWidget(data=data)
+            tree.setWindowTitle("Job_%d_%s" % (self.jid, self.model[0]))
+            tree.resize(600, 800)
+            return tree
+        else:
+            return None
 
 
 def do_average(
@@ -326,16 +361,21 @@ def do_average(
 
     for m in trange(tot_num):
         fname = flist[m]
+        xf = None  # Initialize to avoid unbound variable
         try:
-            xf = XF(os.path.join(work_dir, fname), fields=fields)
+            # Ensure work_dir and fname are strings
+            if work_dir is not None:
+                xf = XF(os.path.join(str(work_dir), str(fname)), fields=fields)
+            else:
+                xf = XF(str(fname), fields=fields)
             flag, val = validate_g2_baseline(xf.g2, avg_qindex)
             baseline[m] = val
-        except Exception as ec:
+        except Exception:
             flag, val = False, 0
             traceback.print_exc()
             logger.error("file %s is damaged, skip", fname)
 
-        if flag:
+        if flag and xf is not None:
             for key in fields:
                 if key != "saxs_1d":
                     data = xf.at(key)
@@ -374,7 +414,13 @@ def do_average(
     if save_path is None:
         save_path = "AVG" + os.path.basename(flist[0])
     logger.info("create file: {}".format(save_path))
-    copyfile(original_file, save_path)
-    put(save_path, result, ftype="nexus", mode="alias")
+    # Ensure original_file is not None before copying
+    if original_file is not None:
+        copyfile(original_file, save_path)
+    else:
+        logger.warning("No original file available for copying")
+    
+    # Ensure save_path is a string
+    put(str(save_path) if save_path is not None else '', result, ftype="nexus", mode="alias")
 
     return baseline

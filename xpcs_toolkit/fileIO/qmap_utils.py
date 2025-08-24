@@ -1,25 +1,208 @@
 import hdf5plugin
-import h5py
 import numpy as np
 from .aps_8idi import key as key_map
 import logging
+import hashlib
+import os
+from pathlib import Path
+from typing import Optional, Dict, List, Any, Tuple
+
+# Use lazy imports for heavy dependencies
+from .._lazy_imports import lazy_import
+h5py = lazy_import('h5py')
+joblib = lazy_import('joblib')
+Memory = lazy_import('joblib', 'Memory')
 
 logger = logging.getLogger(__name__)
 
+# Set up disk cache for q-space maps
+_cache_dir = Path.home() / '.cache' / 'xpcs_toolkit' / 'qmaps'
+_cache_dir.mkdir(parents=True, exist_ok=True)
+_memory = Memory(str(_cache_dir), verbose=0)
+
 
 class QMapManager:
-    def __init__(self):
-        self.db = {}
+    """Manager for q-space maps with in-memory and disk caching."""
+    
+    def __init__(self, use_disk_cache=True):
+        """Initialize QMapManager with optional disk caching.
+        
+        Parameters
+        ----------
+        use_disk_cache : bool, optional
+            Whether to enable disk caching (default: True)
+        """
+        self.db = {}  # In-memory cache
+        self.use_disk_cache = use_disk_cache
+        
+        if use_disk_cache:
+            # Use joblib Memory for persistent caching
+            self._cached_qmap_loader = _memory.cache(self._load_qmap_uncached)
+        else:
+            self._cached_qmap_loader = self._load_qmap_uncached
+    
+    def _generate_cache_key(self, filename: str) -> str:
+        """Generate a cache key based on file metadata and geometry.
+        
+        This creates a unique key based on:
+        1. File modification time
+        2. File size
+        3. Geometry parameters that affect q-space mapping
+        """
+        try:
+            # Get file stats
+            stat = os.stat(filename)
+            mtime = stat.st_mtime
+            size = stat.st_size
+            
+            # Extract key geometry parameters
+            with h5py.File(filename, "r") as f:
+                root_key = "/xpcs/qmap"
+                if root_key not in f:
+                    # Fallback for files without qmap hash
+                    return f"{filename}_{mtime}_{size}"
+                
+                # Get critical parameters that affect q-space mapping
+                bcx = f[key_map["nexus"]["bcx"]][()]
+                bcy = f[key_map["nexus"]["bcy"]][()]
+                X_energy = f[key_map["nexus"]["X_energy"]][()]
+                pixel_size = f[key_map["nexus"]["pixel_size"]][()]
+                det_dist = f[key_map["nexus"]["det_dist"]][()]
+                
+                # Create hash of geometry parameters
+                geometry_str = f"{bcx}_{bcy}_{X_energy}_{pixel_size}_{det_dist}"
+                geometry_hash = hashlib.md5(geometry_str.encode()).hexdigest()[:8]
+                
+                return f"{geometry_hash}_{mtime}_{size}"
+                
+        except Exception as e:
+            logger.warning(f"Could not generate cache key for {filename}: {e}")
+            # Fallback to filename + current timestamp
+            import time
+            return f"{os.path.basename(filename)}_{int(time.time())}"
+            
+    def _load_qmap_uncached(self, cache_key: str, filename: str):
+        """Load QMap without any caching (used by joblib).
+        
+        Parameters
+        ----------
+        cache_key : str
+            Cache key (used by joblib for cache management)
+        filename : str
+            Path to the HDF5 file
+            
+        Returns
+        -------
+        QMap
+            Loaded q-space map
+        """
+        logger.debug(f"Loading QMap from file: {filename}")
+        return QMap(filename=filename)
 
-    def get_qmap(self, filename):
-        hash_value = get_hash(filename)  # Compute hash
-        if hash_value not in self.db:
-            qmap = QMap(filename=filename)
-            self.db[hash_value] = qmap
-        return self.db[hash_value]
+    def get_qmap(self, filename: str):
+        """Get q-space map with caching support.
+        
+        Parameters
+        ----------
+        filename : str
+            Path to the HDF5 file
+            
+        Returns
+        -------
+        QMap
+            Q-space map object
+        """
+        # Generate cache key for this file
+        cache_key = self._generate_cache_key(filename)
+        
+        # Check in-memory cache first
+        if cache_key in self.db:
+            logger.debug(f"QMap cache hit (memory): {filename}")
+            return self.db[cache_key]
+        
+        # Load from disk cache or file
+        if self.use_disk_cache:
+            logger.debug(f"Loading QMap with disk cache: {filename}")
+            qmap = self._cached_qmap_loader(cache_key, filename)
+        else:
+            logger.debug(f"Loading QMap without cache: {filename}")
+            qmap = self._load_qmap_uncached(cache_key, filename)
+        
+        # Store in memory cache
+        self.db[cache_key] = qmap
+        
+        return qmap
+    
+    def clear_cache(self, memory_only=False):
+        """Clear the cache.
+        
+        Parameters
+        ----------
+        memory_only : bool, optional
+            If True, only clear memory cache. If False, clear both memory 
+            and disk cache (default: False)
+        """
+        self.db.clear()
+        logger.info("Memory cache cleared")
+        
+        if not memory_only and self.use_disk_cache:
+            _memory.clear()
+            logger.info("Disk cache cleared")
+    
+    def cache_info(self):
+        """Get cache statistics.
+        
+        Returns
+        -------
+        dict
+            Cache statistics including memory and disk usage
+        """
+        memory_items = len(self.db)
+        
+        info = {
+            'memory_cached_items': memory_items,
+            'cache_dir': str(_cache_dir) if self.use_disk_cache else None,
+            'disk_cache_enabled': self.use_disk_cache
+        }
+        
+        if self.use_disk_cache:
+            try:
+                cache_size = sum(f.stat().st_size for f in _cache_dir.rglob('*') if f.is_file())
+                info['disk_cache_size_mb'] = cache_size / (1024**2)
+                info['disk_cache_files'] = len(list(_cache_dir.rglob('*.pkl')))
+            except Exception as e:
+                info['disk_cache_error'] = str(e)
+        
+        return info
 
 
 class QMap:
+    # Define all attributes that will be dynamically added
+    mask: np.ndarray
+    dqmap: np.ndarray
+    sqmap: np.ndarray
+    dqlist: np.ndarray
+    sqlist: np.ndarray
+    dplist: np.ndarray
+    splist: np.ndarray
+    bcx: float
+    bcy: float
+    X_energy: float
+    static_index_mapping: np.ndarray
+    dynamic_index_mapping: np.ndarray
+    pixel_size: float
+    det_dist: float
+    dynamic_num_pts: np.ndarray
+    static_num_pts: int
+    map_names: List[str]
+    map_units: List[str]
+    k0: float
+    is_loaded: bool
+    extent: Tuple[float, float, float, float]
+    qmap: Dict[str, np.ndarray]
+    qmap_units: Dict[str, str]
+    qbin_labels: List[str]
+    
     def __init__(self, filename=None, root_key="/xpcs/qmap"):
         self.root_key = root_key
         self.filename = filename
@@ -221,6 +404,7 @@ class QMap:
         if shape[2] == 1:
             labels = [label]
             avg = compressed_data.reshape(shape[0], -1)
+            full_data = None  # Initialize for later use
         else:
             full_data = np.full((shape[0], shape[1] * shape[2]), fill_value=np.nan)
             for i in range(num_samples):
@@ -231,6 +415,7 @@ class QMap:
         if mode == "saxs_1d":
             assert num_samples == 1, "saxs1d mode only supports one sample"
             if shape[2] > 1:
+                assert full_data is not None, "full_data should be defined when shape[2] > 1"
                 saxs1d = np.concatenate([avg[..., None], full_data], axis=-1)
                 saxs1d = saxs1d[0].T  # shape: (num_lines + 1, num_q)
                 labels = [label + "_%d" % (n + 1) for n in range(shape[2])]

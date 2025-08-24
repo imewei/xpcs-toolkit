@@ -6,6 +6,7 @@ from .helper.listmodel import TableDataModel
 from .mpl_compat import DataTreeWidget
 import os
 import logging
+from typing import Optional, Dict, Any
 from .xpcs_file import XpcsFile
 
 
@@ -13,10 +14,13 @@ logger = logging.getLogger(__name__)
 
 
 class ViewerKernel(FileLocator):
+    # Class-level type annotations
+    meta: Dict[str, Any]
+    
     def __init__(self, path, statusbar=None):
         super().__init__(path)
         self.statusbar = statusbar
-        self.meta = None
+        self.meta = {}  # Initialize as empty dict instead of None
         self.reset_meta()
         self.path = path
         self.avg_tb = AverageToolbox(path)
@@ -44,8 +48,9 @@ class ViewerKernel(FileLocator):
 
     def select_bkgfile(self, fname):
         base_fname = os.path.basename(fname)
-        self.meta["saxs1d_bkg_fname"] = base_fname
-        self.meta["saxs1d_bkg_xf"] = XpcsFile(fname)
+        if self.meta is not None:
+            self.meta["saxs1d_bkg_fname"] = base_fname
+            self.meta["saxs1d_bkg_xf"] = XpcsFile(fname)
 
     def get_pg_tree(self, rows):
         xf_list = self.get_xf_list(rows)
@@ -152,7 +157,7 @@ class ViewerKernel(FileLocator):
             saxs1d.pg_plot(
                 xf_list,
                 mp_hdl,
-                bkg_file=self.meta["saxs1d_bkg_xf"],
+                bkg_file=self.meta["saxs1d_bkg_xf"] if self.meta is not None else None,
                 roi_list=roi_list,
                 **kwargs
             )

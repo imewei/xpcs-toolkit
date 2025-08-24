@@ -52,6 +52,8 @@ def plot_pre(xf_list, hdl):
     ax = hdl.subplots(2, 2, sharex=True).flatten()
     titles = ['contrast', 'tau (s)', 'stretch', 'baseline']
 
+    x = None  # Initialize x to avoid unbound variable error
+    
     for idx, xf in enumerate(xf_list):
         color = colors[idx % len(colors)]
         shape = shapes[idx % len(shapes)]
@@ -64,7 +66,11 @@ def plot_pre(xf_list, hdl):
 
         if idx == len(xf_list) - 1:
             bounds = xf.fit_summary['bounds']
-            xmin, xmax = np.min(x), np.max(x)
+            # Only compute xmin, xmax if x has been defined
+            if x is not None:
+                xmin, xmax = np.min(x), np.max(x)
+            else:
+                xmin, xmax = 0, 1  # Default values if no data
             for n in range(4):
                 ymin = bounds[0][n]
                 ymax = bounds[1][n]

@@ -140,7 +140,10 @@ class DataFileLocator:
         xpcs_file_obj = create_xpcs_dataset(
             os.path.join(self.path, filename), qmap_manager=self.qmap_manager
         )
-        return xpcs_file_obj.get_hdf_metadata(filter_strings)
+        if xpcs_file_obj is not None:
+            return xpcs_file_obj.get_hdf_metadata(filter_strings)
+        else:
+            return {}
 
     def add_target_files(self, file_list: List[str], threshold: int = 256, 
                         preload: bool = True) -> None:
@@ -223,7 +226,7 @@ class DataFileLocator:
         item = self.target_files.pop(row)
         pos = row - 1 if direction == "up" else row + 1
         self.target_files.insert(pos, item)
-        new_index = self.target_files.index(pos)
+        new_index = pos
         self.last_modified_time = str(datetime.datetime.now())
         return new_index
 
@@ -242,6 +245,7 @@ class DataFileLocator:
             "prefix",
             "substr",
         ], "filter_type must be prefix or substr"
+        selected = []
         if filter_type == "prefix":
             selected = [x for x in self.source_files if x.startswith(search_value)]
         elif filter_type == "substr":

@@ -105,11 +105,11 @@ def offset_intensity(Iq, n, plot_offset=None, yscale=None):
     """
     offset the intensity accordingly in both linear and log scale
     """
-    if yscale == "linear":
+    if yscale == "linear" and plot_offset is not None:
         offset = -1 * plot_offset * n * np.max(Iq)
         Iq = offset + Iq
 
-    elif yscale == "log":
+    elif yscale == "log" and plot_offset is not None:
         offset = 10 ** (plot_offset * n)
         Iq = Iq / offset
     return Iq
@@ -192,6 +192,10 @@ def pg_plot(
     log_y = (False, True)[plot_type // 2]
     plot_item.setLogMode(x=log_x, y=log_y)
 
+    # Initialize labels with defaults
+    xlabel = "q (Å⁻¹)"
+    ylabel = "Intensity"
+    
     plot_id = 0
     for n, fi in enumerate(xf_list):
         q, Iq, xlabel, ylabel = fi.get_saxs_1d_data(
