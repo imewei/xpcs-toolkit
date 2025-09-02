@@ -96,15 +96,15 @@ root_doc = "index"
 # directories to ignore when looking for source files
 exclude_patterns = [
     "_build",
-    "Thumbs.db", 
+    "Thumbs.db",
     ".DS_Store",
     "**.ipynb_checkpoints",
 ]
 
 # Suppress specific warnings during reorganization
 suppress_warnings = [
-    'autodoc.import_error',
-    'autosummary.import_error',
+    "autodoc.import_error",
+    "autosummary.import_error",
 ]
 
 # -- Options for HTML output -------------------------------------------------
@@ -188,7 +188,7 @@ autodoc_default_options = {
 # Mock modules that might not be available during doc build
 autodoc_mock_imports = [
     "PyQt5",
-    "pyqtgraph", 
+    "pyqtgraph",
     "numba",
     # Reorganization-related modules that may not be fully available
     "xpcs_toolkit.scientific.mpl_compat",
