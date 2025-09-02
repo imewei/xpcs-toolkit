@@ -280,6 +280,10 @@ module = [
     "xpcs_toolkit.io.*",
     "xpcs_toolkit.core.*",
     "xpcs_toolkit.plugins.*",
+    "xpcs_toolkit.run_tests",
+    "xpcs_toolkit.xpcs_file", 
+    "xpcs_toolkit.data_file_locator",
+    "xpcs_toolkit.analysis_kernel",
 ]
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
