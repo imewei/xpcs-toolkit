@@ -11,7 +11,7 @@ import numpy as np
 def get_min_max(data, min_percent=0, max_percent=100, **kwargs):
     """
     Calculate minimum and maximum values for data visualization.
-    
+
     Parameters
     ----------
     data : array_like
@@ -22,7 +22,7 @@ def get_min_max(data, min_percent=0, max_percent=100, **kwargs):
         Maximum percentile for range calculation
     **kwargs
         Additional plotting parameters including plot_norm and plot_type
-        
+
     Returns
     -------
     tuple
@@ -44,7 +44,7 @@ def get_min_max(data, min_percent=0, max_percent=100, **kwargs):
 def norm_saxs_data(Iq, q, plot_norm=0):
     """
     Normalize SAXS intensity data for different plotting modes.
-    
+
     Parameters
     ----------
     Iq : array_like
@@ -53,7 +53,7 @@ def norm_saxs_data(Iq, q, plot_norm=0):
         Scattering vector magnitudes
     plot_norm : int, default 0
         Normalization mode (0=none, 1=q^2, 2=q^4, 3=I/I_0)
-        
+
     Returns
     -------
     tuple
@@ -78,14 +78,14 @@ def norm_saxs_data(Iq, q, plot_norm=0):
 def create_slice(arr, x_range):
     """
     Create a slice object for array range selection.
-    
+
     Parameters
     ----------
     arr : array_like
         Input array to slice
     x_range : tuple
         (start, end) range values
-        
+
     Returns
     -------
     slice

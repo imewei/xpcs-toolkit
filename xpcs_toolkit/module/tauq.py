@@ -14,7 +14,7 @@ shapes = ("o", "v", "^", "<", ">", "8", "s", "p", "P", "*")
 def plot(xf_list, hdl, q_range, offset, plot_type=3):
     """
     Plot tau-q relationship for XPCS analysis.
-    
+
     Parameters
     ----------
     xf_list : list
@@ -78,7 +78,7 @@ def plot(xf_list, hdl, q_range, offset, plot_type=3):
 def plot_pre(xf_list, hdl):
     """
     Create preliminary fitting parameter plots for XPCS analysis.
-    
+
     Parameters
     ----------
     xf_list : list

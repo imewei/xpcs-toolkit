@@ -14,12 +14,12 @@ import h5py
 def isNeXusFile(filename: str) -> bool:
     """
     Check if a file follows NeXus format standards.
-    
+
     Parameters
     ----------
     filename : str
         Path to the file to check
-        
+
     Returns
     -------
     bool
@@ -37,12 +37,12 @@ def isNeXusFile(filename: str) -> bool:
 def isLegacyFile(filename: str) -> bool:
     """
     Check if a file uses legacy XPCS format.
-    
+
     Parameters
     ----------
     filename : str
         Path to the file to check
-        
+
     Returns
     -------
     bool
@@ -60,12 +60,12 @@ def isLegacyFile(filename: str) -> bool:
 def get_ftype(filename: str) -> Union[str, bool]:
     """
     Determine the file type of an XPCS data file.
-    
+
     Parameters
     ----------
     filename : str
         Path to the file to analyze
-        
+
     Returns
     -------
     Union[str, bool]

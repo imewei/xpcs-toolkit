@@ -33,16 +33,16 @@ colors = [
 def smooth_data(fc, window=1, sampling=1):
     """
     Smooth and sample intensity time series data.
-    
+
     Parameters
     ----------
     fc : object
         XPCS file object containing Int_t intensity data
     window : int, default 1
         Moving average window size for smoothing
-    sampling : int, default 1  
+    sampling : int, default 1
         Downsampling factor for data reduction
-        
+
     Returns
     -------
     tuple

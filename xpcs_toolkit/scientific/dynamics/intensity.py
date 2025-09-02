@@ -33,7 +33,7 @@ colors = [
 def smooth_data(fc, window=1, sampling=1):
     """
     Smooth and sample intensity dynamics data.
-    
+
     Parameters
     ----------
     fc : object
@@ -42,7 +42,7 @@ def smooth_data(fc, window=1, sampling=1):
         Moving average window size for smoothing
     sampling : int, default 1
         Downsampling factor for data reduction
-        
+
     Returns
     -------
     tuple
