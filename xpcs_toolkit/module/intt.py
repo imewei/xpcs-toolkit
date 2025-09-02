@@ -2,11 +2,8 @@ import numpy as np
 from ..mpl_compat import mkPen
 import matplotlib.pyplot as plt
 
-# Optional import for pyqtgraph
-try:
-    import pyqtgraph as pg
-except ImportError:
-    pg = None
+# PyQtGraph import removed for headless operation
+pg = None
 
 colors = [
     (192, 0, 0),
@@ -47,89 +44,19 @@ def smooth_data(fc, window=1, sampling=1):
 
 def plot(xf_list, pg_hdl, enable_zoom=True, xlabel="Frame Index", **kwargs):
     """
+    Plot intensity vs time - disabled in headless mode.
+    
+    This function has been disabled as it requires PyQtGraph GUI functionality.
+    Use the matplotlib-based CLI interface for visualization instead.
+    
     :param xf_list: list of xf objects
-    :param pg_hdl: pyqtgraph handler to plot
-    :param enable_zoom: bool, if to plot the zoom view or not
-    :param xlabel:
-    :param kwargs: used to define how to average/sample the data
-    :return:
+    :param pg_hdl: pyqtgraph handler to plot (ignored in headless mode)
+    :param enable_zoom: bool, if to plot the zoom view or not (ignored)
+    :param xlabel: x-axis label (ignored)
+    :param kwargs: used to define how to average/sample the data (ignored)
+    :return: None
     """
-    data = []
-    for fc in xf_list:
-        x, y = smooth_data(fc, **kwargs)
-        if xlabel != "Frame Index":
-            x = x * fc.t0
-        data.append([x, y])
-
-    pg_hdl.clear()
-
-    t = pg_hdl.addPlot(colspan=2)
-    t.addLegend(offset=(-1, 1), labelTextSize="8pt", verSpacing=-10)
-    tf = pg_hdl.addPlot(row=1, col=0, title="Fourier Spectrum")
-    tf.addLegend(offset=(-1, 1), labelTextSize="8pt", verSpacing=-10)
-    tf.setLabel("bottom", "Frequency (Hz)")
-    tf.setLabel("left", "FFT Intensity")
-
-    tz = pg_hdl.addPlot(row=1, col=1, title="Zoom In")
-    tz.addLegend(offset=(-1, 1), labelTextSize="8pt", verSpacing=-10)
-
-    t.setDownsampling(mode="peak")
-    tf.setDownsampling(mode="peak")
-    tz.setDownsampling(mode="peak")
-
-    for n in range(len(data)):
-        if pg is not None:
-            t.plot(
-                data[n][0],
-                data[n][1],
-                pen=pg.mkPen(colors[n % len(colors)], width=1),
-                name=xf_list[n].label,
-            )
-    t.setTitle("Intensity vs %s" % xlabel)
-
-    lr = None  # Initialize to avoid unbound variable
-    if enable_zoom and pg is not None:
-        vmin = np.min(data[0][0])
-        vmax = np.max(data[0][0])
-        cen = vmin * 0.382 + vmax * 0.618
-        width = (vmax - vmin) * 0.05
-        lr = pg.LinearRegionItem([cen - width, cen + width])
-        # lr.setZValue(-10)
-        t.addItem(lr)
-    t.setLabel("bottom", "%s" % xlabel)
-    t.setLabel("left", "Intensity (cts / pixel)")
-
-    for n in range(len(data)):
-        x, y = xf_list[n].Int_t_fft
-        if pg is not None:
-            tf.plot(
-                x, y, pen=pg.mkPen(colors[n % len(colors)], width=1), name=xf_list[n].label
-            )
-
-    for n in range(len(data)):
-        if pg is not None:
-            tz.plot(
-                data[n][0],
-                data[n][1],
-                pen=pg.mkPen(colors[n % len(colors)], width=1),
-                name=xf_list[n].label,
-            )
-
-    # Only set up zoom functionality if lr was created
-    if lr is not None:
-        def update_plot():
-            tz.setXRange(*lr.getRegion(), padding=0)
-
-        def update_region():
-            lr.setRegion(tz.getViewBox().viewRange()[0])
-
-        lr.sigRegionChanged.connect(update_plot)
-        tz.sigXRangeChanged.connect(update_region)
-        
-        # Initial update only if lr exists
-        update_plot()
-
-    tz.setLabel("bottom", "%s" % xlabel)
-    tz.setLabel("left", "Intensity (cts / pixel)")
-
-    return
+    raise NotImplementedError(
+        "GUI plotting functionality has been disabled in headless mode. "
+        "Use the matplotlib-based CLI interface for visualization instead."
+    )

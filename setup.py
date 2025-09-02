@@ -86,12 +86,6 @@ DOCS_REQUIREMENTS = [
     "nbsphinx>=0.8.0",
 ]
 
-# GUI dependencies
-GUI_REQUIREMENTS = [
-    "pyqtgraph>=0.12.0",
-    "PyQt5>=5.15.0",
-    "ipywidgets>=7.6.0",
-]
 
 # Performance dependencies
 PERFORMANCE_REQUIREMENTS = [
@@ -112,13 +106,11 @@ EXTENDED_REQUIREMENTS = [
 EXTRAS_REQUIRE = {
     "dev": DEV_REQUIREMENTS,
     "docs": DOCS_REQUIREMENTS,
-    "gui": GUI_REQUIREMENTS,
     "performance": PERFORMANCE_REQUIREMENTS,
     "extended": EXTENDED_REQUIREMENTS,
     "all": (
         DEV_REQUIREMENTS + 
         DOCS_REQUIREMENTS + 
-        GUI_REQUIREMENTS + 
         PERFORMANCE_REQUIREMENTS + 
         EXTENDED_REQUIREMENTS
     ),
@@ -174,7 +166,7 @@ setup(
     extras_require=EXTRAS_REQUIRE,
     
     # Python version requirement
-    python_requires=">=3.9",
+    python_requires=">=3.12",
     
     # Console scripts
     entry_points={
@@ -197,9 +189,6 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11", 
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
         "Operating System :: OS Independent",
@@ -208,7 +197,6 @@ setup(
         "Operating System :: Microsoft :: Windows",
         "Natural Language :: English",
         "Environment :: Console",
-        "Environment :: X11 Applications",
     ],
     
     # Keywords for PyPI

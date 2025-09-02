@@ -78,6 +78,8 @@ analysis and automated processing workflows.
 
 """
 
+from __future__ import annotations
+
 from importlib.metadata import version, PackageNotFoundError
 # New classes (recommended)
 from xpcs_toolkit.xpcs_file import XpcsDataFile

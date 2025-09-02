@@ -85,7 +85,11 @@ class LoggerWriter:
                     self.buffer.append(line.rstrip('\n'))
                     complete_message = ''.join(self.buffer)
                     if complete_message.strip():  # Only log non-empty messages
-                        self.level_func(complete_message)
+                        try:
+                            self.level_func(complete_message)
+                        except Exception:
+                            # Continue even if logging fails
+                            pass
                     self.buffer.clear()
                 else:
                     # Incomplete line - add to buffer
@@ -116,7 +120,11 @@ class LoggerWriter:
             if self.buffer:
                 complete_message = ''.join(self.buffer)
                 if complete_message.strip():  # Only log non-empty messages
-                    self.level_func(complete_message)
+                    try:
+                        self.level_func(complete_message)
+                    except Exception:
+                        # Continue even if logging fails
+                        pass
                 self.buffer.clear()
     
     def isatty(self) -> bool:

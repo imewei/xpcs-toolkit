@@ -191,47 +191,17 @@ try:
 except ImportError:
     sk_kmeans = None
 
-try:
-    import pyqtgraph as pg
-except ImportError:
-    pg = None
+# PyQtGraph import removed for headless operation
+pg = None
 
 
 logger = logging.getLogger(__name__)
 
 
 def average_plot_cluster(self, hdl1, num_clusters=2):
-    if (
-        self.meta["avg_file_list"] != tuple(self.target)
-        or "avg_intt_minmax" not in self.meta
-    ):
-        logger.info("avg cache not exist")
-        labels = ["Int_t"]
-        res = self.fetch(labels, file_list=self.target)
-        Int_t = res["Int_t"][:, 1, :].astype(np.float32)
-        Int_t = Int_t / np.max(Int_t)
-        intt_minmax = []
-        for n in range(len(self.target)):
-            intt_minmax.append([np.min(Int_t[n]), np.max(Int_t[n])])
-        intt_minmax = np.array(intt_minmax).T.astype(np.float32)
-
-        self.meta["avg_file_list"] = tuple(self.target)
-        self.meta["avg_intt_minmax"] = intt_minmax
-        self.meta["avg_intt_mask"] = np.ones(len(self.target))
-
-    else:
-        logger.info("using avg cache")
-        intt_minmax = self.meta["avg_intt_minmax"]
-
-    if sk_kmeans is None:
-        raise ImportError("sklearn is required for clustering functionality")
-    y_pred = sk_kmeans(n_clusters=num_clusters).fit_predict(intt_minmax.T)
-    freq = np.bincount(y_pred)
-    self.meta["avg_intt_mask"] = y_pred == y_pred[freq.argmax()]
-    valid_num = np.sum(y_pred == y_pred[freq.argmax()])
-    title = "%d / %d" % (valid_num, y_pred.size)
-    hdl1.show_scatter(
-        intt_minmax, color=y_pred, xlabel="Int-t min", ylabel="Int-t max", title=title
+    """Plot clustering results - disabled in headless mode"""
+    raise NotImplementedError(
+        "GUI plotting functionality has been disabled in headless mode."
     )
 
 
@@ -447,64 +417,18 @@ class AverageToolbox:
         return result
 
     def initialize_plot(self, hdl):
-        hdl.clear()
-        t = hdl.addPlot()
-        t.setLabel("bottom", "Dataset Index")
-        t.setLabel("left", "g2 baseline")
-        self.ax = t.plot(symbol="o")
-        if "avg_blmin" in self.kwargs:
-            if pg is not None:
-                dn = pg.InfiniteLine(
-                    pos=self.kwargs["avg_blmin"], angle=0, pen=pg.mkPen("r")
-                )
-                t.addItem(dn)
-        if "avg_blmax" in self.kwargs:
-            if pg is not None:
-                up = pg.InfiniteLine(
-                    pos=self.kwargs["avg_blmax"], angle=0, pen=pg.mkPen("r")
-                )
-                # t.addItem(pg.FillBetweenItem(dn, up))
-                t.addItem(up)
-        t.setMouseEnabled(x=False, y=False)
-
-        return
+        """Initialize plot - disabled in headless mode"""
+        raise NotImplementedError(
+            "GUI plotting functionality has been disabled in headless mode."
+        )
 
     def update_plot(self):
-        if self.ax is not None:
-            self.ax.setData(self.baseline[: self.ptr])
-            return
+        """Update plot - disabled in headless mode"""
+        pass  # No-op in headless mode
 
     def get_pg_tree(self):
-        data = {}
-        for key, val in self.kwargs.items():
-            if isinstance(val, np.ndarray):
-                if val.size > 4096:
-                    data[key] = "data size is too large"
-                # suqeeze one-element array
-                if val.size == 1:
-                    data[key] = float(val)
-            else:
-                data[key] = val
-
-        # additional keys to describe the worker
-        add_keys = ["submit_time", "etime", "status", "baseline", "ptr", "eta", "size"]
-
-        for key in add_keys:
-            data[key] = self.__dict__[key]
-
-        if self.size > 20:
-            data["first_10_datasets"] = self.model[0:10]
-            data["last_10_datasets"] = self.model[-10:]
-        else:
-            data["input_datasets"] = self.model[:]
-
-        if pg is not None:
-            tree = pg.DataTreeWidget(data=data)
-            tree.setWindowTitle("Job_%d_%s" % (self.jid, self.model[0]))
-            tree.resize(600, 800)
-            return tree
-        else:
-            return None
+        """Get PyQtGraph tree widget - disabled in headless mode"""
+        return None  # Always return None in headless mode
 
 
 def do_average(

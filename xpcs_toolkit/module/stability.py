@@ -154,7 +154,7 @@ XPCS Toolkit Development Team
 Advanced Photon Source, Argonne National Laboratory
 """
 
-from .saxs1d import get_pyqtgraph_anchor_params, plot_line_with_marker
+# Removed PyQtGraph-dependent imports for headless operation
 import numpy as np
 
 
@@ -171,132 +171,42 @@ def plot(
     """
     Visualize temporal stability of partial scattering profiles over time.
     
-    This function creates comprehensive plots showing the evolution of scattering
-    intensity profiles over time or dose, enabling assessment of sample stability,
-    radiation damage effects, and other time-dependent phenomena. Each partial
-    profile represents a different time point or measurement condition.
+    This function has been disabled in headless mode. PyQtGraph plotting 
+    functionality is not available when running without GUI dependencies.
     
-    The visualization supports various scaling and normalization options optimized
-    for different types of stability analysis, from radiation damage assessment
-    to thermal stability studies.
+    For visualization in headless mode, use the matplotlib-based plotting
+    functions available in the CLI interface instead.
     
     Parameters
     ----------
     fc : XpcsDataFile
         Data file containing temporal series of partial SAXS profiles.
-        Must have saxs1d_partial data with time-resolved scattering patterns.
     pg_hdl : matplotlib.pyplot or compatible plotting handle
-        Matplotlib-compatible plotting handle for rendering. Must support
-        standard matplotlib plotting interface and subplot creation.
+        Plotting handle (ignored in headless mode).
     plot_type : int, optional
-        Scaling mode for axes. Default: 2 (linear-log).
-        Bit encoding: bit 0 = x-log, bit 1 = y-log
-        - 0: linear-linear
-        - 1: log-linear (useful for q-range analysis)
-        - 2: linear-log (standard for intensity evolution)
-        - 3: log-log (power-law behavior identification)
+        Scaling mode for axes (ignored in headless mode).
     plot_norm : int, optional
-        Intensity normalization method. Default: 0 (no normalization).
-        - 0: Raw intensity I(q,t)
-        - 1: Kratky plot q²I(q,t) (polymer chain analysis)
-        - 2: Porod plot q⁴I(q,t) (surface area evolution)
-        - 3: Monitor normalized I(q,t)/I₀(t) (beam fluctuation correction)
+        Intensity normalization method (ignored in headless mode).
     legend : str, optional
-        Legend specification. Default: None (automatic).
-        Currently not used - automatic labeling applied.
+        Legend specification (ignored in headless mode).
     title : str, optional
-        Plot title override. Default: None (uses fc.label).
-        Useful for custom analysis descriptions.
+        Plot title override (ignored in headless mode).
     loc : str or int, optional
-        Legend position following matplotlib conventions. Default: 'upper right'.
-        Options: 'upper left', 'lower right', 'center', etc., or integer codes.
+        Legend position (ignored in headless mode).
     **kwargs : dict
-        Additional keyword arguments for future extensibility.
-        Currently passed through but not used.
+        Additional keyword arguments (ignored in headless mode).
     
     Returns
     -------
     None
-        Function performs plotting operations directly on the provided handle.
+        Function returns without performing operations in headless mode.
     
-    Examples
-    --------
-    >>> # Standard stability analysis for radiation damage
-    >>> stability.plot(
-    ...     fc=time_series_data,
-    ...     pg_hdl=matplotlib_handle,
-    ...     plot_type=3,        # log-log scale
-    ...     plot_norm=0,        # Raw intensities
-    ...     title="Radiation Damage Assessment",
-    ...     loc="upper right"
-    ... )
-    >>> 
-    >>> # Kratky analysis for polymer chain stability
-    >>> stability.plot(
-    ...     fc=polymer_time_series,
-    ...     pg_hdl=matplotlib_handle,
-    ...     plot_type=1,        # log-linear scale  
-    ...     plot_norm=1,        # q²I(q) normalization
-    ...     title="Chain Conformation Evolution",
-    ...     loc="lower left"
-    ... )
-    >>> 
-    >>> # High-q surface analysis for particle degradation
-    >>> stability.plot(
-    ...     fc=nanoparticle_series,
-    ...     pg_hdl=matplotlib_handle,
-    ...     plot_type=2,        # linear-log scale
-    ...     plot_norm=2,        # q⁴I(q) normalization
-    ...     title="Surface Area Evolution"
-    ... )
-    
-    Notes
-    -----
-    - Each curve represents a different time point in the measurement series
-    - Curve labels use format 'p{n}' where n is the temporal index
-    - Grid lines enhance quantitative comparison between time points
-    - Logarithmic scaling helps identify different degradation regimes
-    - Normalization choices highlight different physical aspects:
-      * Raw intensity: Total scattering power evolution
-      * Kratky: Chain flexibility and coil-to-globule transitions
-      * Porod: Surface-to-volume ratio changes
-      * Monitor normalization: Beam-corrected comparison
-    
-    See Also
-    --------
-    saxs1d.plot_line_with_marker : Individual curve plotting function
-    saxs1d.get_pyqtgraph_anchor_params : Legend positioning utility
+    Raises
+    ------
+    NotImplementedError
+        Always raised as this function is disabled in headless mode.
     """
-
-    pg_hdl.clear()
-    plot_item = pg_hdl.getPlotItem()
-
-    plot_item.setTitle(fc.label)
-    legend = plot_item.addLegend()
-    anchor_param = get_pyqtgraph_anchor_params(loc, padding=15)
-    legend.anchor(**anchor_param)
-
-    norm_method = [None, "q2", "q4", "I0"][plot_norm]
-    log_x = (False, True)[plot_type % 2]
-    log_y = (False, True)[plot_type // 2]
-    plot_item.setLogMode(x=log_x, y=log_y)
-
-    q, Iqp, xlabel, ylabel = fc.get_saxs_1d_data(
-        target="saxs1d_partial", norm_method=norm_method
+    raise NotImplementedError(
+        "GUI plotting functionality has been disabled in headless mode. "
+        "Use the matplotlib-based CLI interface for visualization instead."
     )
-    for n in range(Iqp.shape[0]):
-        plot_line_with_marker(
-            plot_item,
-            q,
-            Iqp[n],
-            n,
-            f"p{n}",  # label
-            1.0,  # alpha
-            marker_size=6,
-            log_x=log_x,
-            log_y=log_y,
-        )
-
-    plot_item.setLabel("bottom", xlabel)
-    plot_item.setLabel("left", ylabel)
-    plot_item.showGrid(x=True, y=True, alpha=0.3)

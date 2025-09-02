@@ -6,20 +6,6 @@
 # Include development dependencies (which includes core)
 -r requirements-dev.txt
 
-# =============================================================================
-# GUI AND INTERACTIVE FEATURES
-# =============================================================================
-
-# PyQt and GUI frameworks
-pyqtgraph>=0.12.0             # Fast plotting for interactive GUI
-PyQt5>=5.15.0                 # Qt GUI framework
-# PyQt6>=6.0.0                # Alternative Qt version (uncomment if needed)
-
-# Interactive widgets and notebook support  
-ipywidgets>=7.6.0             # Interactive widgets for Jupyter
-jupyter-widgets>=7.6.0        # Jupyter widgets
-plotly>=5.0.0                 # Interactive plotting
-bokeh>=2.4.0                  # Interactive visualization
 
 # =============================================================================
 # PERFORMANCE OPTIMIZATION

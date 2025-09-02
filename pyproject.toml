@@ -11,7 +11,7 @@ name = "xpcs-toolkit"
 dynamic = ["version"]
 description = "XPCS Toolkit: A comprehensive command-line tool for X-ray Photon Correlation Spectroscopy analysis"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.12"
 license = {text = "MIT"}
 keywords = [
     "XPCS", 
@@ -43,9 +43,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Operating System :: OS Independent",
@@ -54,7 +51,6 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Natural Language :: English",
     "Environment :: Console",
-    "Environment :: X11 Applications"
 ]
 
 # Core dependencies required for basic functionality
@@ -130,13 +126,6 @@ docs = [
     "nbsphinx>=0.8.0",       # Jupyter notebook support
 ]
 
-# GUI and interactive features (optional)
-gui = [
-    "pyqtgraph>=0.12.0",     # Fast plotting for GUI
-    "PyQt5>=5.15.0",         # Qt GUI framework
-    "ipywidgets>=7.6.0",     # Interactive widgets
-]
-
 # Performance optimization packages
 performance = [
     "numba>=0.56.0",         # JIT compilation
@@ -154,7 +143,7 @@ extended = [
 
 # All optional dependencies for complete installation
 all = [
-    "xpcs-toolkit[dev,docs,gui,performance,extended]"
+    "xpcs-toolkit[dev,docs,performance,extended]"
 ]
 
 [project.urls]
@@ -202,7 +191,6 @@ markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
-    "gui: marks tests as GUI tests (require display)",
 ]
 filterwarnings = [
     "error",
@@ -263,7 +251,6 @@ module = [
     "h5py.*",
     "hdf5plugin.*",
     "sklearn.*",
-    "pyqtgraph.*",
     "tqdm.*",
     "joblib.*",
     "matplotlib.*",

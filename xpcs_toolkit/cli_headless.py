@@ -728,7 +728,7 @@ def main():
                                command=args.command,
                                xpcs_version=__version__)
     context_logger.info("XPCS Toolkit CLI started",
-                       extra={"args": vars(args)})
+                       extra={"cli_args": vars(args)})
 
     # Ensure path exists
     if hasattr(args, 'path'):
