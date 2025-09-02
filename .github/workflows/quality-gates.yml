@@ -37,13 +37,13 @@ jobs:
     - name: Code formatting check
       run: |
         echo "::group::Ruff Format Check"
-        ruff format --check --diff .
+        ruff format --check --diff --exclude xpcs_toolkit/_version.py .
         echo "::endgroup::"
     
     - name: Comprehensive linting
       run: |
         echo "::group::Ruff Linting"
-        ruff check . --output-format=github
+        ruff check . --exclude xpcs_toolkit/_version.py --output-format=github
         echo "::endgroup::"
     
     - name: Type checking
