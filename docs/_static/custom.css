@@ -1,0 +1,125 @@
+/* Custom CSS for XPCS Toolkit Documentation */
+
+/* Brand colors and theming */
+:root {
+    --xpcs-primary: #2196F3;
+    --xpcs-secondary: #1976D2;
+    --xpcs-accent: #42A5F5;
+    --xpcs-success: #4CAF50;
+    --xpcs-warning: #FF9800;
+    --xpcs-error: #F44336;
+}
+
+/* Logo and branding */
+.sidebar-brand {
+    font-weight: bold;
+    font-size: 1.2em;
+    color: var(--xpcs-primary);
+}
+
+/* Code blocks */
+.highlight {
+    border-radius: 6px;
+    border: 1px solid #e1e4e8;
+}
+
+.highlight pre {
+    padding: 16px;
+    overflow: auto;
+    line-height: 1.45;
+}
+
+/* Admonitions styling */
+.admonition {
+    border-radius: 6px;
+    border-left: 4px solid var(--xpcs-primary);
+    margin: 16px 0;
+    padding: 12px 16px;
+}
+
+.admonition.note {
+    border-left-color: var(--xpcs-primary);
+    background-color: #f6f8fa;
+}
+
+.admonition.warning {
+    border-left-color: var(--xpcs-warning);
+    background-color: #fff8e5;
+}
+
+.admonition.tip {
+    border-left-color: var(--xpcs-success);
+    background-color: #f0f9f0;
+}
+
+/* API documentation */
+.py .sig-name {
+    font-weight: bold;
+}
+
+.py .sig-param {
+    font-style: italic;
+}
+
+/* Navigation improvements */
+.toctree-wrapper ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.toctree-wrapper li {
+    margin: 4px 0;
+}
+
+/* Badge styling */
+img[alt*="badge"], img[alt*="shield"] {
+    margin: 2px;
+    border-radius: 3px;
+}
+
+/* Table improvements */
+table.docutils {
+    border-collapse: collapse;
+    border-spacing: 0;
+    empty-cells: show;
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+table.docutils td, table.docutils th {
+    border: 1px solid #e1e4e8;
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+}
+
+table.docutils th {
+    background-color: #f6f8fa;
+    font-weight: bold;
+}
+
+/* Copy button improvements */
+button.copybtn {
+    opacity: 0.3;
+    transition: opacity 0.2s;
+}
+
+.highlight:hover button.copybtn {
+    opacity: 1;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .highlight pre {
+        padding: 12px;
+        font-size: 14px;
+    }
+    
+    table.docutils {
+        font-size: 14px;
+    }
+    
+    table.docutils td, table.docutils th {
+        padding: 6px 8px;
+    }
+}

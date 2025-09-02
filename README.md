@@ -1,8 +1,13 @@
 # XPCS Toolkit
 
-[![Python Version](https://img.shields.io/badge/python-3.9%2B-blue)](https://python.org)
+[![PyPI version](https://badge.fury.io/py/xpcs-toolkit.svg)](https://badge.fury.io/py/xpcs-toolkit)
+[![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/imewei/xpcs-toolkit)
+[![Documentation Status](https://readthedocs.org/projects/xpcs-toolkit/badge/?version=latest)](https://xpcs-toolkit.readthedocs.io/en/latest/?badge=latest)
+[![Coverage Status](https://img.shields.io/badge/coverage-93%25-brightgreen)](https://github.com/imewei/xpcs-toolkit)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+[![Downloads](https://pepy.tech/badge/xpcs-toolkit)](https://pepy.tech/project/xpcs-toolkit)
 
 A comprehensive command-line tool for X-ray Photon Correlation Spectroscopy (XPCS) analysis, designed for synchrotron beamline operations and research environments.
 
@@ -165,11 +170,19 @@ make coverage       # Generate test coverage report
 
 ## 📚 Documentation
 
-- **[Dependencies Guide](DEPENDENCIES_GUIDE.md)** - Installation and dependency management
-- **[Makefile Guide](MAKEFILE_GUIDE.md)** - Development workflow commands
-- **[Migration Guide](MIGRATION_GUIDE.md)** - Upgrading from legacy versions
-- **[Performance Optimizations](PERFORMANCE_OPTIMIZATIONS.md)** - Technical improvements
-- **[Logging Documentation](docs/logging.md)** - Logging system configuration
+### 📖 **[Full Documentation](https://xpcs-toolkit.readthedocs.io/)**
+
+#### Quick Links
+- **[Installation Guide](https://xpcs-toolkit.readthedocs.io/en/latest/installation.html)** - Detailed setup instructions
+- **[Quick Start Tutorial](https://xpcs-toolkit.readthedocs.io/en/latest/quickstart.html)** - Get started in 5 minutes  
+- **[API Reference](https://xpcs-toolkit.readthedocs.io/en/latest/api/)** - Complete API documentation
+- **[User Guides](https://xpcs-toolkit.readthedocs.io/en/latest/guides/)** - In-depth tutorials and examples
+- **[FAQ](https://xpcs-toolkit.readthedocs.io/en/latest/faq.html)** - Common questions and troubleshooting
+
+#### Development Resources
+- **[Contributing Guide](https://xpcs-toolkit.readthedocs.io/en/latest/contributing.html)** - How to contribute
+- **[Changelog](https://xpcs-toolkit.readthedocs.io/en/latest/changelog.html)** - Release history
+- **[Developer Documentation](https://xpcs-toolkit.readthedocs.io/en/latest/development/)** - Development setup
 
 ## 🤝 Contributing
 
