@@ -8,7 +8,7 @@ This comprehensive test suite is organized into the following categories:
 ### Unit Tests (`unit/`)
 Individual component tests that verify the behavior of single classes, functions, or modules:
 - `test_xpcs_file.py` - XpcsDataFile class tests
-- `test_analysis_kernel.py` - AnalysisKernel class tests  
+- `test_analysis_kernel.py` - AnalysisKernel class tests
 - `test_data_file_locator.py` - DataFileLocator class tests
 - `test_modules.py` - Scientific analysis modules tests
 - `test_logging.py` - Logging system tests
