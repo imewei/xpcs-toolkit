@@ -1,115 +1,79 @@
 """
-XPCS Toolkit - Python-based Interactive Visualization Tool for XPCS Datasets
+XPCS Toolkit - Modern Python package for XPCS analysis.
 
 This comprehensive toolkit provides advanced visualization and analysis capabilities
 for X-ray Photon Correlation Spectroscopy (XPCS) datasets, with specialized support
 for the customized NeXus file format developed at Argonne National Laboratory's
 Advanced Photon Source beamline 8-ID-I.
 
-## Key Features
+The toolkit has been reorganized into a modern, maintainable structure while
+maintaining full backward compatibility with existing code.
 
-### Multi-tau Correlation Analysis
-- Complete g2 correlation function analysis and visualization
-- Time-delay correlation analysis with customizable q-ranges
-- Advanced fitting capabilities for relaxation dynamics
-- Statistical error analysis and uncertainty quantification
-
-### Two-time Correlation Analysis  
-- Two-dimensional correlation function visualization
-- Time-resolved dynamics analysis for non-equilibrium systems
-- Interactive exploration of speckle pattern evolution
-- Support for aging and non-stationary processes
-
-### Interactive Data Visualization
-- 2D SAXS pattern visualization with ROI selection
-- 1D radial averaging with customizable integration sectors
-- Real-time intensity time-series monitoring
-- Beam stability analysis and quality assessment
-
-### File Format Support
-- Native support for APS 8-ID-I NeXus format
-- Legacy HDF5 format compatibility
-- Automated file type detection and handling
-- Efficient large dataset management
-
-### Analysis Modules
-- Comprehensive correlation analysis (g2mod)
-- Small-angle X-ray scattering analysis (saxs1d, saxs2d)
-- Two-time correlation analysis (twotime)
-- Tau vs q fitting and analysis (tauq)
-- Beam stability monitoring (stability)
-- Intensity time-series analysis (intt)
-
-### Command-line Interface
-- Headless operation for batch processing
-- Automated plot generation and export
-- Integration with analysis pipelines
-- Configurable output formats and parameters
-
-## Usage Examples
+## Usage
 
 ```python
-# Interactive analysis
-from xpcs_toolkit import XpcsDataFile, AnalysisKernel
+# Existing imports continue to work
+from xpcs_toolkit import XpcsDataFile, AnalysisKernel, DataFileLocator
 
-# Load XPCS data file
-xpcs_data = XpcsDataFile('experiment_data.hdf')
-print(f"Analysis types: {xpcs_data.analysis_type}")
-
-# Create analysis kernel for batch processing
-kernel = AnalysisKernel('/path/to/data/directory')
-kernel.build()
-
-# Extract g2 correlation data
-q_vals, t_vals, g2, g2_err, labels = xpcs_data.get_g2_data(q_range=(0.01, 0.1))
+# Load and analyze data
+data_file = XpcsDataFile('experiment.hdf')
+kernel = AnalysisKernel('/path/to/data')
 ```
 
-## Supported Analysis Types
+## New Modular Structure
 
-- **Multi-tau**: Traditional multi-tau correlation analysis
-- **Two-time**: Two-dimensional correlation analysis
-- **Mixed**: Files containing both analysis types
+The codebase has been reorganized into logical modules:
 
-## Installation and Setup
+- `core/`: Core analysis engines and data handling
+- `scientific/`: Specialized scientific analysis modules
+- `io/`: Input/output operations and file format handling
+- `cli/`: Command-line interface
+- `utils/`: Utilities and helper functions
+- `config.py`: Centralized configuration management
 
-The toolkit supports both interactive Python-based analysis and headless
-command-line operation, making it suitable for both exploratory data
-analysis and automated processing workflows.
+For new development, prefer importing from specific modules, but all
+existing imports remain functional.
 
 """
 
 from __future__ import annotations
 
-from importlib.metadata import version, PackageNotFoundError
-# New classes (recommended)
-from xpcs_toolkit.xpcs_file import XpcsDataFile
-from xpcs_toolkit.analysis_kernel import AnalysisKernel  
-from xpcs_toolkit.data_file_locator import DataFileLocator
-# Backward compatibility aliases (deprecated)
-from xpcs_toolkit.xpcs_file import XpcsFile
-from xpcs_toolkit.analysis_kernel import ViewerKernel
-from xpcs_toolkit.data_file_locator import FileLocator
+from importlib.metadata import PackageNotFoundError, version
 
-# Explicit exports
+from .analysis_kernel import AnalysisKernel, ViewerKernel
+
+# Configuration system (new)
+from .config import XpcsConfig, get_config, reset_config, set_config
+from .data_file_locator import DataFileLocator, FileLocator
+
+# Keep existing imports working (from original locations)
+from .xpcs_file import XpcsDataFile, XpcsFile
+
+# Public API exports
 __all__ = [
-    # New classes (recommended)
-    'XpcsDataFile',
-    'AnalysisKernel', 
-    'DataFileLocator',
-    # Backward compatibility aliases
-    'XpcsFile',
-    'ViewerKernel',
-    'FileLocator',
+    # Core classes
+    "XpcsDataFile",
+    "AnalysisKernel",
+    "DataFileLocator",
+    # Deprecated aliases (for compatibility)
+    "XpcsFile",
+    "ViewerKernel",
+    "FileLocator",
+    # Configuration (new)
+    "XpcsConfig",
+    "get_config",
+    "set_config",
+    "reset_config",
 ]
 
-# Version handling - try both old and new package names for compatibility
+# Version handling
 try:
     __version__ = version("xpcs-toolkit")
 except PackageNotFoundError:
     try:
         __version__ = version("pyxpcsviewer")  # Backward compatibility
     except PackageNotFoundError:
-        __version__ = "0.1.0"  # Fallback if package is not installed
+        __version__ = "0.1.0"  # Fallback
 
-__author__ = 'Wei Chen'
-__credits__ = 'Argonne National Laboratory'
+__author__ = "Wei Chen"
+__credits__ = "Argonne National Laboratory"
