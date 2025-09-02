@@ -1,6 +1,4 @@
 import numpy as np
-from ..mpl_compat import mkPen
-import matplotlib.pyplot as plt
 
 # PyQtGraph import removed for headless operation
 pg = None
@@ -45,10 +43,10 @@ def smooth_data(fc, window=1, sampling=1):
 def plot(xf_list, pg_hdl, enable_zoom=True, xlabel="Frame Index", **kwargs):
     """
     Plot intensity vs time - disabled in headless mode.
-    
+
     This function has been disabled as it requires PyQtGraph GUI functionality.
     Use the matplotlib-based CLI interface for visualization instead.
-    
+
     :param xf_list: list of xf objects
     :param pg_hdl: pyqtgraph handler to plot (ignored in headless mode)
     :param enable_zoom: bool, if to plot the zoom view or not (ignored)

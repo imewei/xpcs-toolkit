@@ -1,6 +1,7 @@
-import h5py
 import os
 from typing import Union
+
+import h5py
 
 
 def isNeXusFile(filename: str) -> bool:
@@ -28,8 +29,8 @@ def get_ftype(filename: str) -> Union[str, bool]:
         return False
 
     if isLegacyFile(filename):
-        return 'legacy'
+        return "legacy"
     elif isNeXusFile(filename):
-         return 'nexus' 
+        return "nexus"
     else:
         return False

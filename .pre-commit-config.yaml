@@ -1,0 +1,132 @@
+# Pre-commit hooks for XPCS Toolkit quality assurance
+repos:
+  # Code formatting and linting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.6
+    hooks:
+      - id: ruff
+        name: Ruff Linter
+        args: [--fix, --unsafe-fixes]
+      - id: ruff-format
+        name: Ruff Formatter
+
+  # Type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.7.1
+    hooks:
+      - id: mypy
+        name: MyPy Type Checking
+        additional_dependencies: 
+          - numpy
+          - scipy
+          - pandas
+          - matplotlib
+          - scikit-learn
+          - h5py
+        args: [--show-error-codes, --no-error-summary]
+
+  # Security scanning
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        name: Bandit Security Scan
+        args: ["-c", "pyproject.toml"]
+        additional_dependencies: ["bandit[toml]"]
+
+  # General code quality
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trim Trailing Whitespace
+      - id: end-of-file-fixer
+        name: Fix End of Files
+      - id: check-yaml
+        name: Check YAML
+      - id: check-toml
+        name: Check TOML
+      - id: check-json
+        name: Check JSON
+      - id: check-added-large-files
+        name: Check for Large Files
+        args: ['--maxkb=1024']
+      - id: check-merge-conflict
+        name: Check for Merge Conflicts
+      - id: debug-statements
+        name: Debug Statement Check
+
+  # Scientific computing specific checks
+  - repo: local
+    hooks:
+      - id: numerical-stability-check
+        name: Numerical Stability Check
+        entry: python -c "
+          import numpy as np
+          import sys
+          import subprocess
+          
+          # Check for potential numerical issues
+          result = subprocess.run(['grep', '-r', '--include=*.py', 'np.float32', 'xpcs_toolkit/'], 
+                                capture_output=True, text=True)
+          if result.stdout:
+              print('WARNING: Found np.float32 usage, consider np.float64 for scientific computing')
+              print(result.stdout)
+          
+          # Check for proper error handling in numerical functions
+          result = subprocess.run(['grep', '-r', '--include=*.py', 'np.divide.*[^,]*)', 'xpcs_toolkit/'],
+                                capture_output=True, text=True)  
+          if result.stdout:
+              print('INFO: Consider using np.errstate for division operations')
+          
+          print('✅ Numerical stability check completed')
+          "
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  # Performance regression check
+  - repo: local
+    hooks:
+      - id: import-performance-check
+        name: Import Performance Check
+        entry: python -c "
+          import time
+          start = time.time()
+          try:
+              import xpcs_toolkit
+              import_time = time.time() - start
+              if import_time > 10.0:
+                  print(f'⚠️  Import time: {import_time:.2f}s (threshold: 10s)')
+                  exit(1)
+              else:
+                  print(f'✅ Import performance: {import_time:.2f}s')
+          except ImportError as e:
+              print(f'❌ Import failed: {e}')
+              exit(1)
+          "
+        language: system
+        pass_filenames: false
+        always_run: true
+
+# Global pre-commit settings
+default_language_version:
+  python: python3.12
+
+# Performance settings
+default_stages: [commit, push]
+fail_fast: false
+
+# Repository settings
+exclude: |
+  (?x)^(
+      \.git/|
+      \.pytest_cache/|
+      __pycache__/|
+      \.mypy_cache/|
+      htmlcov/|
+      \.coverage|
+      dist/|
+      build/|
+      \.egg-info/
+  )

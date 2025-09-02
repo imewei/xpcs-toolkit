@@ -1,7 +1,7 @@
 """
 XPCS Toolkit - Two-Time Correlation Analysis Module (twotime)
 
-This module provides specialized analysis and visualization capabilities for 
+This module provides specialized analysis and visualization capabilities for
 two-time correlation functions in X-ray Photon Correlation Spectroscopy (XPCS).
 Two-time correlation analysis is essential for studying non-stationary, aging,
 and non-equilibrium systems where the dynamics depend on both measurement
@@ -9,7 +9,7 @@ time and delay time.
 
 ## Scientific Background
 
-Two-time correlation functions extend the standard equal-time analysis to 
+Two-time correlation functions extend the standard equal-time analysis to
 capture time-dependent behavior in dynamic systems. The two-time correlation
 function is defined as:
 
@@ -137,8 +137,8 @@ Advanced Photon Source, Argonne National Laboratory
 """
 
 import numpy as np
+
 from ..mpl_compat import mkPen
-import matplotlib.pyplot as plt
 
 PG_COLORS = [
     "#1f77b4",
@@ -169,16 +169,16 @@ def plot_twotime(
 ):
     """
     Visualize two-time correlation functions and extract dynamic information.
-    
+
     This function creates comprehensive visualizations of two-time correlation data,
     including correlation maps, SAXS patterns, and extracted correlation functions.
     It provides tools for analyzing non-stationary dynamics, aging behavior, and
     time-dependent phenomena in XPCS measurements.
-    
+
     The visualization includes multiple panels showing different aspects of the
     two-time correlation analysis: the full correlation matrix C(t₁,t₂), associated
     SAXS scattering patterns, and extracted correlation functions g₂(τ).
-    
+
     Parameters
     ----------
     xfile : XpcsDataFile
@@ -214,18 +214,18 @@ def plot_twotime(
     selection : int, optional
         Index for region selection in correlation analysis. Default: 0.
         Used for extracting correlations from specific spatial or temporal regions.
-    
+
     Returns
     -------
     None
         Function performs visualization operations directly on the provided handles.
         Updates multiple display panels with correlation maps and extracted functions.
-    
+
     Raises
     ------
     AssertionError
         If the input file does not contain "Twotime" in its analysis type.
-    
+
     Examples
     --------
     >>> # Basic two-time correlation visualization
@@ -236,7 +236,7 @@ def plot_twotime(
     ...     auto_crop=True,
     ...     cmap='viridis'
     ... )
-    >>> 
+    >>>
     >>> # Custom intensity range for detailed analysis
     >>> plot_twotime(
     ...     xfile=gelation_data,
@@ -247,7 +247,7 @@ def plot_twotime(
     ...     vmax=1.5,
     ...     correct_diag=True
     ... )
-    
+
     Notes
     -----
     - Two-time correlation maps reveal non-stationary dynamics through off-diagonal features
@@ -255,13 +255,15 @@ def plot_twotime(
     - Aging systems show characteristic triangular or wedge-shaped correlation patterns
     - Color intensity represents correlation strength: darker = stronger correlation
     - Interactive selection allows extraction of correlation functions from specific regions
-    
+
     See Also
     --------
     plot_twotime_g2 : Extract and plot correlation functions from correlation maps
     """
     if "Twotime" not in xfile.atype:
-        raise AssertionError(f"Input file has analysis type '{xfile.atype}' but requires 'Twotime' for two-time correlation analysis")
+        raise AssertionError(
+            f"Input file has analysis type '{xfile.atype}' but requires 'Twotime' for two-time correlation analysis"
+        )
 
     # display dqmap and saxs
     dqmap_disp, saxs, selection_xy = xfile.get_twotime_maps(
@@ -301,16 +303,16 @@ def plot_twotime(
 def plot_twotime_g2(hdl, c2_result):
     """
     Extract and visualize correlation functions from two-time correlation analysis.
-    
+
     This function processes two-time correlation results to extract standard
     correlation functions g₂(τ) from selected regions or time windows. It displays
     both full and partial correlation functions, enabling comparison between
     different temporal regimes or spatial regions within the sample.
-    
+
     The visualization helps identify time-dependent changes in dynamics and
     assess the stationarity of the system by comparing correlation functions
     extracted from different time periods.
-    
+
     Parameters
     ----------
     hdl : dict
@@ -322,19 +324,19 @@ def plot_twotime_g2(hdl, c2_result):
         - 'g2_partial': Array of partial correlation functions from different regions
         - 'acquire_period': Time resolution of the measurement (seconds)
         - Additional metadata from two-time analysis
-    
+
     Returns
     -------
     None
         Function performs plotting operations directly on the provided handle.
         Updates the correlation function display with multiple curves.
-    
+
     Examples
     --------
     >>> # Extract and plot correlation functions
     >>> c2_results = xfile.get_twotime_c2(selection=0)
     >>> plot_twotime_g2(display_handles, c2_results)
-    
+
     Notes
     -----
     - Full correlation function represents average dynamics over entire measurement
@@ -342,7 +344,7 @@ def plot_twotime_g2(hdl, c2_result):
     - Differences between partial functions indicate non-stationary behavior
     - Logarithmic time axis reveals dynamics across multiple decades
     - Color coding distinguishes between different correlation functions
-    
+
     See Also
     --------
     plot_twotime : Main two-time correlation visualization function

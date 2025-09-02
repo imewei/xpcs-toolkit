@@ -1,14 +1,14 @@
 """
 XPCS Toolkit - Small-Angle X-ray Scattering 1D Analysis Module (saxs1d)
 
-This module provides comprehensive analysis and visualization capabilities for 
-one-dimensional small-angle X-ray scattering (SAXS) patterns. SAXS is a powerful 
-technique for characterizing the structure of materials at the nanometer scale, 
+This module provides comprehensive analysis and visualization capabilities for
+one-dimensional small-angle X-ray scattering (SAXS) patterns. SAXS is a powerful
+technique for characterizing the structure of materials at the nanometer scale,
 providing information about particle size, shape, and inter-particle correlations.
 
 ## Scientific Background
 
-Small-angle X-ray scattering measures elastic scattering at small angles (typically 
+Small-angle X-ray scattering measures elastic scattering at small angles (typically
 0.1° to 10°), where the scattering intensity I(q) depends on the momentum transfer:
 
     q = 4π sin(θ/2)/λ
@@ -36,7 +36,7 @@ Where:
 - **Form factors**: Sphere, cylinder, ellipsoid fitting for shape determination
 - **Size distributions**: Polydispersity analysis from peak broadening
 
-### Structure and Organization  
+### Structure and Organization
 - **Inter-particle correlations**: Structure factor peaks indicate ordering
 - **Fractal structures**: Power-law scattering I(q) ∝ q⁻ᴰ reveals fractal dimension D
 - **Phase behavior**: Critical scattering near phase transitions
@@ -166,9 +166,9 @@ XPCS Toolkit Development Team
 Advanced Photon Source, Argonne National Laboratory
 """
 
-import numpy as np
-from ..mpl_compat import mkPen, mkBrush
 import logging
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -191,7 +191,7 @@ _MPL_LOC_INT_TO_STR = {
 def get_pyqtgraph_anchor_params(loc, padding=10):
     """
     Convert matplotlib legend position to pyqtgraph anchor parameters.
-    
+
     This function has been disabled in headless mode as it's specific to PyQtGraph GUI functionality.
     """
     raise NotImplementedError(
@@ -202,12 +202,12 @@ def get_pyqtgraph_anchor_params(loc, padding=10):
 def offset_intensity(Iq, n, plot_offset=None, yscale=None):
     """
     Apply vertical offset to scattering intensity for multi-curve visualization.
-    
+
     This function enables clear separation of multiple SAXS curves in overlay plots
     by applying appropriate offsets based on the plot scaling (linear or logarithmic).
     The offset strategy differs between linear and log scales to maintain visual
     clarity while preserving the relative intensity relationships.
-    
+
     Parameters
     ----------
     Iq : numpy.ndarray
@@ -222,22 +222,22 @@ def offset_intensity(Iq, n, plot_offset=None, yscale=None):
     yscale : str, optional
         Y-axis scaling mode. Options: 'linear', 'log', or None.
         Determines the offset calculation method.
-    
+
     Returns
     -------
     numpy.ndarray
         Offset-corrected intensity values with same shape as input.
-        
+
     Examples
     --------
     >>> # Linear scale offset (additive)
-    >>> I_offset = offset_intensity(I_orig, curve_index=2, 
+    >>> I_offset = offset_intensity(I_orig, curve_index=2,
     ...                           plot_offset=0.1, yscale='linear')
-    >>> 
+    >>>
     >>> # Log scale offset (multiplicative)
     >>> I_offset = offset_intensity(I_orig, curve_index=2,
     ...                           plot_offset=0.5, yscale='log')
-    
+
     Notes
     -----
     - Linear offsets: I_offset = I - n × offset × max(I)
@@ -258,11 +258,11 @@ def offset_intensity(Iq, n, plot_offset=None, yscale=None):
 def switch_line_builder(hdl, lb_type=None):
     """
     Switch line builder tool for interactive SAXS analysis.
-    
+
     This function enables different line-building tools for interactive
     analysis of SAXS data, such as drawing regions of interest, creating
     integration sectors, or marking specific q-ranges for analysis.
-    
+
     Parameters
     ----------
     hdl : matplotlib.pyplot or compatible plotting handle
@@ -270,12 +270,12 @@ def switch_line_builder(hdl, lb_type=None):
     lb_type : str, optional
         Line builder type specification. Default: None.
         Options depend on the plot widget implementation.
-    
+
     Returns
     -------
     None
         Function performs tool switching directly on the plot handle.
-    
+
     Notes
     -----
     - Enables interactive analysis features for SAXS data exploration
@@ -288,46 +288,57 @@ def switch_line_builder(hdl, lb_type=None):
 def get_color_marker(index):
     """
     Assign consistent colors and markers for SAXS curve visualization.
-    
+
     Provides cycling color and marker schemes compatible with matplotlib
     standards for scientific plotting. Ensures visual distinctiveness
     across multiple datasets while maintaining professional appearance.
-    
+
     Parameters
     ----------
     index : int
         Curve index for color/marker assignment. Cycles through available
         options using modulo arithmetic for unlimited curves.
-    
+
     Returns
     -------
     color_hex : str
         Hexadecimal color code (e.g., '#1f77b4') compatible with matplotlib.
     marker : str
         Marker symbol (e.g., 'o', 's', '^') for data points.
-    
+
     Examples
     --------
     >>> color, marker = get_color_marker(0)  # Returns ('#1f77b4', 'o')
     >>> color, marker = get_color_marker(5)  # Returns ('#8c564b', '<')
-    
+
     Notes
     -----
     - Uses standard matplotlib color cycle for consistency
     - Marker shapes chosen for clear distinction at small sizes
     - Cycles repeat after 10 colors/markers for unlimited datasets
     """
-    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', 
-              '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
-    markers = ['o', 's', '^', 'D', 'v', '<', '>', 'p', '*', 'h']
+    colors = [
+        "#1f77b4",
+        "#ff7f0e",
+        "#2ca02c",
+        "#d62728",
+        "#9467bd",
+        "#8c564b",
+        "#e377c2",
+        "#7f7f7f",
+        "#bcbd22",
+        "#17becf",
+    ]
+    markers = ["o", "s", "^", "D", "v", "<", ">", "p", "*", "h"]
     return colors[index % len(colors)], markers[index % len(markers)]
+
 
 def plot_line_with_marker(
     plot_item, x, y, index, label, alpha_val, marker_size=6, log_x=False, log_y=False
 ):
     """
     Render individual SAXS curve with proper styling and scaling.
-    
+
     This function has been disabled in headless mode as it's specific to PyQtGraph GUI functionality.
     """
     raise NotImplementedError(
@@ -359,7 +370,7 @@ def pg_plot(
 ):
     """
     Create comprehensive 1D SAXS intensity plots with flexible analysis options.
-    
+
     This function has been disabled in headless mode as it requires PyQtGraph GUI functionality.
     Use the matplotlib-based CLI interface for visualization instead."""
     raise NotImplementedError(

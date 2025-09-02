@@ -2,18 +2,20 @@ from __future__ import annotations
 
 import os
 import re
+from typing import Any, cast
 import warnings
-from typing import Any, Optional, Tuple, List, Dict, cast
 
 # Use lazy import for numpy to improve startup time
 from ._lazy_imports import lazy_import
-np = lazy_import('numpy')
+
+np = lazy_import("numpy")
+
+import logging
 
 from .fileIO.hdf_reader import get, get_analysis_type, read_metadata_to_dict
-from .helper.fitting import fit_with_fixed
 from .fileIO.qmap_utils import get_qmap
+from .helper.fitting import fit_with_fixed
 from .module.twotime_utils import get_c2_stream, get_single_c2_from_hdf
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +99,9 @@ def power_law(x, a, b):
     return a * x**b
 
 
-def create_identifier(filename: str, label_style: str | None = None, simplify_flag: bool = True) -> str:
+def create_identifier(
+    filename: str, label_style: str | None = None, simplify_flag: bool = True
+) -> str:
     """
     Generate a simplified or customized ID string from a filename.
 
@@ -129,10 +133,16 @@ def create_identifier(filename: str, label_style: str | None = None, simplify_fl
     try:
         selection = [int(x.strip()) for x in label_style.split(",")]
         if not selection:
-            warnings.warn("Empty label_style selection. Returning simplified filename.")
+            warnings.warn(
+                "Empty label_style selection. Returning simplified filename.",
+                stacklevel=2,
+            )
             return filename
     except ValueError:
-        warnings.warn("Invalid label_style format. Must be comma-separated integers.")
+        warnings.warn(
+            "Invalid label_style format. Must be comma-separated integers.",
+            stacklevel=2,
+        )
         return filename
 
     segments = filename.split("_")
@@ -142,7 +152,9 @@ def create_identifier(filename: str, label_style: str | None = None, simplify_fl
         if i < len(segments):
             selected_segments.append(segments[i])
         else:
-            warnings.warn(f"Index {i} out of range for segments {segments}")
+            warnings.warn(
+                f"Index {i} out of range for segments {segments}", stacklevel=2
+            )
 
     if not selected_segments:
         return filename  # fallback if nothing valid was selected
@@ -271,8 +283,13 @@ class XpcsDataFile:
 
     """
 
-    def __init__(self, filename: str, fields: list[str] | None = None,
-                 label_style: str | None = None, qmap_manager=None):
+    def __init__(
+        self,
+        filename: str,
+        fields: list[str] | None = None,
+        label_style: str | None = None,
+        qmap_manager=None,
+    ):
         self.filename = filename
         if qmap_manager is None:
             self.q_space_map = get_qmap(self.filename)
@@ -325,7 +342,9 @@ class XpcsDataFile:
         ans = "\n".join([ans, self.__str__()])
         return ans
 
-    def get_hdf_metadata(self, filter_strings: list[str] | None = None) -> dict[str, Any]:
+    def get_hdf_metadata(
+        self, filter_strings: list[str] | None = None
+    ) -> dict[str, Any]:
         """
         Get a text representation of the XPCS file metadata.
 
@@ -388,10 +407,12 @@ class XpcsDataFile:
             return {}
 
         # Type assertion to help the type checker understand this is a dictionary
-        result_data = cast(Dict[str, Any], result_data)
+        result_data = cast(dict[str, Any], result_data)
 
         if "Twotime" in self.analysis_type:
-            stride_frame = result_data.pop("c2_stride_frame", 1)  # Provide default value
+            stride_frame = result_data.pop(
+                "c2_stride_frame", 1
+            )  # Provide default value
             avg_frame = result_data.pop("c2_avg_frame", 1)  # Provide default value
             if "c2_t0" in result_data and "t0" in result_data:
                 result_data["c2_t0"] = result_data["t0"] * stride_frame * avg_frame
@@ -445,8 +466,14 @@ class XpcsDataFile:
         # delayed loading of saxs_2d due to its large size
         elif key == "saxs_2d":
             if self.saxs_2d_data is None:
-                result_data = get(self.filename, ["saxs_2d"], "alias", file_type="nexus")
-                if result_data is not None and isinstance(result_data, dict) and "saxs_2d" in result_data:
+                result_data = get(
+                    self.filename, ["saxs_2d"], "alias", file_type="nexus"
+                )
+                if (
+                    result_data is not None
+                    and isinstance(result_data, dict)
+                    and "saxs_2d" in result_data
+                ):
                     self.saxs_2d_data = result_data["saxs_2d"]
             return self.saxs_2d_data
         elif key == "saxs_2d_log":
@@ -467,12 +494,12 @@ class XpcsDataFile:
                     self.saxs_2d_log_data = None
             return self.saxs_2d_log_data
         elif key == "Int_t_fft":
-            Int_t = getattr(self, 'Int_t', None)
+            Int_t = getattr(self, "Int_t", None)
             if Int_t is None:
                 return None
             # Use rfft for real input data (more efficient)
             y = np.abs(np.fft.rfft(Int_t[1]))
-            t0 = getattr(self, 't0', 1)
+            t0 = getattr(self, "t0", 1)
             # More efficient array generation
             n_half = y.size
             x = np.arange(n_half, dtype=np.float32) / (2 * (n_half - 1) * t0)
@@ -482,9 +509,11 @@ class XpcsDataFile:
         elif key in self.__dict__:
             return self.__dict__[key]
         else:
-            raise AttributeError(f"'{type(self).__name__}' object has no attribute '{key}'")
+            raise AttributeError(
+                f"'{type(self).__name__}' object has no attribute '{key}'"
+            )
 
-    def get_info_at_position(self, x: int, y: int) -> Optional[str]:
+    def get_info_at_position(self, x: int, y: int) -> str | None:
         """Get information at a specific detector position.
 
         Parameters
@@ -509,7 +538,7 @@ class XpcsDataFile:
             qmap_info = self.q_space_map.get_qmap_at_pos(x, y)
             return f"I={scat_intensity:.4e} {qmap_info}"
 
-    def get_detector_extent(self) -> Tuple[float, float, float, float]:
+    def get_detector_extent(self) -> tuple[float, float, float, float]:
         """Get the detector extent for plotting.
 
         Returns
@@ -536,7 +565,7 @@ class XpcsDataFile:
         """
         return self.q_space_map.get_qbin_label(qbin, append_qbin=append_qbin)
 
-    def get_qbinlist_at_qindex(self, qindex: int, zero_based: bool = True) -> List[int]:
+    def get_qbinlist_at_qindex(self, qindex: int, zero_based: bool = True) -> list[int]:
         """Get list of q-bins at a specific q-index.
 
         Parameters
@@ -553,8 +582,11 @@ class XpcsDataFile:
         """
         return self.q_space_map.get_qbinlist_at_qindex(qindex, zero_based=zero_based)
 
-    def get_g2_data(self, q_range: Optional[Tuple[float, float]] = None,
-                    time_range: Optional[Tuple[float, float]] = None) -> Tuple[Any, Any, Any, Any, List[str]]:
+    def get_g2_data(
+        self,
+        q_range: tuple[float, float] | None = None,
+        time_range: tuple[float, float] | None = None,
+    ) -> tuple[Any, Any, Any, Any, list[str]]:
         """Get G2 correlation data within specified q and time ranges.
 
         Parameters
@@ -571,21 +603,25 @@ class XpcsDataFile:
         """
         assert "Multitau" in self.analysis_type, "only multitau is supported"
         # q_range can be None
-        qindex_selected, qvalues = self.q_space_map.get_qbin_in_qrange(q_range, zero_based=True)
-        g2_data = getattr(self, 'g2', None)
-        g2_err_data = getattr(self, 'g2_err', None)
+        qindex_selected, qvalues = self.q_space_map.get_qbin_in_qrange(
+            q_range, zero_based=True
+        )
+        g2_data = getattr(self, "g2", None)
+        g2_err_data = getattr(self, "g2_err", None)
         if g2_data is None or g2_err_data is None:
             raise ValueError("G2 data is not available")
         g2 = g2_data[:, qindex_selected]
         g2_err = g2_err_data[:, qindex_selected]
         labels = [self.q_space_map.get_qbin_label(qbin + 1) for qbin in qindex_selected]
 
-        time_elapsed_data = getattr(self, 'time_elapsed', None)
+        time_elapsed_data = getattr(self, "time_elapsed", None)
         if time_elapsed_data is None:
             raise ValueError("time_elapsed data is not available")
 
         if time_range is not None:
-            t_roi = (time_elapsed_data >= time_range[0]) * (time_elapsed_data <= time_range[1])
+            t_roi = (time_elapsed_data >= time_range[0]) * (
+                time_elapsed_data <= time_range[1]
+            )
             g2 = g2[t_roi]
             g2_err = g2_err[t_roi]
             time_elapsed = time_elapsed_data[t_roi]
@@ -608,26 +644,27 @@ class XpcsDataFile:
         # Handle backward compatibility for qrange parameter
         if qrange is not None and q_range is None:
             import warnings
+
             warnings.warn(
                 "Parameter 'qrange' is deprecated, use 'q_range' instead",
                 DeprecationWarning,
-                stacklevel=2
+                stacklevel=2,
             )
             q_range = qrange
-            
+
         assert target in ["saxs1d", "saxs1d_partial"]
-        saxs_1d = getattr(self, 'saxs_1d', None)
+        saxs_1d = getattr(self, "saxs_1d", None)
         if saxs_1d is None:
             raise ValueError("saxs_1d data is not available")
         if target == "saxs1d":
             q, Iq = saxs_1d["q"], saxs_1d["Iq"]
         else:
-            Iqp_data = getattr(self, 'Iqp', None)
+            Iqp_data = getattr(self, "Iqp", None)
             if Iqp_data is None:
                 raise ValueError("Iqp data is not available")
             q, Iq = saxs_1d["q"], Iqp_data
         if bkg_xf is not None:
-            bkg_saxs_1d = getattr(bkg_xf, 'saxs_1d', None)
+            bkg_saxs_1d = getattr(bkg_xf, "saxs_1d", None)
             if bkg_saxs_1d is not None and np.allclose(q, bkg_saxs_1d["q"]):
                 Iq = Iq - bkg_weight * bkg_saxs_1d["Iq"]
                 Iq[Iq < 0] = np.nan
@@ -672,7 +709,7 @@ class XpcsDataFile:
 
     def get_twotime_qbin_labels(self):
         qbin_labels = []
-        c2_processed_bins = getattr(self, 'c2_processed_bins', None)
+        c2_processed_bins = getattr(self, "c2_processed_bins", None)
         if c2_processed_bins is None:
             return []
         for qbin in c2_processed_bins.tolist():
@@ -684,10 +721,7 @@ class XpcsDataFile:
     ):
         # emphasize the beamstop region which has qindex = 0;
         dqmap = np.copy(self.dqmap)
-        if scale == "log":
-            saxs = self.saxs_2d_log
-        else:
-            saxs = self.saxs_2d
+        saxs = self.saxs_2d_log if scale == "log" else self.saxs_2d
 
         if auto_crop:
             idx = np.nonzero(dqmap >= 1)
@@ -725,23 +759,23 @@ class XpcsDataFile:
         return dqmap_disp, saxs, selection
 
     def get_twotime_c2(self, selection=0, correct_diag=True, max_size=32678):
-        c2_processed_bins = getattr(self, 'c2_processed_bins', None)
+        c2_processed_bins = getattr(self, "c2_processed_bins", None)
         if c2_processed_bins is None:
             raise ValueError("c2_processed_bins is not available")
         dq_processed = tuple(c2_processed_bins.tolist())
-        assert selection >= 0 and selection < len(
-            dq_processed
-        ), f"selection {selection} out of range {dq_processed}"  # noqa: E501
+        assert selection >= 0 and selection < len(dq_processed), (
+            f"selection {selection} out of range {dq_processed}"
+        )  # noqa: E501
         config = (selection, correct_diag, max_size)
         if self.c2_kwargs == config:
             return self.c2_all_data
         else:
-            fname = getattr(self, 'fname', self.filename)
+            fname = getattr(self, "fname", self.filename)
             c2_result = get_single_c2_from_hdf(
                 fname,
                 selection=selection,
                 max_size=max_size,
-                t0=getattr(self, 't0', None),
+                t0=getattr(self, "t0", None),
                 correct_diag=correct_diag,
             )
             self.c2_all_data = c2_result
@@ -749,7 +783,7 @@ class XpcsDataFile:
         return c2_result
 
     def get_twotime_stream(self, **kwargs):
-        fname = getattr(self, 'fname', self.filename)
+        fname = getattr(self, "fname", self.filename)
         return get_c2_stream(fname, **kwargs)
 
     # def get_g2_fitting_line(self, q, tor=1e-6):
@@ -768,7 +802,7 @@ class XpcsDataFile:
 
     def get_fitting_info(self, mode="g2_fitting"):
         if self.fit_summary is None:
-            return "fitting is not ready for %s" % self.label
+            return f"fitting is not ready for {self.label}"
 
         if mode == "g2_fitting":
             result = self.fit_summary.copy()
@@ -784,9 +818,7 @@ class XpcsDataFile:
             for n in range(val.shape[0]):
                 temp = []
                 for m in range(len(prefix)):
-                    temp.append(
-                        "%s = %f ± %f" % (prefix[m], val[n, 0, m], val[n, 1, m])
-                    )
+                    temp.append(f"{prefix[m]} = {val[n, 0, m]:f} ± {val[n, 1, m]:f}")
                 msg.append(", ".join(temp))
             result["fit_val"] = np.array(msg)
 
@@ -795,12 +827,7 @@ class XpcsDataFile:
                 result = "tauq fitting is not available"
             else:
                 v = self.fit_summary["tauq_fit_val"]
-                result = "a = %e ± %e; b = %f ± %f" % (
-                    v[0, 0],
-                    v[1, 0],
-                    v[0, 1],
-                    v[1, 1],
-                )
+                result = f"a = {v[0, 0]:e} ± {v[1, 0]:e}; b = {v[0, 1]:f} ± {v[1, 1]:f}"
         else:
             raise ValueError("mode not supported.")
 
@@ -823,21 +850,23 @@ class XpcsDataFile:
             raise ValueError("bounds cannot be None")
         assert len(bounds) == 2
         if fit_func == "single":
-            assert (
-                len(bounds[0]) == 4
-            ), "for single exp, the shape of bounds must be (2, 4)"
+            assert len(bounds[0]) == 4, (
+                "for single exp, the shape of bounds must be (2, 4)"
+            )
             if fit_flag is None:
                 fit_flag = [True for _ in range(4)]
             func = single_exp_all
         else:
-            assert (
-                len(bounds[0]) == 7
-            ), "for single exp, the shape of bounds must be (2, 4)"
+            assert len(bounds[0]) == 7, (
+                "for single exp, the shape of bounds must be (2, 4)"
+            )
             if fit_flag is None:
                 fit_flag = [True for _ in range(7)]
             func = double_exp_all
 
-        q_val, t_el, g2, sigma, label = self.get_g2_data(q_range=q_range, time_range=t_range)
+        q_val, t_el, g2, sigma, label = self.get_g2_data(
+            q_range=q_range, time_range=t_range
+        )
 
         # set the initial guess
         p0 = np.array(bounds).mean(axis=0)
@@ -881,10 +910,7 @@ class XpcsDataFile:
             data = g2_err[:, n]
             idx = data > threshold
             # avoid averaging of empty slice
-            if np.sum(idx) > 0:
-                avg = np.mean(data[idx])
-            else:
-                avg = threshold
+            avg = np.mean(data[idx]) if np.sum(idx) > 0 else threshold
             g2_err_mod[np.logical_not(idx), n] = avg
 
         return g2_err_mod
@@ -935,7 +961,7 @@ class XpcsDataFile:
 
     def compute_qmap(self):
         """Compute qmap from q_space_map if available."""
-        if hasattr(self.q_space_map, 'compute_qmap'):
+        if hasattr(self.q_space_map, "compute_qmap"):
             return self.q_space_map.compute_qmap()
         return None
 
@@ -956,14 +982,14 @@ class XpcsDataFile:
                 pmax += 360.0
                 pmap[pmap < pmin] += 360.0
             proi = np.logical_and(pmap >= pmin, pmap < pmax)
-            mask = getattr(self, 'mask', None)
+            mask = getattr(self, "mask", None)
             if mask is None:
                 raise ValueError("Mask is not available")
             proi = np.logical_and(proi, (mask > 0))
             qmap_idx = np.zeros_like(qmap, dtype=np.uint32)
 
             index = 1
-            sqspan = getattr(self, 'sqspan', None)
+            sqspan = getattr(self, "sqspan", None)
             if sqspan is None:
                 raise ValueError("sqspan is not available")
             qsize = len(sqspan) - 1
@@ -988,11 +1014,13 @@ class XpcsDataFile:
             # set the qmax cutoff
             dist = roi_parameter["dist"]
             # qmax = qmap[int(self.bcy), int(self.bcx + dist)]
-            X_energy = getattr(self, 'X_energy', None)
-            pix_dim_x = getattr(self, 'pix_dim_x', None)
-            det_dist = getattr(self, 'det_dist', None)
+            X_energy = getattr(self, "X_energy", None)
+            pix_dim_x = getattr(self, "pix_dim_x", None)
+            det_dist = getattr(self, "det_dist", None)
             if X_energy is None or pix_dim_x is None or det_dist is None:
-                raise ValueError("Required attributes for qmax calculation are not available")
+                raise ValueError(
+                    "Required attributes for qmax calculation are not available"
+                )
             wlength = 12.398 / X_energy
             qmax = dist * pix_dim_x / det_dist * 2 * np.pi / wlength
             saxs_roi[self.sqlist >= qmax] = 0
@@ -1004,7 +1032,7 @@ class XpcsDataFile:
             if rmin > rmax:
                 rmin, rmax = rmax, rmin
             rroi = np.logical_and(rmap >= rmin, rmap < rmax)
-            mask = getattr(self, 'mask', None)
+            mask = getattr(self, "mask", None)
             if mask is None:
                 raise ValueError("Mask is not available")
             rroi = np.logical_and(rroi, (mask > 0))
@@ -1052,13 +1080,13 @@ class XpcsDataFile:
 
         # export all saxs1d
         fname = os.path.join(folder, self.label + "_" + "saxs1d.txt")
-        saxs_1d = getattr(self, 'saxs_1d', None)
+        saxs_1d = getattr(self, "saxs_1d", None)
         if saxs_1d is None:
             raise ValueError("saxs_1d data is not available")
         Iq, q = saxs_1d["Iq"], saxs_1d["q"]
         header = "q(1/Angstron) Intensity"
         for n in range(Iq.shape[0] - 1):
-            header += f" Intensity_phi{n + 1 :03d}"
+            header += f" Intensity_phi{n + 1:03d}"
         np.savetxt(fname, np.vstack([q, Iq]).T, header=header)
 
     def get_pg_tree(self):
@@ -1075,12 +1103,12 @@ class XpcsDataFile:
                 # squeeze one-element array
                 if val.size == 1:
                     data[key] = float(val)
-        data["analysis_type"] = getattr(self, 'atype', self.analysis_type)
+        data["analysis_type"] = getattr(self, "atype", self.analysis_type)
         data["label"] = self.label
 
         # Return mock tree widget for compatibility
         tree = DataTreeWidget(data=data)
-        tree.setWindowTitle(getattr(self, 'fname', self.filename))
+        tree.setWindowTitle(getattr(self, "fname", self.filename))
         tree.resize(600, 800)
         return tree
 
@@ -1097,11 +1125,11 @@ class XpcsFile(XpcsDataFile):
         warnings.warn(
             "XpcsFile is deprecated, use XpcsDataFile instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         # Handle the old parameter name 'fname'
-        if 'fname' in kwargs:
-            kwargs['filename'] = kwargs.pop('fname')
+        if "fname" in kwargs:
+            kwargs["filename"] = kwargs.pop("fname")
         super().__init__(*args, **kwargs)
 
         # Add backward compatibility attributes
@@ -1116,7 +1144,7 @@ class XpcsFile(XpcsDataFile):
         warnings.warn(
             "get_hdf_info is deprecated, use get_hdf_metadata instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.get_hdf_metadata(filter_strings=fstr)
 
@@ -1125,7 +1153,7 @@ class XpcsFile(XpcsDataFile):
         warnings.warn(
             "load_data is deprecated, use load_dataset instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.load_dataset(extra_fields=extra_fields)
 
@@ -1136,7 +1164,7 @@ def create_id(*args, **kwargs):
     warnings.warn(
         "create_id is deprecated, use create_identifier instead",
         DeprecationWarning,
-        stacklevel=2
+        stacklevel=2,
     )
     return create_identifier(*args, **kwargs)
 

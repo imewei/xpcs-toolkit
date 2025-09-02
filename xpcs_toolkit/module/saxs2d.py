@@ -1,7 +1,7 @@
 """
 XPCS Toolkit - Small-Angle X-ray Scattering 2D Analysis Module (saxs2d)
 
-This module provides comprehensive visualization and analysis capabilities for 
+This module provides comprehensive visualization and analysis capabilities for
 two-dimensional small-angle X-ray scattering (SAXS) patterns. 2D SAXS reveals
 the complete scattering information, including structural anisotropy, preferred
 orientations, and spatial correlations that are averaged out in 1D analysis.
@@ -13,7 +13,7 @@ information, providing access to:
 
 ### Structural Anisotropy
 - **Orientation distributions**: Fiber textures, liquid crystal alignment
-- **Preferred directions**: Crystallographic textures, flow alignment  
+- **Preferred directions**: Crystallographic textures, flow alignment
 - **Symmetry analysis**: Crystal systems, molecular packing arrangements
 - **Correlation lengths**: Anisotropic structure factors and form factors
 
@@ -25,7 +25,7 @@ The 2D detector records intensity I(q_x, q_y) where:
 
 ### Pattern Features
 - **Powder rings**: Isotropic polycrystalline materials
-- **Spot patterns**: Single crystal or large grain structures  
+- **Spot patterns**: Single crystal or large grain structures
 - **Fiber patterns**: Uniaxial orientation (polymers, biomaterials)
 - **Streak patterns**: Layer structures, interfaces, defects
 - **Anisotropic scattering**: Oriented domains, flow effects
@@ -46,7 +46,7 @@ The 2D detector records intensity I(q_x, q_y) where:
 - **Noise reduction**: Statistical filtering while preserving features
 - **Region masking**: Exclude detector artifacts and beam stops
 
-### Quantitative Analysis  
+### Quantitative Analysis
 - **Radial integration**: Convert to 1D I(q) profiles with sector averaging
 - **Azimuthal integration**: Extract I(φ) at fixed q for orientation analysis
 - **Peak finding**: Locate Bragg reflections and determine positions
@@ -77,7 +77,7 @@ The 2D detector records intensity I(q_x, q_y) where:
 - **Ceramics**: Grain orientation and porosity assessment
 - **Metals**: Texture evolution during processing
 
-### Biological Systems  
+### Biological Systems
 - **Muscle fibers**: Sarcomere structure and contractile proteins
 - **Cell walls**: Cellulose microfibril orientation in plants
 - **Bone**: Collagen and hydroxyapatite arrangement
@@ -113,7 +113,7 @@ saxs2d.plot(
 
 # Custom intensity range for detailed analysis
 saxs2d.plot(
-    xfile=saxs_data, 
+    xfile=saxs_data,
     pg_hdl=matplotlib_handle,
     plot_type='linear',   # Linear intensity scale
     vmin=10,              # Minimum display intensity
@@ -136,6 +136,7 @@ XPCS Toolkit Development Team
 Advanced Photon Source, Argonne National Laboratory
 """
 
+
 def plot(
     xfile,
     pg_hdl=None,
@@ -149,15 +150,15 @@ def plot(
 ):
     """
     Display 2D SAXS scattering patterns with comprehensive visualization options.
-    
-    This function provides scientific-grade visualization of two-dimensional 
+
+    This function provides scientific-grade visualization of two-dimensional
     small-angle X-ray scattering patterns, supporting various intensity scaling
     modes, colormaps, and display optimizations for quantitative analysis.
-    
+
     The visualization preserves the spatial information crucial for anisotropy
     analysis while offering flexible display options for different sample types
     and analysis requirements.
-    
+
     Parameters
     ----------
     xfile : XpcsDataFile
@@ -187,16 +188,16 @@ def plot(
     vmin : float, optional
         Minimum intensity for display range. Default: None.
         Used for manual contrast control. Ignored if autolevel=True.
-    vmax : float, optional  
+    vmax : float, optional
         Maximum intensity for display range. Default: None.
         Used for manual contrast control. Ignored if autolevel=True.
-    
+
     Returns
     -------
     bool
         The rotate parameter value, indicating rotation state.
         This return is maintained for compatibility with calling code.
-    
+
     Examples
     --------
     >>> # Standard logarithmic display for weak feature analysis
@@ -208,7 +209,7 @@ def plot(
     ...     autolevel=True,
     ...     autorange=True
     ... )
-    >>> 
+    >>>
     >>> # Linear scale with manual intensity range
     >>> saxs2d.plot(
     ...     xfile=pattern_data,
@@ -218,7 +219,7 @@ def plot(
     ...     vmax=2000,
     ...     cmap='jet'
     ... )
-    >>> 
+    >>>
     >>> # High-contrast display for powder patterns
     >>> saxs2d.plot(
     ...     xfile=powder_pattern,
@@ -229,7 +230,7 @@ def plot(
     ...     vmin=1,
     ...     vmax=10000
     ... )
-    
+
     Notes
     -----
     - Logarithmic scaling enhances visibility of weak scattering features
@@ -238,7 +239,7 @@ def plot(
     - View range preservation enables zoomed analysis across parameter changes
     - Colormap choice affects quantitative interpretation and feature visibility
     - Manual intensity ranges override autolevel settings for precise control
-    
+
     See Also
     --------
     xpcs_toolkit.module.saxs1d.pg_plot : 1D SAXS visualization after integration
@@ -246,43 +247,50 @@ def plot(
     # Return early if no plot handler provided
     if pg_hdl is None:
         return rotate
-        
-    center = (xfile.bcx, xfile.bcy)
-    if plot_type == "log":
-        img = xfile.saxs_2d_log
-    else:
-        img = xfile.saxs_2d
 
-    if cmap is not None and hasattr(pg_hdl, 'set_colormap'):
+    center = (xfile.bcx, xfile.bcy)
+    img = xfile.saxs_2d_log if plot_type == "log" else xfile.saxs_2d
+
+    if cmap is not None and hasattr(pg_hdl, "set_colormap"):
         pg_hdl.set_colormap(cmap)
 
-    prev_img = getattr(pg_hdl, 'image', None)
+    prev_img = getattr(pg_hdl, "image", None)
     shape_changed = prev_img is None or prev_img.shape != img.shape
     do_autorange = autorange or shape_changed
 
     # Initialize view_range to None
     view_range = None
-    
+
     # Save view range if keeping it and view attribute exists
-    if not do_autorange and hasattr(pg_hdl, 'view') and pg_hdl.view is not None:
+    if not do_autorange and hasattr(pg_hdl, "view") and pg_hdl.view is not None:
         view_range = pg_hdl.view.viewRange()
 
     # Set new image if method exists
-    if hasattr(pg_hdl, 'setImage'):
+    if hasattr(pg_hdl, "setImage"):
         pg_hdl.setImage(img, autoLevels=autolevel, autoRange=do_autorange)
 
     # Restore view range if we have it and skipped auto-ranging
-    if not do_autorange and view_range is not None and hasattr(pg_hdl, 'view') and pg_hdl.view is not None:
+    if (
+        not do_autorange
+        and view_range is not None
+        and hasattr(pg_hdl, "view")
+        and pg_hdl.view is not None
+    ):
         pg_hdl.view.setRange(xRange=view_range[0], yRange=view_range[1], padding=0)
 
     # Restore levels if needed and method exists
-    if not autolevel and vmin is not None and vmax is not None and hasattr(pg_hdl, 'setLevels'):
+    if (
+        not autolevel
+        and vmin is not None
+        and vmax is not None
+        and hasattr(pg_hdl, "setLevels")
+    ):
         pg_hdl.setLevels(vmin, vmax)
 
     # Restore intensity levels (if needed) - removing duplicate code
     # The above condition already handles this case
 
-    if center is not None and hasattr(pg_hdl, 'add_roi'):
+    if center is not None and hasattr(pg_hdl, "add_roi"):
         pg_hdl.add_roi(sl_type="Center", center=center, label="Center")
 
     return rotate

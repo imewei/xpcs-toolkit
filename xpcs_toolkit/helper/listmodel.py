@@ -5,6 +5,7 @@ logger = logging.getLogger(__name__)
 
 class MockSignal:
     """Mock Qt signal for compatibility"""
+
     def emit(self, *args, **kwargs):
         # No-op for headless operation
         pass
@@ -12,6 +13,7 @@ class MockSignal:
 
 class ListDataModel:
     """Plain Python list wrapper that mimics Qt model interface"""
+
     def __init__(self, input_list=None, max_display=16384) -> None:
         if input_list is None:
             self.input_list = []
@@ -22,11 +24,11 @@ class ListDataModel:
 
     def data(self, index, role=None):
         """Compatibility method - returns string representation"""
-        if hasattr(index, 'row'):  # Qt model index
+        if hasattr(index, "row"):  # Qt model index
             row = index.row()
         else:  # Plain integer
             row = index
-        
+
         if 0 <= row < len(self.input_list):
             return str(self.input_list[row])
         return None
@@ -55,7 +57,7 @@ class ListDataModel:
 
     def pop(self, i=-1):
         return self.input_list.pop(i)
-    
+
     def insert(self, i, item):
         self.input_list.insert(i, item)
         self.layoutChanged.emit()
@@ -75,29 +77,36 @@ class ListDataModel:
 
 class TableDataModel:
     """Plain Python table model that mimics Qt table model interface"""
+
     def __init__(self, input_list=None, max_display=16384) -> None:
         if input_list is None:
             self.input_list = []
         else:
             self.input_list = input_list
         self.max_display = max_display
-        self.xlabels = ['id', 'size', 'progress', 'start', 'ETA (s)',
-                        'finish', 'filename']
+        self.xlabels = [
+            "id",
+            "size",
+            "progress",
+            "start",
+            "ETA (s)",
+            "finish",
+            "filename",
+        ]
         self.layoutChanged = MockSignal()
 
     def data(self, index, role=None):
         """Get data at specific index"""
-        if hasattr(index, 'row'):  # Qt model index
+        if hasattr(index, "row"):  # Qt model index
             row, col = index.row(), index.column()
         elif isinstance(index, tuple):  # (row, col) tuple
             row, col = index
         else:  # Single index for row
             row, col = index, 0
-            
+
         if 0 <= row < len(self.input_list) and 0 <= col < len(self.xlabels):
             x = self.input_list[row]
-            ret = [x.jid, x.size, x._progress, x.stime, x.eta, x.etime,
-                   x.short_name]
+            ret = [x.jid, x.size, x._progress, x.stime, x.eta, x.etime, x.short_name]
             return ret[col]
         return None
 
@@ -149,7 +158,7 @@ class TableDataModel:
 
 
 def test():
-    a = ['a', 'b', 'c']
+    a = ["a", "b", "c"]
     model = ListDataModel(a)
     for n in range(len(model)):
         print(model[n])

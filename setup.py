@@ -9,24 +9,24 @@ For modern installations, the project configuration is primarily defined in
 pyproject.toml. This file acts as a bridge for compatibility.
 """
 
-import os
-import sys
 from pathlib import Path
+import sys
 
 # Ensure we can import setuptools
 try:
-    from setuptools import setup, find_packages
+    from setuptools import find_packages, setup
 except ImportError:
     print("Error: setuptools is required to install this package.")
     print("Please install it using: pip install setuptools")
     sys.exit(1)
+
 
 # Get the long description from README
 def get_long_description():
     """Read the README.md file for the long description."""
     readme_path = Path(__file__).parent / "README.md"
     if readme_path.exists():
-        with open(readme_path, "r", encoding="utf-8") as fh:
+        with open(readme_path, encoding="utf-8") as fh:
             return fh.read()
     else:
         return (
@@ -34,21 +34,24 @@ def get_long_description():
             "X-ray Photon Correlation Spectroscopy analysis"
         )
 
+
 # Get version dynamically
 def get_version():
     """Get version from setuptools_scm or fallback."""
     try:
         from setuptools_scm import get_version  # type: ignore[import-untyped]
-        return get_version(root='..', relative_to=__file__)
+
+        return get_version(root="..", relative_to=__file__)
     except (ImportError, LookupError):
         # Fallback version if setuptools_scm is not available or no git
         return "0.1.0.dev0"
+
 
 # Core dependencies - should match pyproject.toml
 CORE_REQUIREMENTS = [
     "numpy>=1.20.0",
     "scipy>=1.7.0",
-    "h5py>=3.0.0", 
+    "h5py>=3.0.0",
     "hdf5plugin>=3.0.0",
     "pandas>=1.3.0",
     "matplotlib>=3.5.0",
@@ -60,7 +63,7 @@ CORE_REQUIREMENTS = [
 # Development dependencies
 DEV_REQUIREMENTS = [
     "pytest>=6.0.0",
-    "pytest-cov>=3.0.0", 
+    "pytest-cov>=3.0.0",
     "pytest-xdist>=2.5.0",
     "pytest-mock>=3.6.0",
     "coverage[toml]>=6.0.0",
@@ -76,7 +79,7 @@ DEV_REQUIREMENTS = [
     "wheel>=0.37.0",
 ]
 
-# Documentation dependencies  
+# Documentation dependencies
 DOCS_REQUIREMENTS = [
     "sphinx>=4.0.0",
     "sphinx-rtd-theme>=1.0.0",
@@ -90,7 +93,7 @@ DOCS_REQUIREMENTS = [
 # Performance dependencies
 PERFORMANCE_REQUIREMENTS = [
     "numba>=0.56.0",
-    "psutil>=5.8.0", 
+    "psutil>=5.8.0",
     "cython>=0.29.0",
 ]
 
@@ -109,10 +112,10 @@ EXTRAS_REQUIRE = {
     "performance": PERFORMANCE_REQUIREMENTS,
     "extended": EXTENDED_REQUIREMENTS,
     "all": (
-        DEV_REQUIREMENTS + 
-        DOCS_REQUIREMENTS + 
-        PERFORMANCE_REQUIREMENTS + 
-        EXTENDED_REQUIREMENTS
+        DEV_REQUIREMENTS
+        + DOCS_REQUIREMENTS
+        + PERFORMANCE_REQUIREMENTS
+        + EXTENDED_REQUIREMENTS
     ),
 }
 
@@ -125,18 +128,15 @@ setup(
         "local_scheme": "node-and-timestamp",
         "write_to": "xpcs_toolkit/_version.py",
     },
-    
     # Package metadata
     description="XPCS Toolkit: A comprehensive command-line tool for X-ray Photon Correlation Spectroscopy analysis",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
-    
     # Author and contact information
     author="Wei Chen",
     author_email="weichen@anl.gov",
     maintainer="Wei Chen",
     maintainer_email="weichen@anl.gov",
-    
     # URLs and links
     url="https://github.com/imewei/xpcs-toolkit",
     project_urls={
@@ -146,11 +146,9 @@ setup(
         "Changelog": "https://github.com/imewei/xpcs-toolkit/blob/main/CHANGELOG.md",
         "Funding": "https://www.anl.gov/",
     },
-    
     # Package discovery
     packages=find_packages(exclude=["tests", "tests.*", "*.tests", "*.tests.*"]),
     package_dir={"": "."},
-    
     # Include additional files
     package_data={
         "xpcs_toolkit": [
@@ -160,14 +158,11 @@ setup(
         "xpcs_toolkit.configure": ["*.json"],
     },
     include_package_data=True,
-    
     # Dependencies
     install_requires=CORE_REQUIREMENTS,
     extras_require=EXTRAS_REQUIRE,
-    
     # Python version requirement
     python_requires=">=3.12",
-    
     # Console scripts
     entry_points={
         "console_scripts": [
@@ -175,11 +170,10 @@ setup(
             "xpcs=xpcs_toolkit.cli_headless:main",
         ],
     },
-    
     # Package classification
     classifiers=[
         "Development Status :: 4 - Beta",
-        "Intended Audience :: Science/Research", 
+        "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Physics",
@@ -198,41 +192,36 @@ setup(
         "Natural Language :: English",
         "Environment :: Console",
     ],
-    
     # Keywords for PyPI
     keywords=[
         "XPCS",
         "X-ray",
         "photon correlation spectroscopy",
-        "synchrotron", 
+        "synchrotron",
         "visualization",
         "scientific computing",
         "materials science",
         "soft matter",
     ],
-    
     # Licensing
     license="MIT",
-    
     # Build requirements
     setup_requires=[
         "setuptools>=61.0",
         "setuptools_scm[toml]>=6.2",
         "wheel",
     ],
-    
     # Test requirements (for python setup.py test)
     tests_require=[
         "pytest>=6.0.0",
         "pytest-cov>=3.0.0",
     ],
-    
     # Zip safety
     zip_safe=False,
-    
     # Additional metadata
     platforms=["any"],
 )
+
 
 # Post-installation message
 def print_installation_message():
@@ -241,7 +230,7 @@ def print_installation_message():
 ╔═══════════════════════════════════════════════════════════╗
 ║                   XPCS Toolkit Installed                  ║
 ╠═══════════════════════════════════════════════════════════╣
-║                                                           ║  
+║                                                           ║
 ║  Thank you for installing XPCS Toolkit!                  ║
 ║                                                           ║
 ║  Quick start:                                             ║
@@ -254,7 +243,13 @@ def print_installation_message():
 ╚═══════════════════════════════════════════════════════════╝
 """)
 
+
 if __name__ == "__main__":
     # Only print message if not in build/test mode
-    if len(sys.argv) > 1 and sys.argv[1] not in ['egg_info', 'build', 'develop', 'test']:
+    if len(sys.argv) > 1 and sys.argv[1] not in [
+        "egg_info",
+        "build",
+        "develop",
+        "test",
+    ]:
         print_installation_message()

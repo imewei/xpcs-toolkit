@@ -1,29 +1,31 @@
 from functools import lru_cache
 from multiprocessing import Pool
-from typing import List, Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     import numpy as np
 else:
     # Use lazy imports for heavy dependencies
     from .._lazy_imports import lazy_import
-    np = lazy_import('numpy')
+
+    np = lazy_import("numpy")
 
 # Use lazy imports for heavy dependencies
 from .._lazy_imports import lazy_import
-h5py = lazy_import('h5py')
+
+h5py = lazy_import("h5py")
 
 from ..fileIO.aps_8idi import key as key_map
 
 key_map = key_map["nexus"]
 
 
-def _safe_hdf5_keys(hdf5_obj: Any) -> List[str]:
+def _safe_hdf5_keys(hdf5_obj: Any) -> list[str]:
     """Safely extract keys from HDF5 Group or Dataset objects."""
     keys = []
     try:
         # First, try the standard keys() method for HDF5 Groups
-        if hasattr(hdf5_obj, 'keys') and callable(getattr(hdf5_obj, 'keys', None)):
+        if hasattr(hdf5_obj, "keys") and callable(getattr(hdf5_obj, "keys", None)):
             keys = list(hdf5_obj.keys())
         else:
             # Fallback: empty list for non-group objects
@@ -123,10 +125,10 @@ def get_all_c2_from_hdf(
         result = [read_single_c2(args) for args in args_list]
 
     c2_all = np.array([res[0] for res in result])
-    sampling_rate_all = set([res[1] for res in result])
-    assert (
-        len(sampling_rate_all) == 1
-    ), f"Sampling rate not consistent {sampling_rate_all}"
+    sampling_rate_all = {res[1] for res in result}
+    assert len(sampling_rate_all) == 1, (
+        f"Sampling rate not consistent {sampling_rate_all}"
+    )
     sampling_rate = list(sampling_rate_all)[0]
     c2_result = {
         "c2_all": c2_all,
@@ -167,7 +169,7 @@ def get_single_c2_from_hdf(
         "acquire_period": t0,
         "dq_selection": selection,
     }
-    
+
     # Safely add g2 data if available
     if g2_partials is not None:
         if "g2_full" in g2_partials and g2_partials["g2_full"] is not None:
@@ -189,7 +191,7 @@ def get_c2_g2partials_from_hdf(full_path):
     with h5py.File(full_path, "r") as f:
         if c2_prefix not in f:
             return None
-        
+
         # Safely load datasets as numpy arrays
         if g2_full_key in f:
             g2_full_dataset = f[g2_full_key]
@@ -200,7 +202,7 @@ def get_c2_g2partials_from_hdf(full_path):
                 g2_full = None
         else:
             g2_full = None
-            
+
         if g2_partial_key in f:
             g2_partial_dataset = f[g2_partial_key]
             try:
@@ -239,7 +241,9 @@ def get_c2_stream(full_path, max_size=-1):
 
     def generator():
         for idx in idxlist:  # Use idxlist for iteration
-            c2, _ = read_single_c2((full_path, idx, max_size, True))  # Use read_single_c2 instead of undefined get_single_c2
+            c2, _ = read_single_c2(
+                (full_path, idx, max_size, True)
+            )  # Use read_single_c2 instead of undefined get_single_c2
             yield int(idx[4:]), c2  # Assuming idx format like 'dqXXX'
 
     return idxlist, generator()

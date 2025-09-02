@@ -1,7 +1,7 @@
 """
 XPCS Toolkit - Temporal Stability Analysis Module (stability)
 
-This module provides comprehensive analysis capabilities for temporal stability 
+This module provides comprehensive analysis capabilities for temporal stability
 assessment in X-ray scattering experiments. Stability analysis is crucial for
 identifying sample degradation, beam damage effects, temperature fluctuations,
 and other time-dependent phenomena that can affect data quality and interpretation.
@@ -15,7 +15,7 @@ changes. Key aspects include:
 ### Radiation Damage Assessment
 X-ray exposure can cause:
 - **Structural changes**: Bond breaking, cross-linking, phase transitions
-- **Mass loss**: Volatile component evaporation, decomposition products  
+- **Mass loss**: Volatile component evaporation, decomposition products
 - **Chemical modifications**: Oxidation, reduction, radical formation
 - **Morphological evolution**: Particle aggregation, surface reconstruction
 
@@ -144,7 +144,7 @@ stability.plot(
 ## References
 
 - Jeffries et al., "Radiation damage and dose limits in serial synchrotron crystallography" (2015)
-- Garman, "Developments in X-ray crystallographic structure determination of biological macromolecules" (2014)  
+- Garman, "Developments in X-ray crystallographic structure determination of biological macromolecules" (2014)
 - Murray & Garman, "Investigation of possible free-radical scavengers" (2002)
 - Warkentin & Thorne, "A general method for hyperquenching protein crystals" (2007)
 
@@ -155,7 +155,6 @@ Advanced Photon Source, Argonne National Laboratory
 """
 
 # Removed PyQtGraph-dependent imports for headless operation
-import numpy as np
 
 
 def plot(
@@ -170,13 +169,13 @@ def plot(
 ):
     """
     Visualize temporal stability of partial scattering profiles over time.
-    
-    This function has been disabled in headless mode. PyQtGraph plotting 
+
+    This function has been disabled in headless mode. PyQtGraph plotting
     functionality is not available when running without GUI dependencies.
-    
+
     For visualization in headless mode, use the matplotlib-based plotting
     functions available in the CLI interface instead.
-    
+
     Parameters
     ----------
     fc : XpcsDataFile
@@ -195,12 +194,12 @@ def plot(
         Legend position (ignored in headless mode).
     **kwargs : dict
         Additional keyword arguments (ignored in headless mode).
-    
+
     Returns
     -------
     None
         Function returns without performing operations in headless mode.
-    
+
     Raises
     ------
     NotImplementedError

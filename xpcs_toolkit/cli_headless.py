@@ -89,21 +89,23 @@ Optimized for use at synchrotron beamlines where:
 - Reproducible analysis workflows are critical
 
 """
+
 import argparse
-import sys
 import logging
 import os
+import sys
 import warnings
 
 # Use lazy imports for heavy dependencies
 from ._lazy_imports import lazy_import
-plt = lazy_import('matplotlib.pyplot')
-np = lazy_import('numpy')
+
+plt = lazy_import("matplotlib.pyplot")
+np = lazy_import("numpy")
 
 from xpcs_toolkit import __version__
-from xpcs_toolkit.data_file_locator import DataFileLocator
 from xpcs_toolkit.analysis_kernel import AnalysisKernel
-from xpcs_toolkit.helper.logging_config import setup_logging, get_logger
+from xpcs_toolkit.data_file_locator import DataFileLocator
+from xpcs_toolkit.helper.logging_config import get_logger, setup_logging
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +124,7 @@ def configure_logging(enable_verbose_output=False):
         "configure_logging() is deprecated. Use setup_logging() from "
         "xpcs_toolkit.helper.logging_config instead.",
         DeprecationWarning,
-        stacklevel=2
+        stacklevel=2,
     )
 
     level = "DEBUG" if enable_verbose_output else "INFO"
@@ -132,22 +134,22 @@ def configure_logging(enable_verbose_output=False):
 def plot_saxs_2d(arguments):
     """
     Generate publication-ready 2D Small-Angle X-ray Scattering (SAXS) pattern visualizations.
-    
+
     This function creates high-quality 2D scattering pattern visualizations from XPCS data files,
-    supporting both linear and logarithmic intensity scaling. The 2D SAXS patterns reveal 
+    supporting both linear and logarithmic intensity scaling. The 2D SAXS patterns reveal
     structural information about materials on nanometer length scales through:
-    
+
     - **Isotropic samples**: Circular scattering rings indicating uniform structure
-    - **Anisotropic samples**: Oriented features revealing directional ordering  
+    - **Anisotropic samples**: Oriented features revealing directional ordering
     - **Particle sizes**: Inverse relationship between feature size and scattering angle
     - **Sample homogeneity**: Intensity variations across the detector
-    
+
     Scientific Background:
         The 2D scattering intensity I(qx, qy) is recorded on a 2D detector where:
         - qx, qy: Components of the scattering wavevector q = 4π sin(θ/2)/λ
         - θ: Scattering angle, λ: X-ray wavelength
         - |q|: Magnitude related to characteristic length scale d = 2π/q
-    
+
     Features:
         - Automatic detector geometry correction
         - Beam center determination and verification
@@ -155,7 +157,7 @@ def plot_saxs_2d(arguments):
         - Bad pixel masking and interpolation
         - Publication-quality figure generation
         - Batch processing capabilities
-    
+
     Args:
         arguments (argparse.Namespace): Command line arguments containing:
             - path (str): Directory containing XPCS HDF5 files
@@ -163,15 +165,15 @@ def plot_saxs_2d(arguments):
             - log_scale (bool): Use logarithmic intensity scaling
             - max_files (int): Maximum number of files to process
             - Additional visualization parameters from CLI
-    
+
     Returns:
         int: Exit code (0 for success, 1 for error)
-    
+
     Raises:
         FileNotFoundError: If no valid XPCS files found in specified path
         ValueError: If SAXS 2D data is not available in the files
         IOError: If output file cannot be written
-    
+
     Examples:
         >>> # Basic 2D SAXS visualization
         >>> args = argparse.Namespace(
@@ -182,25 +184,25 @@ def plot_saxs_2d(arguments):
         ... )
         >>> plot_saxs_2d(args)
         0
-        
+
         >>> # High-quality logarithmic scaling
         >>> args.log_scale = True
         >>> args.output = 'saxs2d_log.png'
         >>> plot_saxs_2d(args)
         0
-    
+
     Notes:
         - Automatically detects APS 8-ID-I NeXus and legacy HDF5 formats
         - Supports detector geometry correction and calibration
         - Handles missing data and bad pixels gracefully
         - Optimized for both real-time analysis and batch processing
-        
+
     See Also:
         plot_saxs1d: Generate 1D radial profiles from 2D patterns
         plot_g2_function: Analyze dynamic information from correlation functions
-        
+
     References:
-        - Chu et al. "pyXPCSviewer: an open-source interactive tool for X-ray photon 
+        - Chu et al. "pyXPCSviewer: an open-source interactive tool for X-ray photon
           correlation spectroscopy visualization and analysis" J. Synchrotron Rad. (2022)
         - Glatter & Kratky "Small Angle X-ray Scattering" Academic Press (1982)
     """
@@ -216,8 +218,11 @@ def plot_saxs_2d(arguments):
 
     # Add files to target list
     maximum_files = arguments.max_files
-    files_to_process = (file_locator.source_files.input_list[:maximum_files]
-                       if maximum_files else file_locator.source_files.input_list)
+    files_to_process = (
+        file_locator.source_files.input_list[:maximum_files]
+        if maximum_files
+        else file_locator.source_files.input_list
+    )
     file_locator.add_target(files_to_process)
 
     analysis_kernel = AnalysisKernel(arguments.path)
@@ -242,17 +247,17 @@ def plot_saxs_2d(arguments):
         print("Error: SAXS 2D data is not available")
         return
 
-    image_plot = ax.imshow(saxs_image_data, origin='lower', aspect='auto')
+    image_plot = ax.imshow(saxs_image_data, origin="lower", aspect="auto")
     plt.colorbar(image_plot, ax=ax)
-    ax.set_title(f'2D SAXS Pattern: {xpcs_file.label}')
-    ax.set_xlabel('X (pixels)')
-    ax.set_ylabel('Y (pixels)')
+    ax.set_title(f"2D SAXS Pattern: {xpcs_file.label}")
+    ax.set_xlabel("X (pixels)")
+    ax.set_ylabel("Y (pixels)")
 
     # Save figure
     plt.tight_layout()
     output_filename = arguments.outfile
     dots_per_inch = arguments.dpi
-    plt.savefig(output_filename, dpi=dots_per_inch, bbox_inches='tight')
+    plt.savefig(output_filename, dpi=dots_per_inch, bbox_inches="tight")
     logger.info(f"Saved 2D scattering plot to {output_filename}")
     plt.close()
     return 0
@@ -261,33 +266,33 @@ def plot_saxs_2d(arguments):
 def plot_g2_function(arguments):
     """
     Analyze and visualize intensity correlation functions g₂(q,τ) from XPCS measurements.
-    
+
     This function extracts and analyzes the intensity correlation function g₂(q,τ), which is
-    the fundamental quantity in X-ray Photon Correlation Spectroscopy. The correlation 
+    the fundamental quantity in X-ray Photon Correlation Spectroscopy. The correlation
     function reveals dynamic information about sample fluctuations and provides access to:
-    
+
     - **Relaxation timescales**: Characteristic times of structural rearrangements
     - **Dynamic heterogeneity**: Spatial variations in local dynamics
     - **Diffusion coefficients**: Through Einstein-Stokes relation D = kT/(6πηr)
     - **Non-ergodic behavior**: Aging effects and glassy dynamics
     - **Active processes**: Non-equilibrium fluctuations in living systems
-    
+
     Scientific Background:
         The intensity correlation function is defined as:
-        
+
         g₂(q,τ) = ⟨I(q,t)I(q,t+τ)⟩ / ⟨I(q,t)⟩²
-        
+
         Where:
         - I(q,t): Scattered intensity at wavevector q and time t
         - τ: Correlation delay time (lag time)
         - ⟨⟩: Time ensemble average
         - q = 4π sin(θ/2)/λ: Magnitude of scattering wavevector
-        
+
         For ergodic systems, g₂(q,τ) approaches unity at long times. Deviations reveal:
         - Exponential decay: g₂(τ) = 1 + β exp(-2Γτ) for Brownian motion
         - Stretched exponentials: Non-exponential relaxation in complex systems
         - Multiple timescales: Multi-component dynamics
-    
+
     Analysis Features:
         - Multi-tau correlation algorithm for extended time range
         - Statistical error analysis and propagation
@@ -295,7 +300,7 @@ def plot_g2_function(arguments):
         - Q-dependent analysis revealing length-scale dependent dynamics
         - Automatic baseline correction and normalization
         - Non-ergodicity parameter extraction
-    
+
     Args:
         arguments (argparse.Namespace): Command line arguments containing:
             - path (str): Directory containing XPCS HDF5 files
@@ -303,15 +308,15 @@ def plot_g2_function(arguments):
             - qmax (float): Maximum q-value for analysis (Å⁻¹)
             - outfile (str): Output filename for correlation function plot
             - Additional analysis parameters from CLI parser
-    
+
     Returns:
         int: Exit code (0 for success, 1 for error)
-    
+
     Raises:
         FileNotFoundError: If no valid XPCS files found in specified path
         ValueError: If correlation data is not available or invalid q-range
         RuntimeError: If correlation analysis fails due to insufficient statistics
-    
+
     Examples:
         >>> # Basic g2 analysis with automatic q-range
         >>> args = argparse.Namespace(
@@ -321,7 +326,7 @@ def plot_g2_function(arguments):
         ... )
         >>> plot_g2_function(args)
         0
-        
+
         >>> # Specific q-range for diffusion analysis
         >>> args = argparse.Namespace(
         ...     path='/data/colloids/',
@@ -330,14 +335,14 @@ def plot_g2_function(arguments):
         ... )
         >>> plot_g2_function(args)
         0
-    
+
     Applications:
         - **Brownian motion**: Extract diffusion coefficients from particle suspensions
         - **Gelation studies**: Monitor sol-gel transitions and network formation
         - **Glass dynamics**: Study slow dynamics near glass transition temperature
         - **Active matter**: Investigate non-equilibrium fluctuations in living systems
         - **Phase transitions**: Track critical fluctuations and ordering kinetics
-    
+
     Output Information:
         The generated plot typically shows:
         - g₂(τ) vs correlation time τ for multiple q-values
@@ -345,17 +350,17 @@ def plot_g2_function(arguments):
         - Statistical error bars indicating measurement precision
         - Fitted curves with extracted relaxation parameters
         - Color coding for different q-values
-    
+
     Notes:
         - Requires sufficient photon statistics for reliable correlation analysis
         - Multi-tau algorithm enables analysis over 6-8 decades in time
         - Error bars represent statistical uncertainties from finite sampling
         - Fitting quality depends on signal-to-noise ratio and time range
-        
+
     See Also:
         plot_saxs_2d: Visualize scattering patterns providing q-space information
         plot_saxs1d: Generate radial profiles for structure analysis
-        
+
     References:
         - Brown & Pusey "Dynamic Light Scattering" in "Photon Correlation Spectroscopy" (1991)
         - Cipelletti & Weitz "Ultralow-angle dynamic light scattering" Rev. Sci. Instrum. (1999)
@@ -373,8 +378,11 @@ def plot_g2_function(arguments):
 
     # Add files to target list
     maximum_files = arguments.max_files
-    files_to_process = (file_locator.source_files.input_list[:maximum_files]
-                       if maximum_files else file_locator.source_files.input_list)
+    files_to_process = (
+        file_locator.source_files.input_list[:maximum_files]
+        if maximum_files
+        else file_locator.source_files.input_list
+    )
     file_locator.add_target(files_to_process)
 
     analysis_kernel = AnalysisKernel(arguments.path)
@@ -395,17 +403,30 @@ def plot_g2_function(arguments):
         # Get G2 correlation data
         q_minimum = arguments.qmin
         q_maximum = arguments.qmax
-        q_range = (q_minimum, q_maximum) if q_minimum is not None and q_maximum is not None else None
-        q_values, time_elapsed, g2, g2_error, q_bin_labels = xpcs_file.get_g2_data(q_range=q_range)
+        q_range = (
+            (q_minimum, q_maximum)
+            if q_minimum is not None and q_maximum is not None
+            else None
+        )
+        q_values, time_elapsed, g2, g2_error, q_bin_labels = xpcs_file.get_g2_data(
+            q_range=q_range
+        )
 
         # Plot first q-bin
         if g2.shape[1] > 0:
-            axis.errorbar(time_elapsed, g2[:, 0], yerr=g2_error[:, 0],
-                         fmt='o-', markersize=3, capsize=2, label=q_bin_labels[0])
-            axis.set_xscale('log')
-            axis.set_xlabel('Time (s)')
-            axis.set_ylabel('g2')
-            axis.set_title(f'{xpcs_file.label}')
+            axis.errorbar(
+                time_elapsed,
+                g2[:, 0],
+                yerr=g2_error[:, 0],
+                fmt="o-",
+                markersize=3,
+                capsize=2,
+                label=q_bin_labels[0],
+            )
+            axis.set_xscale("log")
+            axis.set_xlabel("Time (s)")
+            axis.set_ylabel("g2")
+            axis.set_title(f"{xpcs_file.label}")
             axis.grid(True, alpha=0.3)
             axis.legend()
 
@@ -416,7 +437,7 @@ def plot_g2_function(arguments):
     plt.tight_layout()
     output_filename = arguments.outfile
     dots_per_inch = arguments.dpi
-    plt.savefig(output_filename, dpi=dots_per_inch, bbox_inches='tight')
+    plt.savefig(output_filename, dpi=dots_per_inch, bbox_inches="tight")
     logger.info(f"Saved G2 correlation function plot to {output_filename}")
     plt.close()
     return 0
@@ -434,7 +455,11 @@ def plot_saxs1d(args):
         return 1
 
     # Add files to target list
-    files_to_process = fl.source_files.input_list[:args.max_files] if args.max_files else fl.source_files.input_list
+    files_to_process = (
+        fl.source_files.input_list[: args.max_files]
+        if args.max_files
+        else fl.source_files.input_list
+    )
     fl.add_target(files_to_process)
 
     vk = AnalysisKernel(args.path)
@@ -451,11 +476,22 @@ def plot_saxs1d(args):
     # Get colors from matplotlib colormap
     try:
         # Try to get tab10 colormap
-        cmap = plt.cm.get_cmap('tab10')
+        cmap = plt.cm.get_cmap("tab10")
         colors = cmap(np.linspace(0, 1, len(xf_list)))
     except (AttributeError, ValueError):
         # Fallback to a basic color cycle if tab10 is not available
-        basic_colors = ['blue', 'red', 'green', 'orange', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
+        basic_colors = [
+            "blue",
+            "red",
+            "green",
+            "orange",
+            "purple",
+            "brown",
+            "pink",
+            "gray",
+            "olive",
+            "cyan",
+        ]
         colors = [basic_colors[i % len(basic_colors)] for i in range(len(xf_list))]
 
     # Initialize labels with defaults
@@ -463,30 +499,45 @@ def plot_saxs1d(args):
 
     for i, xf in enumerate(xf_list):
         # Get 1D scattering data
-        q_range = (args.qmin, args.qmax) if args.qmin is not None and args.qmax is not None else None
-        saxs_data = xf.get_saxs1d_data(q_range=q_range) if hasattr(xf, 'get_saxs1d_data') else None
+        q_range = (
+            (args.qmin, args.qmax)
+            if args.qmin is not None and args.qmax is not None
+            else None
+        )
+        saxs_data = (
+            xf.get_saxs1d_data(q_range=q_range)
+            if hasattr(xf, "get_saxs1d_data")
+            else None
+        )
         if saxs_data is None:
             print(f"Warning: Cannot get SAXS 1D data for {xf.label}")
             continue
         q, Iq, xlabel, ylabel = saxs_data
 
         # Plot first phi slice
-        ax.plot(q, Iq[0], 'o-', color=colors[i], markersize=3,
-               label=f'{xf.label}', alpha=0.8)
+        ax.plot(
+            q,
+            Iq[0],
+            "o-",
+            color=colors[i],
+            markersize=3,
+            label=f"{xf.label}",
+            alpha=0.8,
+        )
 
     if args.log_x:
-        ax.set_xscale('log')
+        ax.set_xscale("log")
     if args.log_y:
-        ax.set_yscale('log')
+        ax.set_yscale("log")
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    ax.set_title('SAXS 1D Profiles')
+    ax.set_title("SAXS 1D Profiles")
     ax.grid(True, alpha=0.3)
     ax.legend()
 
     plt.tight_layout()
-    plt.savefig(args.outfile, dpi=args.dpi, bbox_inches='tight')
+    plt.savefig(args.outfile, dpi=args.dpi, bbox_inches="tight")
     logger.info(f"Saved SAXS 1D plot to {args.outfile}")
     plt.close()
     return 0
@@ -519,20 +570,20 @@ def plot_stability(args):
     fig, ax = plt.subplots(figsize=(10, 6))
 
     # Get intensity vs time data
-    Int_t = getattr(xf, 'Int_t', None)
+    Int_t = getattr(xf, "Int_t", None)
     if Int_t is None:
         print("Error: Intensity vs time data is not available")
         return
     t_data, I_data = Int_t
 
-    ax.plot(t_data, I_data, 'b-', linewidth=1, alpha=0.8)
-    ax.set_xlabel('Time')
-    ax.set_ylabel('Intensity')
-    ax.set_title(f'Beam Stability: {xf.label}')
+    ax.plot(t_data, I_data, "b-", linewidth=1, alpha=0.8)
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Intensity")
+    ax.set_title(f"Beam Stability: {xf.label}")
     ax.grid(True, alpha=0.3)
 
     plt.tight_layout()
-    plt.savefig(args.outfile, dpi=args.dpi, bbox_inches='tight')
+    plt.savefig(args.outfile, dpi=args.dpi, bbox_inches="tight")
     logger.info(f"Saved stability plot to {args.outfile}")
     plt.close()
     return 0
@@ -639,19 +690,33 @@ SYNCHROTRON INTEGRATION:
 
 For interactive analysis and advanced features, use the full XPCS Toolkit Python API.
 For technical support: https://github.com/imewei/xpcs-toolkit
-        """
+        """,
     )
 
-    parser.add_argument("--version", action="version", version=f"xpcs-toolkit {__version__}")
-    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output")
+    parser.add_argument(
+        "--version", action="version", version=f"xpcs-toolkit {__version__}"
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Enable verbose output"
+    )
 
     # Logging configuration options
-    parser.add_argument("--log-level", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-                       help="Set logging level (overrides --verbose)")
-    parser.add_argument("--log-file", help="Path to log file (default: xpcs_toolkit.log)")
-    parser.add_argument("--log-config", help="Path to logging configuration file (YAML or JSON)")
-    parser.add_argument("--log-format", choices=["simple", "detailed", "json"],
-                       help="Log format style (default: detailed)")
+    parser.add_argument(
+        "--log-level",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        help="Set logging level (overrides --verbose)",
+    )
+    parser.add_argument(
+        "--log-file", help="Path to log file (default: xpcs_toolkit.log)"
+    )
+    parser.add_argument(
+        "--log-config", help="Path to logging configuration file (YAML or JSON)"
+    )
+    parser.add_argument(
+        "--log-format",
+        choices=["simple", "detailed", "json"],
+        help="Log format style (default: detailed)",
+    )
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
@@ -662,9 +727,13 @@ For technical support: https://github.com/imewei/xpcs-toolkit
     # SAXS 2D command
     saxs2d_parser = subparsers.add_parser("saxs2d", help="Plot 2D scattering patterns")
     saxs2d_parser.add_argument("path", help="Path to directory containing HDF files")
-    saxs2d_parser.add_argument("--outfile", "-o", default="saxs2d.png", help="Output filename")
+    saxs2d_parser.add_argument(
+        "--outfile", "-o", default="saxs2d.png", help="Output filename"
+    )
     saxs2d_parser.add_argument("--log-scale", action="store_true", help="Use log scale")
-    saxs2d_parser.add_argument("--max-files", type=int, help="Maximum number of files to process")
+    saxs2d_parser.add_argument(
+        "--max-files", type=int, help="Maximum number of files to process"
+    )
     saxs2d_parser.add_argument("--dpi", type=int, default=150, help="Figure DPI")
 
     # G2 command
@@ -673,24 +742,40 @@ For technical support: https://github.com/imewei/xpcs-toolkit
     g2_parser.add_argument("--outfile", "-o", default="g2.png", help="Output filename")
     g2_parser.add_argument("--qmin", type=float, help="Minimum q value")
     g2_parser.add_argument("--qmax", type=float, help="Maximum q value")
-    g2_parser.add_argument("--max-files", type=int, help="Maximum number of files to process")
+    g2_parser.add_argument(
+        "--max-files", type=int, help="Maximum number of files to process"
+    )
     g2_parser.add_argument("--dpi", type=int, default=150, help="Figure DPI")
 
     # SAXS 1D command
-    saxs1d_parser = subparsers.add_parser("saxs1d", help="Plot 1D radial scattering profiles")
+    saxs1d_parser = subparsers.add_parser(
+        "saxs1d", help="Plot 1D radial scattering profiles"
+    )
     saxs1d_parser.add_argument("path", help="Path to directory containing HDF files")
-    saxs1d_parser.add_argument("--outfile", "-o", default="saxs1d.png", help="Output filename")
+    saxs1d_parser.add_argument(
+        "--outfile", "-o", default="saxs1d.png", help="Output filename"
+    )
     saxs1d_parser.add_argument("--qmin", type=float, help="Minimum q value")
     saxs1d_parser.add_argument("--qmax", type=float, help="Maximum q value")
-    saxs1d_parser.add_argument("--log-x", action="store_true", help="Use log scale for x-axis")
-    saxs1d_parser.add_argument("--log-y", action="store_true", help="Use log scale for y-axis")
-    saxs1d_parser.add_argument("--max-files", type=int, help="Maximum number of files to process")
+    saxs1d_parser.add_argument(
+        "--log-x", action="store_true", help="Use log scale for x-axis"
+    )
+    saxs1d_parser.add_argument(
+        "--log-y", action="store_true", help="Use log scale for y-axis"
+    )
+    saxs1d_parser.add_argument(
+        "--max-files", type=int, help="Maximum number of files to process"
+    )
     saxs1d_parser.add_argument("--dpi", type=int, default=150, help="Figure DPI")
 
     # Stability command
-    stability_parser = subparsers.add_parser("stability", help="Plot beam stability analysis")
+    stability_parser = subparsers.add_parser(
+        "stability", help="Plot beam stability analysis"
+    )
     stability_parser.add_argument("path", help="Path to directory containing HDF files")
-    stability_parser.add_argument("--outfile", "-o", default="stability.png", help="Output filename")
+    stability_parser.add_argument(
+        "--outfile", "-o", default="stability.png", help="Output filename"
+    )
     stability_parser.add_argument("--dpi", type=int, default=150, help="Figure DPI")
 
     return parser
@@ -706,32 +791,32 @@ def main():
         return 1
 
     # Configure logging based on CLI arguments
-    if hasattr(args, 'log_config') and args.log_config:
+    if hasattr(args, "log_config") and args.log_config:
         # Use external config file
         setup_logging(config_file=args.log_config)
     else:
         # Build config from CLI arguments
-        log_level = getattr(args, 'log_level', None) or ("DEBUG" if args.verbose else "INFO")
-        log_file = getattr(args, 'log_file', None)
-        log_format = getattr(args, 'log_format', "detailed")
+        log_level = getattr(args, "log_level", None) or (
+            "DEBUG" if args.verbose else "INFO"
+        )
+        log_file = getattr(args, "log_file", None)
+        log_format = getattr(args, "log_format", "detailed")
 
         from xpcs_toolkit.helper.logging_config import get_default_config
+
         config = get_default_config(
-            level=log_level,
-            file_path=log_file,
-            format_style=log_format
+            level=log_level, file_path=log_file, format_style=log_format
         )
         setup_logging(config)
 
     # Log startup information
-    context_logger = get_logger(__name__,
-                               command=args.command,
-                               xpcs_version=__version__)
-    context_logger.info("XPCS Toolkit CLI started",
-                       extra={"cli_args": vars(args)})
+    context_logger = get_logger(
+        __name__, command=args.command, xpcs_version=__version__
+    )
+    context_logger.info("XPCS Toolkit CLI started", extra={"cli_args": vars(args)})
 
     # Ensure path exists
-    if hasattr(args, 'path'):
+    if hasattr(args, "path"):
         if not os.path.exists(args.path):
             context_logger.error("Path does not exist", extra={"path": args.path})
             return 1
@@ -741,11 +826,11 @@ def main():
 
     # Execute command
     command_map = {
-        'list': list_files,
-        'saxs2d': plot_saxs_2d,
-        'g2': plot_g2_function,
-        'saxs1d': plot_saxs1d,
-        'stability': plot_stability,
+        "list": list_files,
+        "saxs2d": plot_saxs_2d,
+        "g2": plot_g2_function,
+        "saxs1d": plot_saxs1d,
+        "stability": plot_stability,
     }
 
     try:
@@ -753,17 +838,20 @@ def main():
         if exit_code == 0:
             context_logger.info("Command completed successfully")
         else:
-            context_logger.warning("Command completed with errors",
-                                  extra={"exit_code": exit_code})
+            context_logger.warning(
+                "Command completed with errors", extra={"exit_code": exit_code}
+            )
         return exit_code
 
     except KeyError:
         context_logger.error("Unknown command", extra={"command": args.command})
         return 1
-    except Exception as e:
-        context_logger.exception("Uncaught exception during command execution",
-                               extra={"command": args.command})
-        if args.verbose or getattr(args, 'log_level', None) == "DEBUG":
+    except Exception:
+        context_logger.exception(
+            "Uncaught exception during command execution",
+            extra={"command": args.command},
+        )
+        if args.verbose or getattr(args, "log_level", None) == "DEBUG":
             raise
         return 1
 

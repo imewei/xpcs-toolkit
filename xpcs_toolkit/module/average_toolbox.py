@@ -74,7 +74,7 @@ Data averaging in X-ray scattering experiments serves multiple purposes:
 
 ### Data Analysis
 - **Enhanced correlation functions**: Improve g₂(q,τ) signal quality for fitting
-- **Structure determination**: Average SAXS patterns for reliable size/shape analysis  
+- **Structure determination**: Average SAXS patterns for reliable size/shape analysis
 - **Dynamics characterization**: Reduce noise in dynamic light scattering measurements
 - **Comparative studies**: Create high-quality reference datasets for comparisons
 
@@ -96,7 +96,7 @@ Data averaging in X-ray scattering experiments serves multiple purposes:
 Main class providing comprehensive averaging functionality with:
 - File management and validation
 - Quality control and clustering
-- Real-time progress monitoring  
+- Real-time progress monitoring
 - Interactive visualization
 
 ### Standalone Functions
@@ -150,7 +150,7 @@ The correlation function baseline g₂(τ→∞) should approach 1.0 for properl
 
 ### Statistical Clustering
 K-means clustering on intensity statistics helps identify:
-- **Consistent measurements**: Main cluster represents typical behavior  
+- **Consistent measurements**: Main cluster represents typical behavior
 - **Outliers**: Points outside main cluster may have experimental issues
 - **Systematic variations**: Separate clusters may indicate different conditions
 
@@ -167,23 +167,22 @@ XPCS Toolkit Development Team
 Advanced Photon Source, Argonne National Laboratory
 """
 
-import os
 import logging
-import uuid
-import time
-import traceback
+import os
 from shutil import copyfile
+import time
+import uuid
 
 # Use lazy imports for heavy dependencies
 from .._lazy_imports import lazy_import
 from ..mpl_compat import MockSignal
 
-np = lazy_import('numpy')
-trange = lazy_import('tqdm', 'trange')
+np = lazy_import("numpy")
+trange = lazy_import("tqdm", "trange")
 
 from ..fileIO.hdf_reader import put
-from ..xpcs_file import XpcsDataFile as XF
 from ..helper.listmodel import ListDataModel
+from ..xpcs_file import XpcsDataFile as XF
 
 # Optional imports
 try:
@@ -207,6 +206,7 @@ def average_plot_cluster(self, hdl1, num_clusters=2):
 
 class WorkerSignal:
     """Mock worker signal for headless operation"""
+
     def __init__(self):
         self.progress = MockSignal()
         self.values = MockSignal()
@@ -214,7 +214,9 @@ class WorkerSignal:
 
 
 class AverageToolbox:
-    def __init__(self, work_dir=None, flist=["hello"], jid=None) -> None:
+    def __init__(self, work_dir=None, flist=None, jid=None) -> None:
+        if flist is None:
+            flist = ["hello"]
         self.file_list = flist.copy()
         self.model = ListDataModel(self.file_list)
 
@@ -279,8 +281,10 @@ class AverageToolbox:
         avg_qindex=0,
         avg_blmin=0.95,
         avg_blmax=1.05,
-        fields=["saxs_2d"],
+        fields=None,
     ):
+        if fields is None:
+            fields = ["saxs_2d"]
         self.stime = time.strftime("%H:%M:%S")
         self.status = "running"
         logger.info("average job %d starts", self.jid)
@@ -330,20 +334,24 @@ class AverageToolbox:
                 try:
                     # Ensure work_dir and fname are strings
                     if self.work_dir is not None:
-                        xf = XF(os.path.join(str(self.work_dir), str(fname)), fields=fields)
+                        xf = XF(
+                            os.path.join(str(self.work_dir), str(fname)), fields=fields
+                        )
                     else:
                         xf = XF(str(fname), fields=fields)
                     flag, val = validate_g2_baseline(xf.g2, avg_qindex)
                     self.baseline[self.ptr] = val
                     self.ptr += 1
-                except (OSError, IOError, ValueError) as e:
+                except (OSError, ValueError) as e:
                     # Specific exception handling for file and data errors
                     flag, val = False, 0
                     logger.error("Failed to process file %s: %s", fname, str(e))
                 except Exception as e:
                     # Catch-all for unexpected errors with more detail
                     flag, val = False, 0
-                    logger.error("Unexpected error processing file %s: %s", fname, str(e))
+                    logger.error(
+                        "Unexpected error processing file %s: %s", fname, str(e)
+                    )
                     if logger.isEnabledFor(logging.DEBUG):
                         logger.debug("Full traceback:", exc_info=True)
 
@@ -358,10 +366,10 @@ class AverageToolbox:
                             data = getattr(xf, key, None)
                             if data is None:
                                 continue
-                        
+
                         if result[key] is None:
                             # Use copy to avoid memory aliasing issues
-                            result[key] = data.copy() if hasattr(data, 'copy') else data
+                            result[key] = data.copy() if hasattr(data, "copy") else data
                             mask[m] = 1
                         elif result[key].shape == data.shape:
                             # In-place addition for memory efficiency
@@ -395,13 +403,13 @@ class AverageToolbox:
 
             logger.info("the valid dataset number is %d / %d" % (np.sum(mask), tot_num))
 
-        logger.info("create file: {}".format(save_path))
+        logger.info(f"create file: {save_path}")
         # Ensure origin_path and save_path are not None before copying
         if self.origin_path is not None and save_path is not None:
             copyfile(self.origin_path, str(save_path))
         else:
             logger.warning("No origin path available for copying")
-        
+
         # Ensure save_path is a string
         if save_path is not None:
             put(str(save_path), result, file_type="nexus", mode="alias")
@@ -439,9 +447,10 @@ def do_average(
     avg_qindex=0,
     avg_blmin=0.95,
     avg_blmax=1.05,
-    fields=["saxs_2d", "saxs_1d", "g2", "g2_err"],
+    fields=None,
 ):
-
+    if fields is None:
+        fields = ["saxs_2d", "saxs_1d", "g2", "g2_err"]
     if work_dir is None:
         work_dir = "./"
 
@@ -475,7 +484,7 @@ def do_average(
                 xf = XF(str(fname), fields=fields)
             flag, val = validate_g2_baseline(xf.g2, avg_qindex)
             baseline[m] = val
-        except (OSError, IOError, ValueError) as e:
+        except (OSError, ValueError) as e:
             # Specific exception handling for file and data errors
             flag, val = False, 0
             logger.error("Failed to process file %s: %s", fname, str(e))
@@ -490,9 +499,9 @@ def do_average(
             for key in fields:
                 scale = 1.0  # Default scale value
                 if key != "saxs_1d":
-                    data = xf.at(key) if hasattr(xf, 'at') else None  # type: ignore[union-attr]
+                    data = xf.at(key) if hasattr(xf, "at") else None  # type: ignore[union-attr]
                 else:
-                    if hasattr(xf, 'at'):
+                    if hasattr(xf, "at"):
                         saxs_1d_data = xf.at("saxs_1d")  # type: ignore[union-attr]
                         if saxs_1d_data is not None:
                             data = saxs_1d_data["data_raw"]
@@ -534,14 +543,19 @@ def do_average(
     original_file = os.path.join(work_dir, flist[0])
     if save_path is None:
         save_path = "AVG" + os.path.basename(flist[0])
-    logger.info("create file: {}".format(save_path))
+    logger.info(f"create file: {save_path}")
     # Ensure original_file is not None before copying
     if original_file is not None:
         copyfile(original_file, save_path)
     else:
         logger.warning("No original file available for copying")
-    
+
     # Ensure save_path is a string
-    put(str(save_path) if save_path is not None else '', result, file_type="nexus", mode="alias")
+    put(
+        str(save_path) if save_path is not None else "",
+        result,
+        file_type="nexus",
+        mode="alias",
+    )
 
     return baseline

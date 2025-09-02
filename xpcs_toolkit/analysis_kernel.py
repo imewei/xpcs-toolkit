@@ -1,18 +1,19 @@
 from __future__ import annotations
 
-import os
 import logging
+import os
+from typing import Any
 import warnings
-from typing import Optional, List, Tuple, Dict, Any
 
 # Use lazy imports for heavy dependencies
 from ._lazy_imports import lazy_import
-np = lazy_import('numpy')
+
+np = lazy_import("numpy")
 
 from .data_file_locator import DataFileLocator
-from .module import saxs2d, saxs1d, intt, stability, g2mod, tauq, twotime
-from .module.average_toolbox import AverageToolbox
 from .helper.listmodel import TableDataModel
+from .module import g2mod, intt, saxs1d, saxs2d, stability, tauq, twotime
+from .module.average_toolbox import AverageToolbox
 from .mpl_compat import DataTreeWidget
 from .xpcs_file import XpcsDataFile
 
@@ -153,7 +154,7 @@ class AnalysisKernel(DataFileLocator):
     """
 
     # Class-level type annotations
-    metadata: Optional[Dict[str, Any]]
+    metadata: dict[str, Any] | None
 
     def __init__(self, path: str, statusbar=None):
         super().__init__(path)
@@ -166,7 +167,7 @@ class AnalysisKernel(DataFileLocator):
         self.average_job_id = 0
         self.average_worker_active = {}
         self.current_dataset = None
-        
+
         # Initialize file management attributes for compatibility
         self.file_list = []
         self.selected_files = []
@@ -175,35 +176,42 @@ class AnalysisKernel(DataFileLocator):
     def directory(self) -> str:
         """Get the current directory path (alias for path)."""
         return self.path
-    
+
     @directory.setter
     def directory(self, value: str) -> None:
         """Set the directory path (alias for path)."""
         self.path = value
         self.set_directory_path(value)
-    
-    def get_selected_files(self) -> List:
+
+    def get_selected_files(self) -> list:
         """Get the list of selected files."""
         return self.selected_files
-    
-    def build_file_list(self, path: Optional[str] = None,
-                       file_extensions: Tuple[str, ...] = (".hdf", ".h5"),
-                       sort_method: str = "Filename") -> bool:
+
+    def build_file_list(
+        self,
+        path: str | None = None,
+        file_extensions: tuple[str, ...] = (".hdf", ".h5"),
+        sort_method: str = "Filename",
+    ) -> bool:
         """
         Build the file list from the specified directory.
-        
+
         Overrides parent method to also populate file_list attribute.
         """
         result = super().build_file_list(path, file_extensions, sort_method)
         # Update file_list attribute for compatibility
         # Convert ListDataModel to list if needed
-        if hasattr(self, 'source_files') and self.source_files is not None:
-            if hasattr(self.source_files, 'input_list'):
+        if hasattr(self, "source_files") and self.source_files is not None:
+            if hasattr(self.source_files, "input_list"):
                 # ListDataModel has input_list attribute containing the actual data
                 self.file_list = self.source_files.input_list.copy()
-            elif hasattr(self.source_files, '__getitem__') and hasattr(self.source_files, '__len__'):
+            elif hasattr(self.source_files, "__getitem__") and hasattr(
+                self.source_files, "__len__"
+            ):
                 # If it's list-like, convert to list
-                self.file_list = [self.source_files[i] for i in range(len(self.source_files))]
+                self.file_list = [
+                    self.source_files[i] for i in range(len(self.source_files))
+                ]
             else:
                 self.file_list = []
         else:
@@ -240,7 +248,7 @@ class AnalysisKernel(DataFileLocator):
             self.metadata["saxs_1d_background_filename"] = base_filename
             self.metadata["saxs_1d_background_file"] = XpcsDataFile(filename)
 
-    def get_data_tree(self, rows: List[int]) -> Optional[object]:
+    def get_data_tree(self, rows: list[int]) -> object | None:
         """Get data tree widget for selected files.
 
         Parameters
@@ -259,7 +267,7 @@ class AnalysisKernel(DataFileLocator):
         else:
             return None
 
-    def get_fitting_tree(self, rows: List[int]) -> object:
+    def get_fitting_tree(self, rows: list[int]) -> object:
         """Get fitting results tree widget.
 
         Parameters
@@ -281,9 +289,15 @@ class AnalysisKernel(DataFileLocator):
         tree.resize(1024, 800)
         return tree
 
-    def plot_g2_function(self, handler, q_range: Tuple[float, float],
-                        time_range: Tuple[float, float], y_range: Tuple[float, float],
-                        rows: Optional[List[int]] = None, **kwargs) -> Tuple[Any, Any]:
+    def plot_g2_function(
+        self,
+        handler,
+        q_range: tuple[float, float],
+        time_range: tuple[float, float],
+        y_range: tuple[float, float],
+        rows: list[int] | None = None,
+        **kwargs,
+    ) -> tuple[Any, Any]:
         """Plot G2 correlation function.
 
         Parameters
@@ -306,10 +320,18 @@ class AnalysisKernel(DataFileLocator):
         tuple
             (q_values, time_elapsed) or (None, None) if no data.
         """
-        xpcs_file_list = self.get_xpcs_file_list(rows=rows, filter_analysis_type="Multitau")
+        xpcs_file_list = self.get_xpcs_file_list(
+            rows=rows, filter_analysis_type="Multitau"
+        )
         if xpcs_file_list:
             g2mod.pg_plot(
-                handler, xpcs_file_list, q_range, time_range, y_range, rows=rows, **kwargs
+                handler,
+                xpcs_file_list,
+                q_range,
+                time_range,
+                y_range,
+                rows=rows,
+                **kwargs,
             )
             data_result = g2mod.get_data(xpcs_file_list)
             if data_result and len(data_result) >= 2:
@@ -320,15 +342,20 @@ class AnalysisKernel(DataFileLocator):
                 else:
                     q = None
                 if time_elapsed is not None:
-                    time_elapsed = np.asarray(time_elapsed) if not isinstance(time_elapsed, np.ndarray) else time_elapsed
+                    time_elapsed = (
+                        np.asarray(time_elapsed)
+                        if not isinstance(time_elapsed, np.ndarray)
+                        else time_elapsed
+                    )
                 return q, time_elapsed
             else:
                 return None, None
         else:
             return None, None
 
-    def plot_q_space_map(self, handler, rows: Optional[List[int]] = None,
-                        target: Optional[str] = None) -> None:
+    def plot_q_space_map(
+        self, handler, rows: list[int] | None = None, target: str | None = None
+    ) -> None:
         """Plot q-space map visualization.
 
         Parameters
@@ -354,7 +381,9 @@ class AnalysisKernel(DataFileLocator):
             elif target == "static_roi_map":
                 handler.setImage(xpcs_file_list[0].sqmap)
 
-    def plot_tau_vs_q_preview(self, handler=None, rows: Optional[List[int]] = None) -> None:
+    def plot_tau_vs_q_preview(
+        self, handler=None, rows: list[int] | None = None
+    ) -> None:
         """Plot tau vs q preview.
 
         Parameters
@@ -364,7 +393,9 @@ class AnalysisKernel(DataFileLocator):
         rows : list of int, optional
             Row indices of selected files.
         """
-        xpcs_file_list = self.get_xpcs_file_list(rows=rows, filter_analysis_type="Multitau")
+        xpcs_file_list = self.get_xpcs_file_list(
+            rows=rows, filter_analysis_type="Multitau"
+        )
         filtered_list = [xf for xf in xpcs_file_list if xf.fit_summary is not None]
         tauq.plot_pre(filtered_list, handler)
 
@@ -372,12 +403,12 @@ class AnalysisKernel(DataFileLocator):
         self,
         handler=None,
         bounds=None,
-        rows: Optional[List[int]] = None,
+        rows: list[int] | None = None,
         plot_type: int = 3,
         fit_flag=None,
         offset=None,
-        q_range: Optional[Tuple[float, float]] = None,
-    ) -> Dict[str, str]:
+        q_range: tuple[float, float] | None = None,
+    ) -> dict[str, str]:
         """Plot tau vs q analysis with fitting.
 
         Parameters
@@ -411,16 +442,22 @@ class AnalysisKernel(DataFileLocator):
                 logger.info("g2 fitting is not available for %s", xpcs_file.filename)
             else:
                 xpcs_file.fit_tauq(q_range, bounds, fit_flag)
-                result[xpcs_file.label] = xpcs_file.get_fitting_info(mode="tauq_fitting")
+                result[xpcs_file.label] = xpcs_file.get_fitting_info(
+                    mode="tauq_fitting"
+                )
 
         if len(result) > 0:
             tauq.plot(
-                xpcs_file_list, hdl=handler, q_range=q_range, offset=offset, plot_type=plot_type
+                xpcs_file_list,
+                hdl=handler,
+                q_range=q_range,
+                offset=offset,
+                plot_type=plot_type,
             )
 
         return result
 
-    def get_info_at_mouse_position(self, rows: List[int], x: int, y: int) -> Optional[str]:
+    def get_info_at_mouse_position(self, rows: list[int], x: int, y: int) -> str | None:
         """Get information at mouse position on detector.
 
         Parameters
@@ -440,7 +477,7 @@ class AnalysisKernel(DataFileLocator):
             info = xpcs_file[0].get_info_at_position(x, y)
             return info
 
-    def plot_saxs_2d(self, *args, rows: Optional[List[int]] = None, **kwargs) -> None:
+    def plot_saxs_2d(self, *args, rows: list[int] | None = None, **kwargs) -> None:
         """Plot 2D SAXS pattern.
 
         Parameters
@@ -467,8 +504,8 @@ class AnalysisKernel(DataFileLocator):
             ROI parameters.
         """
         xpcs_file_list = self.get_xpcs_file_list()
-        bcx = getattr(xpcs_file_list[0], 'bcx', None)
-        bcy = getattr(xpcs_file_list[0], 'bcy', None)
+        bcx = getattr(xpcs_file_list[0], "bcx", None)
+        bcy = getattr(xpcs_file_list[0], "bcy", None)
 
         # Use default center if bcx or bcy are None
         center_x = bcx if bcx is not None else 512
@@ -478,7 +515,7 @@ class AnalysisKernel(DataFileLocator):
         if kwargs["sl_type"] == "Pie":
             handler.add_roi(cen=center, radius=100, **kwargs)
         elif kwargs["sl_type"] == "Circle":
-            mask = getattr(xpcs_file_list[0], 'mask', None)
+            mask = getattr(xpcs_file_list[0], "mask", None)
             if mask is None:
                 # Use default radius if mask is not available
                 radius = 100
@@ -508,9 +545,11 @@ class AnalysisKernel(DataFileLocator):
             saxs1d.pg_plot(
                 xpcs_file_list,
                 mp_handler,
-                bkg_file=self.metadata["saxs_1d_background_file"] if self.metadata is not None else None,
+                bkg_file=self.metadata["saxs_1d_background_file"]
+                if self.metadata is not None
+                else None,
                 roi_list=roi_list,
-                **kwargs
+                **kwargs,
             )
 
     def export_saxs_1d_data(self, pg_handler, folder: str) -> None:
@@ -541,8 +580,9 @@ class AnalysisKernel(DataFileLocator):
         pass
         # saxs1d.switch_line_builder(mp_handler, line_builder_type)
 
-    def plot_two_time_correlation(self, handler, rows: Optional[List[int]] = None,
-                                 **kwargs) -> Optional[List[str]]:
+    def plot_two_time_correlation(
+        self, handler, rows: list[int] | None = None, **kwargs
+    ) -> list[str] | None:
         """Plot two-time correlation function.
 
         Parameters
@@ -564,13 +604,18 @@ class AnalysisKernel(DataFileLocator):
             return None
         xpcs_file = xpcs_file_list[0]
         new_qbin_labels = None
-        if self.current_dataset is None or self.current_dataset.filename != xpcs_file.filename:
+        if (
+            self.current_dataset is None
+            or self.current_dataset.filename != xpcs_file.filename
+        ):
             self.current_dataset = xpcs_file
             new_qbin_labels = xpcs_file.get_twotime_qbin_labels()
         twotime.plot_twotime(xpcs_file, handler, **kwargs)
         return new_qbin_labels
 
-    def plot_intensity_vs_time(self, pg_handler, rows: Optional[List[int]] = None, **kwargs) -> None:
+    def plot_intensity_vs_time(
+        self, pg_handler, rows: list[int] | None = None, **kwargs
+    ) -> None:
         """Plot intensity vs time.
 
         Parameters
@@ -585,7 +630,9 @@ class AnalysisKernel(DataFileLocator):
         xpcs_file_list = self.get_xpcs_file_list(rows=rows)
         intt.plot(xpcs_file_list, pg_handler, **kwargs)
 
-    def plot_stability_analysis(self, mp_handler, rows: Optional[List[int]] = None, **kwargs) -> None:
+    def plot_stability_analysis(
+        self, mp_handler, rows: list[int] | None = None, **kwargs
+    ) -> None:
         """Plot stability analysis.
 
         Parameters
@@ -642,7 +689,7 @@ class AnalysisKernel(DataFileLocator):
         if 0 <= job_id < len(self.average_worker):
             self.average_worker[job_id].update_plot()
 
-    def update_averaging_values(self, data: Tuple[Any, float]) -> None:
+    def update_averaging_values(self, data: tuple[Any, float]) -> None:
         """Update averaging values.
 
         Parameters
@@ -671,7 +718,7 @@ class AnalysisKernel(DataFileLocator):
         warnings.warn(
             "get_xf_list is deprecated, use get_xpcs_file_list instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.get_xpcs_file_list(*args, **kwargs)
 
@@ -680,7 +727,7 @@ class AnalysisKernel(DataFileLocator):
         warnings.warn(
             "reset_meta is deprecated, use reset_metadata instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.reset_metadata()
 
@@ -689,7 +736,7 @@ class AnalysisKernel(DataFileLocator):
         warnings.warn(
             "select_bkgfile is deprecated, use select_background_file instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.select_background_file(fname)
 
@@ -698,7 +745,7 @@ class AnalysisKernel(DataFileLocator):
         warnings.warn(
             "get_pg_tree is deprecated, use get_data_tree instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.get_data_tree(rows)
 
@@ -707,7 +754,7 @@ class AnalysisKernel(DataFileLocator):
         warnings.warn(
             "plot_g2 is deprecated, use plot_g2_function instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.plot_g2_function(*args, **kwargs)
 
@@ -716,7 +763,7 @@ class AnalysisKernel(DataFileLocator):
         warnings.warn(
             "plot_qmap is deprecated, use plot_q_space_map instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.plot_q_space_map(*args, **kwargs)
 
@@ -725,7 +772,7 @@ class AnalysisKernel(DataFileLocator):
         warnings.warn(
             "plot_tauq_pre is deprecated, use plot_tau_vs_q_preview instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.plot_tau_vs_q_preview(*args, **kwargs)
 
@@ -734,7 +781,7 @@ class AnalysisKernel(DataFileLocator):
         warnings.warn(
             "plot_tauq is deprecated, use plot_tau_vs_q instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.plot_tau_vs_q(*args, **kwargs)
 
@@ -743,7 +790,7 @@ class AnalysisKernel(DataFileLocator):
         warnings.warn(
             "get_info_at_mouse is deprecated, use get_info_at_mouse_position instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.get_info_at_mouse_position(*args, **kwargs)
 
@@ -752,7 +799,7 @@ class AnalysisKernel(DataFileLocator):
         warnings.warn(
             "add_roi is deprecated, use add_region_of_interest instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.add_region_of_interest(*args, **kwargs)
 
@@ -761,7 +808,7 @@ class AnalysisKernel(DataFileLocator):
         warnings.warn(
             "export_saxs_1d is deprecated, use export_saxs_1d_data instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.export_saxs_1d_data(*args, **kwargs)
 
@@ -770,7 +817,7 @@ class AnalysisKernel(DataFileLocator):
         warnings.warn(
             "switch_saxs1d_line is deprecated, use switch_saxs_1d_line instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.switch_saxs_1d_line(*args, **kwargs)
 
@@ -779,7 +826,7 @@ class AnalysisKernel(DataFileLocator):
         warnings.warn(
             "plot_twotime is deprecated, use plot_two_time_correlation instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.plot_two_time_correlation(*args, **kwargs)
 
@@ -788,7 +835,7 @@ class AnalysisKernel(DataFileLocator):
         warnings.warn(
             "plot_intt is deprecated, use plot_intensity_vs_time instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.plot_intensity_vs_time(*args, **kwargs)
 
@@ -797,7 +844,7 @@ class AnalysisKernel(DataFileLocator):
         warnings.warn(
             "plot_stability is deprecated, use plot_stability_analysis instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.plot_stability_analysis(*args, **kwargs)
 
@@ -806,7 +853,7 @@ class AnalysisKernel(DataFileLocator):
         warnings.warn(
             "submit_job is deprecated, use submit_averaging_job instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.submit_averaging_job(*args, **kwargs)
 
@@ -815,7 +862,7 @@ class AnalysisKernel(DataFileLocator):
         warnings.warn(
             "remove_job is deprecated, use remove_averaging_job instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.remove_averaging_job(*args, **kwargs)
 
@@ -824,7 +871,7 @@ class AnalysisKernel(DataFileLocator):
         warnings.warn(
             "update_avg_info is deprecated, use update_averaging_info instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.update_averaging_info(*args, **kwargs)
 
@@ -833,7 +880,7 @@ class AnalysisKernel(DataFileLocator):
         warnings.warn(
             "update_avg_values is deprecated, use update_averaging_values instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.update_averaging_values(*args, **kwargs)
 
@@ -842,7 +889,7 @@ class AnalysisKernel(DataFileLocator):
         warnings.warn(
             "export_g2 is deprecated, use export_g2_data instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.export_g2_data()
 
@@ -859,7 +906,7 @@ class ViewerKernel(AnalysisKernel):
         warnings.warn(
             "ViewerKernel is deprecated, use AnalysisKernel instead",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         super().__init__(*args, **kwargs)
 
