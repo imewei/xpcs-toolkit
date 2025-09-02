@@ -1,32 +1,32 @@
-import hdf5plugin
-import numpy as np
-from .aps_8idi import key as key_map
-import logging
 import hashlib
+import logging
 import os
 from pathlib import Path
-from typing import Optional, Dict, List, Any, Tuple
+
+import numpy as np
 
 # Use lazy imports for heavy dependencies
 from .._lazy_imports import lazy_import
-h5py = lazy_import('h5py')
-joblib = lazy_import('joblib')
-Memory = lazy_import('joblib', 'Memory')
+from .aps_8idi import key as key_map
+
+h5py = lazy_import("h5py")
+joblib = lazy_import("joblib")
+Memory = lazy_import("joblib", "Memory")
 
 logger = logging.getLogger(__name__)
 
 # Set up disk cache for q-space maps
-_cache_dir = Path.home() / '.cache' / 'xpcs_toolkit' / 'qmaps'
+_cache_dir = Path.home() / ".cache" / "xpcs_toolkit" / "qmaps"
 _cache_dir.mkdir(parents=True, exist_ok=True)
 _memory = Memory(str(_cache_dir), verbose=0)
 
 
 class QMapManager:
     """Manager for q-space maps with in-memory and disk caching."""
-    
+
     def __init__(self, use_disk_cache=True):
         """Initialize QMapManager with optional disk caching.
-        
+
         Parameters
         ----------
         use_disk_cache : bool, optional
@@ -34,16 +34,16 @@ class QMapManager:
         """
         self.db = {}  # In-memory cache
         self.use_disk_cache = use_disk_cache
-        
+
         if use_disk_cache:
             # Use joblib Memory for persistent caching
             self._cached_qmap_loader = _memory.cache(self._load_qmap_uncached)
         else:
             self._cached_qmap_loader = self._load_qmap_uncached
-    
+
     def _generate_cache_key(self, filename: str) -> str:
         """Generate a cache key based on file metadata and geometry.
-        
+
         This creates a unique key based on:
         1. File modification time
         2. File size
@@ -54,43 +54,46 @@ class QMapManager:
             stat = os.stat(filename)
             mtime = stat.st_mtime
             size = stat.st_size
-            
+
             # Extract key geometry parameters
             with h5py.File(filename, "r") as f:
                 root_key = "/xpcs/qmap"
                 if root_key not in f:
                     # Fallback for files without qmap hash
                     return f"{filename}_{mtime}_{size}"
-                
+
                 # Get critical parameters that affect q-space mapping
                 bcx = f[key_map["nexus"]["bcx"]][()]
                 bcy = f[key_map["nexus"]["bcy"]][()]
                 X_energy = f[key_map["nexus"]["X_energy"]][()]
                 pixel_size = f[key_map["nexus"]["pixel_size"]][()]
                 det_dist = f[key_map["nexus"]["det_dist"]][()]
-                
+
                 # Create hash of geometry parameters
                 geometry_str = f"{bcx}_{bcy}_{X_energy}_{pixel_size}_{det_dist}"
-                geometry_hash = hashlib.md5(geometry_str.encode()).hexdigest()[:8]
-                
+                geometry_hash = hashlib.md5(
+                    geometry_str.encode(), usedforsecurity=False
+                ).hexdigest()[:8]
+
                 return f"{geometry_hash}_{mtime}_{size}"
-                
+
         except Exception as e:
             logger.warning(f"Could not generate cache key for {filename}: {e}")
             # Fallback to filename + current timestamp
             import time
+
             return f"{os.path.basename(filename)}_{int(time.time())}"
-            
+
     def _load_qmap_uncached(self, cache_key: str, filename: str):
         """Load QMap without any caching (used by joblib).
-        
+
         Parameters
         ----------
         cache_key : str
             Cache key (used by joblib for cache management)
         filename : str
             Path to the HDF5 file
-            
+
         Returns
         -------
         QMap
@@ -101,12 +104,12 @@ class QMapManager:
 
     def get_qmap(self, filename: str):
         """Get q-space map with caching support.
-        
+
         Parameters
         ----------
         filename : str
             Path to the HDF5 file
-            
+
         Returns
         -------
         QMap
@@ -114,12 +117,12 @@ class QMapManager:
         """
         # Generate cache key for this file
         cache_key = self._generate_cache_key(filename)
-        
+
         # Check in-memory cache first
         if cache_key in self.db:
             logger.debug(f"QMap cache hit (memory): {filename}")
             return self.db[cache_key]
-        
+
         # Load from disk cache or file
         if self.use_disk_cache:
             logger.debug(f"Loading QMap with disk cache: {filename}")
@@ -127,52 +130,54 @@ class QMapManager:
         else:
             logger.debug(f"Loading QMap without cache: {filename}")
             qmap = self._load_qmap_uncached(cache_key, filename)
-        
+
         # Store in memory cache
         self.db[cache_key] = qmap
-        
+
         return qmap
-    
+
     def clear_cache(self, memory_only=False):
         """Clear the cache.
-        
+
         Parameters
         ----------
         memory_only : bool, optional
-            If True, only clear memory cache. If False, clear both memory 
+            If True, only clear memory cache. If False, clear both memory
             and disk cache (default: False)
         """
         self.db.clear()
         logger.info("Memory cache cleared")
-        
+
         if not memory_only and self.use_disk_cache:
             _memory.clear()
             logger.info("Disk cache cleared")
-    
+
     def cache_info(self):
         """Get cache statistics.
-        
+
         Returns
         -------
         dict
             Cache statistics including memory and disk usage
         """
         memory_items = len(self.db)
-        
+
         info = {
-            'memory_cached_items': memory_items,
-            'cache_dir': str(_cache_dir) if self.use_disk_cache else None,
-            'disk_cache_enabled': self.use_disk_cache
+            "memory_cached_items": memory_items,
+            "cache_dir": str(_cache_dir) if self.use_disk_cache else None,
+            "disk_cache_enabled": self.use_disk_cache,
         }
-        
+
         if self.use_disk_cache:
             try:
-                cache_size = sum(f.stat().st_size for f in _cache_dir.rglob('*') if f.is_file())
-                info['disk_cache_size_mb'] = cache_size / (1024**2)
-                info['disk_cache_files'] = len(list(_cache_dir.rglob('*.pkl')))
+                cache_size = sum(
+                    f.stat().st_size for f in _cache_dir.rglob("*") if f.is_file()
+                )
+                info["disk_cache_size_mb"] = cache_size / (1024**2)
+                info["disk_cache_files"] = len(list(_cache_dir.rglob("*.pkl")))
             except Exception as e:
-                info['disk_cache_error'] = str(e)
-        
+                info["disk_cache_error"] = str(e)
+
         return info
 
 
@@ -194,15 +199,15 @@ class QMap:
     det_dist: float
     dynamic_num_pts: np.ndarray
     static_num_pts: int
-    map_names: List[str]
-    map_units: List[str]
+    map_names: list[str]
+    map_units: list[str]
     k0: float
     is_loaded: bool
-    extent: Tuple[float, float, float, float]
-    qmap: Dict[str, np.ndarray]
-    qmap_units: Dict[str, str]
-    qbin_labels: List[str]
-    
+    extent: tuple[float, float, float, float]
+    qmap: dict[str, np.ndarray]
+    qmap_units: dict[str, str]
+    qbin_labels: list[str]
+
     def __init__(self, filename=None, root_key="/xpcs/qmap"):
         self.root_key = root_key
         self.filename = filename
@@ -216,7 +221,7 @@ class QMap:
         required_keys = [
             "mask",
             "dqmap",
-            "sqmap", 
+            "sqmap",
             "dqlist",
             "sqlist",
             "dplist",
@@ -233,35 +238,41 @@ class QMap:
             "map_names",
             "map_units",
         ]
-        
+
         try:
             with h5py.File(self.filename, "r") as f:
                 # Check if this is a minimal test file without Q-map data
-                has_qmap_data = any(key_map["nexus"][key] in f for key in ["mask", "dqmap", "X_energy"])
-                
+                has_qmap_data = any(
+                    key_map["nexus"][key] in f for key in ["mask", "dqmap", "X_energy"]
+                )
+
                 if not has_qmap_data:
                     # Create minimal default values for test files
-                    info.update({
-                        "mask": np.ones((100, 100), dtype=bool),
-                        "dqmap": np.zeros((100, 100), dtype=int),
-                        "sqmap": np.zeros((100, 100), dtype=int),
-                        "dqlist": np.array([0]),
-                        "sqlist": np.array([0]),
-                        "dplist": np.array([0]),
-                        "splist": np.array([0]),
-                        "bcx": 50.0,
-                        "bcy": 50.0,
-                        "X_energy": 8.0,  # keV
-                        "static_index_mapping": np.array([0]),
-                        "dynamic_index_mapping": np.array([0]),
-                        "pixel_size": 75e-6,  # 75 microns
-                        "det_dist": 5.0,  # 5 meters
-                        "dynamic_num_pts": np.array([1, 1]),
-                        "static_num_pts": 1,
-                        "map_names": ["q_r", "q_phi"],
-                        "map_units": ["1/A", "rad"],
-                    })
-                    logger.warning(f"Using default Q-map values for file without Q-map data: {self.filename}")
+                    info.update(
+                        {
+                            "mask": np.ones((100, 100), dtype=bool),
+                            "dqmap": np.zeros((100, 100), dtype=int),
+                            "sqmap": np.zeros((100, 100), dtype=int),
+                            "dqlist": np.array([0]),
+                            "sqlist": np.array([0]),
+                            "dplist": np.array([0]),
+                            "splist": np.array([0]),
+                            "bcx": 50.0,
+                            "bcy": 50.0,
+                            "X_energy": 8.0,  # keV
+                            "static_index_mapping": np.array([0]),
+                            "dynamic_index_mapping": np.array([0]),
+                            "pixel_size": 75e-6,  # 75 microns
+                            "det_dist": 5.0,  # 5 meters
+                            "dynamic_num_pts": np.array([1, 1]),
+                            "static_num_pts": 1,
+                            "map_names": ["q_r", "q_phi"],
+                            "map_units": ["1/A", "rad"],
+                        }
+                    )
+                    logger.warning(
+                        f"Using default Q-map values for file without Q-map data: {self.filename}"
+                    )
                 else:
                     # Load actual data from file
                     for key in required_keys:
@@ -269,11 +280,22 @@ class QMap:
                         if path in f:
                             info[key] = f[path][()]
                         else:
-                            logger.warning(f"Missing Q-map key '{key}' at path '{path}' in {self.filename}")
+                            logger.warning(
+                                f"Missing Q-map key '{key}' at path '{path}' in {self.filename}"
+                            )
                             # Provide defaults for missing keys
                             if key in ["mask", "dqmap", "sqmap"]:
-                                info[key] = np.ones((100, 100), dtype=int if 'qmap' in key else bool)
-                            elif key in ["dqlist", "sqlist", "dplist", "splist", "static_index_mapping", "dynamic_index_mapping"]:
+                                info[key] = np.ones(
+                                    (100, 100), dtype=int if "qmap" in key else bool
+                                )
+                            elif key in [
+                                "dqlist",
+                                "sqlist",
+                                "dplist",
+                                "splist",
+                                "static_index_mapping",
+                                "dynamic_index_mapping",
+                            ]:
                                 info[key] = np.array([0])
                             elif key in ["bcx", "bcy"]:
                                 info[key] = 50.0
@@ -291,18 +313,30 @@ class QMap:
                                 info[key] = ["q_r", "q_phi"]
                             elif key == "map_units":
                                 info[key] = ["1/A", "rad"]
-                
+
                 # Calculate k0 from X_energy
                 info["k0"] = 2 * np.pi / (12.398 / info["X_energy"])
-                
+
                 # Handle string decoding for map_names and map_units
                 if isinstance(info["map_names"], np.ndarray):
-                    info["map_names"] = [item.decode("utf-8") if isinstance(item, (np.bytes_, bytes)) else str(item) for item in info["map_names"]]
+                    info["map_names"] = [
+                        item.decode("utf-8")
+                        if isinstance(item, (np.bytes_, bytes))
+                        else str(item)
+                        for item in info["map_names"]
+                    ]
                 if isinstance(info["map_units"], np.ndarray):
-                    info["map_units"] = [item.decode("utf-8") if isinstance(item, (np.bytes_, bytes)) else str(item) for item in info["map_units"]]
-                
+                    info["map_units"] = [
+                        item.decode("utf-8")
+                        if isinstance(item, (np.bytes_, bytes))
+                        else str(item)
+                        for item in info["map_units"]
+                    ]
+
         except (OSError, KeyError, ValueError) as e:
-            logger.warning(f"Failed to load Q-map data from {self.filename}: {e}. Using defaults.")
+            logger.warning(
+                f"Failed to load Q-map data from {self.filename}: {e}. Using defaults."
+            )
             # Provide complete fallback defaults
             info = {
                 "mask": np.ones((100, 100), dtype=bool),
@@ -325,7 +359,7 @@ class QMap:
                 "map_names": ["q_r", "q_phi"],
                 "map_units": ["1/A", "rad"],
             }
-        
+
         self.__dict__.update(info)
         self.is_loaded = True
         return info
@@ -354,7 +388,7 @@ class QMap:
         else:
             qmap, qmap_units = self.qmap, self.qmap_units
             result = ""
-            for key in self.qmap.keys():
+            for key in self.qmap:
                 if key in ["q", "qx", "qy", "phi", "alpha"]:
                     result += f" {key}={qmap[key][y, x]:.3f} {qmap_units[key]},"
                 else:
@@ -400,8 +434,12 @@ class QMap:
         # Backward compatibility for old parameter name
         if qrange is not None:
             import warnings
-            warnings.warn("Parameter 'qrange' is deprecated, use 'q_range' instead", 
-                         DeprecationWarning, stacklevel=2)
+
+            warnings.warn(
+                "Parameter 'qrange' is deprecated, use 'q_range' instead",
+                DeprecationWarning,
+                stacklevel=2,
+            )
             q_range = qrange
         if self.map_names[0] != "q":
             logger.info("q_range is only supported for qmaps with 0-axis as q")
@@ -498,16 +536,18 @@ class QMap:
             full_data = None  # Initialize for later use
         else:
             # Pre-allocate with NaN for better performance
-            full_data = np.empty((shape[0], shape[1] * shape[2]), dtype=compressed_data.dtype)
+            full_data = np.empty(
+                (shape[0], shape[1] * shape[2]), dtype=compressed_data.dtype
+            )
             full_data.fill(np.nan)
-            
+
             # Vectorized assignment instead of loop when possible
             if num_samples == 1:
                 full_data[0, self.static_index_mapping] = compressed_data[0]
             else:
                 for i in range(num_samples):
                     full_data[i, self.static_index_mapping] = compressed_data[i]
-            
+
             full_data = full_data.reshape(shape)
             # Use nanmean with better performance settings
             avg = np.nanmean(full_data, axis=2, dtype=np.float64)
@@ -515,7 +555,9 @@ class QMap:
         if mode == "saxs_1d":
             assert num_samples == 1, "saxs1d mode only supports one sample"
             if shape[2] > 1:
-                assert full_data is not None, "full_data should be defined when shape[2] > 1"
+                assert full_data is not None, (
+                    "full_data should be defined when shape[2] > 1"
+                )
                 # Ensure avg is an array before indexing
                 avg_array = np.asarray(avg)
                 saxs1d = np.concatenate([avg_array[..., None], full_data], axis=-1)
@@ -553,15 +595,15 @@ def get_qmap(filename, **kwargs):
 def test_qmap_manager():
     import time
 
-    for i in range(5):
+    for _i in range(5):
         t0 = time.perf_counter()
-        qmap = get_qmap(
+        get_qmap(
             "/net/s8iddata/export/8-id-ECA/MQICHU/projects/2025_0223_boost_corr_nexus/cluster_results1/Z1113_Sanjeeva-h60_a0004_t0600_f008000_r00003_results.hdf"
         )
-        qmap = get_qmap(
+        get_qmap(
             "/net/s8iddata/export/8-id-ECA/MQICHU/projects/2025_0223_boost_corr_nexus/cluster_results1/Z1113_Sanjeeva-h60_a0004_t0600_f008000_r00003_results2.hdf"
         )
-        qmap = get_qmap(
+        get_qmap(
             "/net/s8iddata/export/8-id-ECA/MQICHU/projects/2025_0223_boost_corr_nexus/cluster_results1/Z1113_Sanjeeva-h60_a0004_t0600_f008000_r00003_results3.hdf"
         )
         t1 = time.perf_counter()
