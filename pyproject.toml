@@ -141,9 +141,21 @@ extended = [
     "dask>=2021.0.0",        # Parallel computing
 ]
 
+# Enhanced testing dependencies for comprehensive test coverage
+test-enhanced = [
+    "pytest-benchmark>=4.0.0",      # Performance benchmarking
+    "pytest-xdist>=3.0.0",          # Parallel testing
+    "hypothesis>=6.0.0",             # Property-based testing
+    "pytest-mock>=3.0.0",            # Enhanced mocking
+    "pytest-timeout>=2.0.0",         # Test timeouts
+    "memory_profiler>=0.60.0",       # Memory usage testing
+    "numpy-stubs>=0.1.0",            # NumPy type stubs for testing
+    "parameterized>=0.8.0",          # Parameterized tests
+]
+
 # All optional dependencies for complete installation
 all = [
-    "xpcs-toolkit[dev,docs,performance,extended]"
+    "xpcs-toolkit[dev,docs,performance,extended,test-enhanced]"
 ]
 
 [project.urls]
@@ -151,8 +163,13 @@ all = [
 "Documentation" = "https://xpcs-toolkit.readthedocs.io/"
 "Repository" = "https://github.com/imewei/xpcs-toolkit.git"
 "Bug Reports" = "https://github.com/imewei/xpcs-toolkit/issues"
+"Feature Requests" = "https://github.com/imewei/xpcs-toolkit/issues/new?template=feature_request.md"
+"Discussions" = "https://github.com/imewei/xpcs-toolkit/discussions"
 "Changelog" = "https://github.com/imewei/xpcs-toolkit/blob/main/CHANGELOG.md"
+"Release Notes" = "https://github.com/imewei/xpcs-toolkit/releases"
+"Contributing" = "https://github.com/imewei/xpcs-toolkit/blob/main/CONTRIBUTING.md"
 "Funding" = "https://www.anl.gov/"
+"Sponsor" = "https://github.com/sponsors/imewei"
 
 [tool.setuptools]
 # Automatic package discovery
@@ -191,6 +208,7 @@ markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
+    "benchmark: marks tests as performance benchmarks",
 ]
 filterwarnings = [
     "error",

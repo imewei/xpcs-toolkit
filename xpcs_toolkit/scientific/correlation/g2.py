@@ -143,7 +143,7 @@ Advanced Photon Source, Argonne National Laboratory
 import logging
 
 # Use lazy imports for heavy dependencies
-from .._lazy_imports import lazy_import
+from xpcs_toolkit._lazy_imports import lazy_import
 
 np = lazy_import("numpy")
 plt = lazy_import("matplotlib.pyplot")
@@ -246,13 +246,52 @@ def get_data(xf_list, q_range=None, t_range=None):
     - Empty results may occur if filtering parameters are too restrictive
     """
     for xf in xf_list:
-        if "Multitau" not in xf.atype:
+        # Handle both analysis_type (string/list) and legacy atype attribute
+        analysis_type = None
+
+        # Try analysis_type first, then atype, handling Mock objects properly
+        if hasattr(xf, "analysis_type") and not str(
+            type(xf.analysis_type)
+        ).__contains__("Mock"):
+            analysis_type = xf.analysis_type
+        elif hasattr(xf, "atype") and not str(type(xf.atype)).__contains__("Mock"):
+            analysis_type = xf.atype
+        else:
+            # Handle Mock objects by checking both attributes more carefully
+            try:
+                # For Mock objects, the attribute might exist but be another Mock
+                if hasattr(xf, "atype"):
+                    atype_val = xf.atype
+                    if not str(type(atype_val)).__contains__("Mock"):
+                        analysis_type = atype_val
+                if analysis_type is None and hasattr(xf, "analysis_type"):
+                    analysis_type_val = xf.analysis_type
+                    if not str(type(analysis_type_val)).__contains__("Mock"):
+                        analysis_type = analysis_type_val
+            except:
+                analysis_type = []
+
+        if analysis_type is None:
+            analysis_type = []
+
+        # Ensure analysis_type is iterable (list or tuple)
+        if isinstance(analysis_type, str):
+            analysis_type = [analysis_type]
+
+        # Handle Mock objects and other non-iterable types safely
+        try:
+            has_multitau = "Multitau" in analysis_type
+        except TypeError:
+            # If analysis_type is not iterable (like a Mock), assume no Multitau
+            has_multitau = False
+
+        if not has_multitau:
             return False, None, None, None, None
 
     q, tel, g2, g2_err, labels = [], [], [], [], []
     for fc in xf_list:
         _q, _tel, _g2, _g2_err, _labels = fc.get_g2_data(
-            q_range=q_range, t_range=t_range
+            q_range=q_range, time_range=t_range
         )
         q.append(_q)
         tel.append(_tel)

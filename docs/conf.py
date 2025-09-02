@@ -45,11 +45,25 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.coverage",
     "sphinx.ext.mathjax",
-    # External extensions for enhanced functionality
+]
+
+# Try to add optional extensions that are available
+optional_required_extensions = [
     "myst_parser",  # Markdown support
     "sphinx_copybutton",  # Copy code button
     "sphinx_design",  # Modern UI components
 ]
+
+for ext in optional_required_extensions:
+    try:
+        __import__(ext)
+        extensions.append(ext)
+        print(f"✅ Loaded extension: {ext}")
+    except ImportError as e:
+        print(f"⚠️  Extension {ext} not available: {e}")
+        # Add fallback behavior if needed
+        if ext == "sphinx_design":
+            print("   Using basic styling without sphinx_design")
 
 # Optional extensions (install if available)
 optional_extensions = [
@@ -61,7 +75,9 @@ for ext in optional_extensions:
     try:
         __import__(ext)
         extensions.append(ext)
-    except ImportError:
+        print(f"✅ Loaded optional extension: {ext}")
+    except (ImportError, OSError, PermissionError) as e:
+        print(f"⚠️  Skipping optional extension {ext}: {type(e).__name__}: {e}")
         pass
 
 # Add any paths that contain templates here, relative to this directory
@@ -70,7 +86,7 @@ templates_path = ["_templates"]
 # Source file suffixes
 source_suffix = {
     ".rst": None,
-    ".md": None,
+    ".md": "markdown",
 }
 
 # The root document
@@ -145,11 +161,11 @@ html_title = f"{project} {version}"
 # HTML short title
 html_short_title = "XPCS Toolkit"
 
-# Logo
-html_logo = "_static/logo.png"  # Add logo if available
+# Logo (commented out until available)
+# html_logo = "_static/logo.png"
 
-# Favicon
-html_favicon = "_static/favicon.ico"  # Add favicon if available
+# Favicon (commented out until available)
+# html_favicon = "_static/favicon.ico"
 
 # -- Options for autodoc ----------------------------------------------------
 

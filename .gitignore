@@ -312,6 +312,7 @@ dist/
 .coverage
 .coverage.*
 coverage.xml
+coverage.json
 htmlcov/
 
 # Tox

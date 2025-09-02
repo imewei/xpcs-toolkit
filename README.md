@@ -1,13 +1,15 @@
 # XPCS Toolkit
 
 [![PyPI version](https://badge.fury.io/py/xpcs-toolkit.svg)](https://badge.fury.io/py/xpcs-toolkit)
-[![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)](https://python.org)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/imewei/xpcs-toolkit)
-[![Documentation Status](https://readthedocs.org/projects/xpcs-toolkit/badge/?version=latest)](https://xpcs-toolkit.readthedocs.io/en/latest/?badge=latest)
-[![Coverage Status](https://img.shields.io/badge/coverage-93%25-brightgreen)](https://github.com/imewei/xpcs-toolkit)
-[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
-[![Downloads](https://pepy.tech/badge/xpcs-toolkit)](https://pepy.tech/project/xpcs-toolkit)
+[![Python Version](https://img.shields.io/pypi/pyversions/xpcs-toolkit)](https://pypi.org/project/xpcs-toolkit/)
+[![License](https://img.shields.io/pypi/l/xpcs-toolkit)](https://github.com/imewei/xpcs-toolkit/blob/main/LICENSE)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/imewei/xpcs-toolkit/ci.yml?branch=main)](https://github.com/imewei/xpcs-toolkit/actions)
+[![Documentation Status](https://readthedocs.org/projects/xpcs-toolkit/badge/?version=latest)](https://xpcs-toolkit.readthedocs.io/en/latest/)
+[![Coverage Status](https://img.shields.io/codecov/c/github/imewei/xpcs-toolkit)](https://codecov.io/gh/imewei/xpcs-toolkit)
+[![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![Downloads](https://img.shields.io/pypi/dm/xpcs-toolkit)](https://pypi.org/project/xpcs-toolkit/)
+[![GitHub stars](https://img.shields.io/github/stars/imewei/xpcs-toolkit)](https://github.com/imewei/xpcs-toolkit/stargazers)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
 
 A comprehensive command-line tool for X-ray Photon Correlation Spectroscopy (XPCS) analysis, designed for synchrotron beamline operations and research environments.
 
@@ -238,6 +240,18 @@ Developed at **Argonne National Laboratory** with support from the U.S. Departme
 - **Email**: weichen@anl.gov
 - **Repository**: [GitHub Repository](https://github.com/imewei/xpcs-toolkit)
 - **Documentation**: See included documentation files and tutorials
+
+## 📖 Local Documentation
+
+### User Guides
+- **[USER_GUIDE.md](USER_GUIDE.md)** - Complete user guide with CLI and API examples
+- **[SCIENTIFIC_BACKGROUND.md](SCIENTIFIC_BACKGROUND.md)** - Theory and scientific methods  
+- **[FILE_FORMAT_GUIDE.md](FILE_FORMAT_GUIDE.md)** - File formats and data structures
+
+### Developer Resources  
+- **[DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md)** - Development setup, testing, and contribution guide
+- **[DEPENDENCIES_GUIDE.md](DEPENDENCIES_GUIDE.md)** - Dependency management and installation options
+- **[QUALITY_GATES.md](QUALITY_GATES.md)** - Code quality standards and CI/CD processes
 
 ## 📜 License
 

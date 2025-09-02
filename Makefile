@@ -169,6 +169,7 @@ clean-test: ## Remove test and coverage artifacts
 	rm -f code_quality_report.md
 	rm -f pip_audit_report.json
 	rm -f coverage.xml
+	rm -f coverage.json
 
 clean-cache: ## Remove development tool cache directories
 	rm -rf .mypy_cache/

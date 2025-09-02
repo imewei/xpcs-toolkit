@@ -1,0 +1,83 @@
+# MANIFEST.in - Include additional files in source distributions
+# This file specifies which files should be included in the source distribution
+# beyond the Python packages themselves.
+
+# Documentation files
+include README.md
+include LICENSE
+include CHANGELOG.md
+include CONTRIBUTING.md
+include USER_GUIDE.md
+include DEVELOPER_GUIDE.md
+include SCIENTIFIC_BACKGROUND.md
+include FILE_FORMAT_GUIDE.md
+include DEPENDENCIES_GUIDE.md
+include QUALITY_GATES.md
+
+# Configuration files
+include pyproject.toml
+include Makefile
+include .readthedocs.yaml
+
+# Documentation source files
+recursive-include docs *.rst
+recursive-include docs *.md
+recursive-include docs *.py
+recursive-include docs Makefile
+include docs/requirements.txt
+
+# Documentation assets
+recursive-include docs/_static *
+recursive-include docs/_templates *
+
+# Test data and fixtures
+recursive-include xpcs_toolkit/tests *.py
+recursive-include xpcs_toolkit/tests/fixtures *.h5
+recursive-include xpcs_toolkit/tests/fixtures *.json
+recursive-include xpcs_toolkit/tests/data *.h5
+
+# Configuration and data files
+recursive-include xpcs_toolkit/configure *.json
+include xpcs_toolkit/py.typed
+
+# Example scripts and notebooks
+recursive-include examples *.py
+recursive-include examples *.ipynb
+recursive-include examples *.md
+
+# Scripts and tools
+recursive-include scripts *.py
+recursive-include scripts *.sh
+
+# Development and CI configuration
+include .pre-commit-config.yaml
+include .gitignore
+
+# Archive documentation (for completeness)
+recursive-include docs/archive *.md
+
+# Exclude compiled files and caches
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *~
+global-exclude *.so
+global-exclude .DS_Store
+global-exclude __pycache__
+global-exclude *.egg-info
+
+# Exclude build artifacts
+prune build
+prune dist
+prune .git
+prune .pytest_cache
+prune .mypy_cache
+prune .ruff_cache
+prune htmlcov
+prune .venv
+prune venv
+
+# Exclude IDE files
+global-exclude .vscode
+global-exclude .idea
+global-exclude *.swp
+global-exclude *.swo
