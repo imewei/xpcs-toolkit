@@ -1,5 +1,5 @@
 Frequently Asked Questions
-=========================
+==========================
 
 This page answers common questions about XPCS Toolkit installation, usage, and troubleshooting.
 
