@@ -160,6 +160,15 @@ clean-test: ## Remove test and coverage artifacts
 	rm -fr $(HTMLCOV_DIR)/
 	rm -fr $(CACHE_DIR)/
 	rm -fr .pytest_cache/
+	find . -name '.benchmarks' -type d -exec rm -rf {} +
+	rm -f test_report.html
+	rm -f bandit-report.json
+	rm -f bandit_report.json
+	rm -f bandit-results.json
+	rm -f bandit_results.json
+	rm -f code_quality_report.md
+	rm -f pip_audit_report.json
+	rm -f coverage.xml
 
 clean-cache: ## Remove development tool cache directories
 	rm -rf .mypy_cache/
