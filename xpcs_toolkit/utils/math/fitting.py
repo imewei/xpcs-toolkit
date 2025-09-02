@@ -147,7 +147,16 @@ def fit_xpcs(tel: Any, qd: Any, g2: Any, g2_err: Any, b: Any) -> Any:
     return fit_result, fit_val
 
 
-def fit_with_fixed_raw(base_func: Any, x: Any, y: Any, sigma: Any, bounds: Any, fit_flag: Any, fit_x: Any, p0: Any = None) -> Any:
+def fit_with_fixed_raw(
+    base_func: Any,
+    x: Any,
+    y: Any,
+    sigma: Any,
+    bounds: Any,
+    fit_flag: Any,
+    fit_x: Any,
+    p0: Any = None,
+) -> Any:
     """
     :param base_func: the base function used for fitting; it can have multiple
         input variables, some of which can be fixed during the fitting;

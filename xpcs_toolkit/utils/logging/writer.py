@@ -163,7 +163,9 @@ class AsyncLoggerWriter(LoggerWriter):
         level: Optional[int] = None,
     ):
         super().__init__(logger_or_func, level)
-        self.message_queue: queue.Queue[str] = queue.Queue(maxsize=1000)  # Prevent unbounded growth
+        self.message_queue: queue.Queue[str] = queue.Queue(
+            maxsize=1000
+        )  # Prevent unbounded growth
         self.worker_thread = threading.Thread(target=self._worker, daemon=True)
         self.shutdown_event = threading.Event()
         self.worker_thread.start()
