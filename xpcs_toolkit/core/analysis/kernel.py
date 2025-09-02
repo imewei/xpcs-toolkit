@@ -717,7 +717,7 @@ class AnalysisKernel(DataFileLocator):
         pass
 
     # Deprecated method aliases for backward compatibility
-    def get_xf_list(self, *args, **kwargs):
+    def get_xf_list(self, *args, **kwargs) -> list[str]:
         """Deprecated: Use get_xpcs_file_list() instead."""
         warnings.warn(
             "get_xf_list is deprecated, use get_xpcs_file_list instead",
@@ -726,7 +726,7 @@ class AnalysisKernel(DataFileLocator):
         )
         return self.get_xpcs_file_list(*args, **kwargs)
 
-    def reset_meta(self):
+    def reset_meta(self) -> None:
         """Deprecated: Use reset_metadata() instead."""
         warnings.warn(
             "reset_meta is deprecated, use reset_metadata instead",
@@ -735,7 +735,7 @@ class AnalysisKernel(DataFileLocator):
         )
         return self.reset_metadata()
 
-    def select_bkgfile(self, fname):
+    def select_bkgfile(self, fname: str) -> None:
         """Deprecated: Use select_background_file() instead."""
         warnings.warn(
             "select_bkgfile is deprecated, use select_background_file instead",

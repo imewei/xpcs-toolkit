@@ -173,7 +173,7 @@ colors = (
 symbols = ["o", "t", "t1", "t2", "t3", "s", "p", "h", "star", "+", "d", "x"]
 
 
-def get_data(xf_list, q_range=None, t_range=None):
+def get_data(xf_list: list[str], q_range: tuple[int, int] | None = None, t_range: tuple[int, int] | None = None) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Extract correlation function data from XPCS data files with optional filtering.
 
@@ -301,7 +301,7 @@ def get_data(xf_list, q_range=None, t_range=None):
     return q, tel, g2, g2_err, labels
 
 
-def compute_geometry(g2, plot_type):
+def compute_geometry(g2: np.ndarray, plot_type: str) -> tuple[int, int, int]:
     """
     Calculate optimal plot layout geometry for correlation function visualization.
 
@@ -381,12 +381,12 @@ def compute_geometry(g2, plot_type):
 
 def pg_plot(
     hdl,
-    xf_list,
-    q_range,
-    t_range,
-    y_range,
-    y_auto=False,
-    q_auto=False,
+    xf_list: list[str],
+    q_range: tuple[int, int],
+    t_range: tuple[int, int],
+    y_range: tuple[float, float],
+    y_auto: bool = False,
+    q_auto: bool = False,
     t_auto=False,
     num_col=4,
     rows=None,
