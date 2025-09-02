@@ -3,7 +3,7 @@ import logging
 import queue
 import sys
 import threading
-from typing import Callable, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 
 class LoggerWriter:
@@ -163,7 +163,7 @@ class AsyncLoggerWriter(LoggerWriter):
         level: Optional[int] = None,
     ):
         super().__init__(logger_or_func, level)
-        self.message_queue: queue.Queue[str] = queue.Queue(
+        self.message_queue: queue.Queue[Union[str, None]] = queue.Queue(
             maxsize=1000
         )  # Prevent unbounded growth
         self.worker_thread = threading.Thread(target=self._worker, daemon=True)
@@ -218,7 +218,7 @@ class AsyncLoggerWriter(LoggerWriter):
 
 
 @contextmanager
-def redirect_std_streams(stdout_logger=None, stderr_logger=None, async_mode=False):
+def redirect_std_streams(stdout_logger: Optional[logging.Logger] = None, stderr_logger: Optional[logging.Logger] = None, async_mode: bool = False) -> Any:
     """
     Context manager to temporarily redirect stdout/stderr to loggers.
 
@@ -287,7 +287,7 @@ def redirect_std_streams(stdout_logger=None, stderr_logger=None, async_mode=Fals
 class LogWriter(LoggerWriter):
     """Deprecated alias for LoggerWriter. Use LoggerWriter instead."""
 
-    def __init__(self, level):
+    def __init__(self, level: int) -> None:
         import warnings
 
         warnings.warn(
@@ -295,5 +295,6 @@ class LogWriter(LoggerWriter):
             DeprecationWarning,
             stacklevel=2,
         )
-        # Assume level is a logging function for backward compatibility
-        super().__init__(level)
+        # Create a logger function for backward compatibility
+        logger_func = lambda msg: logging.log(level, msg)
+        super().__init__(logger_func)

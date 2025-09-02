@@ -187,7 +187,7 @@ def fit_with_fixed_raw(
     num_args = len(fit_flag)
 
     # create a function that takes care of the fit flag;
-    def func(x1, *args):
+    def func(x1: Any, *args: Any) -> Any:
         inputs = np.zeros(num_args)
         inputs[fix_flag] = bounds[1, fix_flag]
         inputs[fit_flag] = np.array(args)

@@ -782,7 +782,7 @@ For technical support: https://github.com/imewei/xpcs-toolkit
     return parser
 
 
-def main() -> None:
+def main() -> int:
     """Main entry point with comprehensive logging and error handling."""
     parser = create_parser()
     args = parser.parse_args()

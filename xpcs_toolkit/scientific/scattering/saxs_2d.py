@@ -149,7 +149,7 @@ def plot(
     autorange: bool = False,
     vmin: Union[float, None] = None,
     vmax: Union[float, None] = None,
-) -> None:
+) -> Any:
     """
     Display 2D SAXS scattering patterns with comprehensive visualization options.
 
