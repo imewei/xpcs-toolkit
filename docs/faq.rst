@@ -386,7 +386,7 @@ Still have questions?
 
 If your question isn't answered here:
 
-1. Check the :doc:`api/index` for detailed function documentation
+1. Check the API documentation for detailed function documentation
 2. Browse the :doc:`guides/index` for in-depth examples  
 3. Search existing `GitHub Issues <https://github.com/imewei/xpcs-toolkit/issues>`_
 4. Open a new issue or discussion

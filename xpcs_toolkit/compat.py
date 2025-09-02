@@ -7,6 +7,7 @@ to ensure existing code continues to work with the reorganized structure.
 
 from __future__ import annotations
 
+import importlib.util
 import sys
 from typing import Any
 import warnings

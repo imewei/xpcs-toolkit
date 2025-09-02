@@ -52,7 +52,7 @@ jobs:
         bandit -r xpcs_toolkit/ -f json -o bandit-report.json || true
     
     - name: Upload security scan results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: security-scan-${{ matrix.python-version }}
@@ -122,7 +122,7 @@ jobs:
         name: detailed-coverage
     
     - name: Upload coverage HTML report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-report
         path: htmlcov/
@@ -172,7 +172,7 @@ jobs:
           --tb=short
     
     - name: Upload benchmark results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: benchmark-results
         path: benchmark-results.json
@@ -250,7 +250,7 @@ jobs:
         echo "Timestamp: $(date)" >> test-summary.txt
     
     - name: Upload test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: integration-results-${{ matrix.test-suite }}
@@ -337,7 +337,7 @@ jobs:
         echo "- Memory leak check: Passed" >> nightly-report.md
     
     - name: Upload nightly report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: nightly-test-report
         path: |

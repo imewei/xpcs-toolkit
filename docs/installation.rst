@@ -302,5 +302,5 @@ Next Steps
 ----------
 
 - Follow the :doc:`quickstart` tutorial
-- Explore the :doc:`api/index` documentation
+- Explore the API documentation
 - Check out :doc:`guides/index` for detailed examples

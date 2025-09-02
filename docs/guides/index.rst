@@ -46,13 +46,13 @@ Quick Navigation
 ----------------
 
 **New Users**
-  Start with :doc:`basic_usage` and :doc:`file_formats`
+  Start with the installation guide and quickstart tutorial
 
 **Scientific Users**
-  Jump to :doc:`saxs_analysis` or :doc:`correlation_analysis`
+  Jump to :doc:`saxs_analysis` for analysis examples
 
 **Production Users**
-  See :doc:`batch_processing` and :doc:`performance_optimization`
+  See the batch processing documentation and performance guides
 
 **Developers**
-  Check :doc:`integration` and the development documentation
+  Check the development documentation and integration guides

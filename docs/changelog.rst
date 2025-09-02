@@ -33,7 +33,7 @@ Latest Releases
    :parser: myst_parser.sphinx_
 
 Development Releases
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 Development versions may include experimental features and are not recommended for production use.
 

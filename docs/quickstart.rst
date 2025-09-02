@@ -319,9 +319,9 @@ Next Steps
 
 Now that you've completed the quick start:
 
-1. **Explore the API**: Check out the complete :doc:`api/index`
+1. **Explore the API**: Check out the complete API documentation
 2. **Read user guides**: Dive deeper with :doc:`guides/index`
-3. **Try tutorials**: Work through :doc:`tutorials/index`
+3. **Try tutorials**: Work through the tutorial documentation
 4. **Get help**: Visit our :doc:`faq` or GitHub issues
 
 Common File Formats
