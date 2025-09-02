@@ -146,9 +146,8 @@ class XpcsConfig:
 
 
 # Global configuration instance
-from typing import Optional
 
-_global_config: Optional[XpcsConfig] = None
+_global_config: XpcsConfig | None = None
 
 
 def get_config() -> XpcsConfig:

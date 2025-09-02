@@ -8,7 +8,7 @@ to ensure existing code continues to work with the reorganized structure.
 from __future__ import annotations
 
 import sys
-from typing import Any, Optional
+from typing import Any
 import warnings
 
 
@@ -87,9 +87,9 @@ def install_compatibility_hooks() -> None:
         def find_spec(
             self,
             fullname: str,
-            path: Optional[Any] = None,
-            target: Optional[Any] = None,
-        ) -> Optional[Any]:
+            path: Any | None = None,
+            target: Any | None = None,
+        ) -> Any | None:
             if fullname in MODULE_REDIRECTS:
                 # Redirect to new module
                 new_name = MODULE_REDIRECTS[fullname]

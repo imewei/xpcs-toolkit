@@ -95,72 +95,70 @@ def put(
     # Use the underlying logger for log_exceptions and PerformanceTimer
     base_logger = context_logger.logger if hasattr(context_logger, "logger") else logger
 
-    with log_exceptions(base_logger, "Failed to write HDF5 file"):
-        with PerformanceTimer(
-            base_logger, "HDF5 write operation", item_count=len(result)
-        ):
-            with h5py.File(str(save_path), "a") as f:
-                for key, val in result.items():
-                    original_key = key
+    with (
+        log_exceptions(base_logger, "Failed to write HDF5 file"),
+        PerformanceTimer(base_logger, "HDF5 write operation", item_count=len(result)),
+        h5py.File(str(save_path), "a") as f,
+    ):
+        for key, val in result.items():
+            original_key = key
 
-                    # Transform key if using alias mode
-                    if mode == "alias":
-                        if key not in hdf_key[file_type]:
-                            context_logger.warning(
-                                "Unknown alias key, using raw key",
-                                extra={
-                                    "key": key,
-                                    "available_keys": list(hdf_key[file_type].keys()),
-                                },
-                            )
-                        else:
-                            key = hdf_key[file_type][key]
-                            context_logger.debug(
-                                "Key alias translation",
-                                extra={"original_key": original_key, "hdf_key": key},
-                            )
+            # Transform key if using alias mode
+            if mode == "alias":
+                if key not in hdf_key[file_type]:
+                    context_logger.warning(
+                        "Unknown alias key, using raw key",
+                        extra={
+                            "key": key,
+                            "available_keys": list(hdf_key[file_type].keys()),
+                        },
+                    )
+                else:
+                    key = hdf_key[file_type][key]
+                    context_logger.debug(
+                        "Key alias translation",
+                        extra={"original_key": original_key, "hdf_key": key},
+                    )
 
-                    # Remove existing key if present
-                    if key in f:
-                        context_logger.debug(
-                            "Overwriting existing key", extra={"key": key}
-                        )
-                        del f[key]
+            # Remove existing key if present
+            if key in f:
+                context_logger.debug("Overwriting existing key", extra={"key": key})
+                del f[key]
 
-                    # Reshape 1D arrays to 2D format if needed
-                    original_shape = None
-                    if isinstance(val, np.ndarray):
-                        original_shape = val.shape
-                        if val.ndim == 1:
-                            val = np.reshape(val, (1, -1))
-                            context_logger.debug(
-                                "Reshaped 1D array",
-                                extra={
-                                    "key": key,
-                                    "original_shape": original_shape,
-                                    "new_shape": val.shape,
-                                },
-                            )
+            # Reshape 1D arrays to 2D format if needed
+            original_shape = None
+            if isinstance(val, np.ndarray):
+                original_shape = val.shape
+                if val.ndim == 1:
+                    val = np.reshape(val, (1, -1))
+                    context_logger.debug(
+                        "Reshaped 1D array",
+                        extra={
+                            "key": key,
+                            "original_shape": original_shape,
+                            "new_shape": val.shape,
+                        },
+                    )
 
-                    # Write data
-                    f[key] = val
+            # Write data
+            f[key] = val
 
-                    # Log details about written data
-                    if isinstance(val, np.ndarray):
-                        context_logger.debug(
-                            "Wrote array data",
-                            extra={
-                                "key": key,
-                                "dtype": str(val.dtype),
-                                "shape": val.shape,
-                                "size_mb": round(val.nbytes / (1024 * 1024), 3),
-                            },
-                        )
-                    else:
-                        context_logger.debug(
-                            "Wrote scalar data",
-                            extra={"key": key, "value_type": type(val).__name__},
-                        )
+            # Log details about written data
+            if isinstance(val, np.ndarray):
+                context_logger.debug(
+                    "Wrote array data",
+                    extra={
+                        "key": key,
+                        "dtype": str(val.dtype),
+                        "shape": val.shape,
+                        "size_mb": round(val.nbytes / (1024 * 1024), 3),
+                    },
+                )
+            else:
+                context_logger.debug(
+                    "Wrote scalar data",
+                    extra={"key": key, "value_type": type(val).__name__},
+                )
 
     context_logger.info("HDF5 write completed successfully")
 
