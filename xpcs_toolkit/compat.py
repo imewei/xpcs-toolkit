@@ -12,7 +12,7 @@ from typing import Any
 import warnings
 
 
-def _create_module_redirect(old_path: str, new_path: str) -> None:
+def _create_module_redirect(old_path: str, new_path: str) -> Any:
     """
     Create a module redirect for backward compatibility.
 

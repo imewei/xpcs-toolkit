@@ -136,18 +136,20 @@ XPCS Toolkit Development Team
 Advanced Photon Source, Argonne National Laboratory
 """
 
+from typing import Any, Union
+
 
 def plot(
-    xfile,
-    pg_hdl=None,
-    plot_type="log",
-    cmap="jet",
-    rotate=False,
-    autolevel=False,
-    autorange=False,
-    vmin=None,
-    vmax=None,
-):
+    xfile: Any,
+    pg_hdl: Any = None,
+    plot_type: str = "log",
+    cmap: str = "jet",
+    rotate: bool = False,
+    autolevel: bool = False,
+    autorange: bool = False,
+    vmin: Union[float, None] = None,
+    vmax: Union[float, None] = None,
+) -> None:
     """
     Display 2D SAXS scattering patterns with comprehensive visualization options.
 

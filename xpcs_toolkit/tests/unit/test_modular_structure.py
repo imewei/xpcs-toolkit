@@ -319,6 +319,7 @@ class TestModuleInitFiles:
                 assert hasattr(package, "__path__"), f"{package_name} is not a package"
 
                 # Should have __init__.py
+                assert package.__file__ is not None, f"{package_name} has no __file__"
                 init_file = Path(package.__file__)
                 assert init_file.name == "__init__.py", (
                     f"{package_name} missing __init__.py"

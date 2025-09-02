@@ -43,7 +43,7 @@ class LazyModule:
         self._module_name = module_name
         self._attribute = attribute
         self._globals_dict = globals_dict
-        self._module = None
+        self._module: Optional[ModuleType] = None
         self._lock = threading.RLock()
 
     def _ensure_loaded(self) -> ModuleType:
@@ -67,6 +67,7 @@ class LazyModule:
                             f"This may be due to a missing optional dependency. "
                             f"Please install the required packages."
                         ) from e
+        assert self._module is not None  # Should always be set if no exception
         return self._module
 
     def __getattr__(self, name: str) -> Any:
@@ -80,7 +81,7 @@ class LazyModule:
         else:
             return getattr(module, name)
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
         """Make the lazy module callable if the underlying module/attribute is."""
         if self._attribute:
             module = self._ensure_loaded()
@@ -175,7 +176,7 @@ def lazy_import_from(
     return {attr: LazyModule(module_name, attr, globals_dict) for attr in attributes}
 
 
-def install_lazy_import_hook():
+def install_lazy_import_hook() -> None:
     """
     Install a sys.modules hook to automatically create lazy imports.
 
@@ -216,7 +217,7 @@ minimize = lazy_import("scipy.optimize", "minimize")
 
 
 # Validation function to test lazy imports
-def validate_lazy_imports():
+def validate_lazy_imports() -> None:
     """Validate that lazy imports are working correctly."""
     import time
 

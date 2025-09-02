@@ -55,24 +55,24 @@ class TestHDFReader:
     @pytest.mark.skipif(not HDF_READER_AVAILABLE, reason="HDF reader not available")
     def test_get_abs_cs_scale_function_exists(self):
         """Test that get_abs_cs_scale function exists."""
-        assert callable(get_abs_cs_scale)  # type: ignore[union-attr]
+        assert callable(get_abs_cs_scale)  # type: ignore[misc]
 
     @pytest.mark.skipif(not HDF_READER_AVAILABLE, reason="HDF reader not available")
     def test_get_analysis_type_function_exists(self):
         """Test that get_analysis_type function exists."""
-        assert callable(get_analysis_type)  # type: ignore[union-attr]
+        assert callable(get_analysis_type)  # type: ignore[misc]
 
     @pytest.mark.skipif(not HDF_READER_AVAILABLE, reason="HDF reader not available")
     def test_get_abs_cs_scale_with_nonexistent_file(self):
         """Test get_abs_cs_scale with non-existent file."""
         with pytest.raises((FileNotFoundError, OSError, Exception)):
-            get_abs_cs_scale("nonexistent_file.h5")  # type: ignore[union-attr]
+            get_abs_cs_scale("nonexistent_file.h5")  # type: ignore[misc]
 
     @pytest.mark.skipif(not HDF_READER_AVAILABLE, reason="HDF reader not available")
     def test_get_analysis_type_with_nonexistent_file(self):
         """Test get_analysis_type with non-existent file."""
         # get_analysis_type handles missing files gracefully and returns default
-        result = get_analysis_type("nonexistent_file.h5")  # type: ignore[union-attr]
+        result = get_analysis_type("nonexistent_file.h5")  # type: ignore[misc]
         # Should return tuple with default analysis type
         assert isinstance(result, tuple)
         assert len(result) > 0
@@ -83,7 +83,7 @@ class TestHDFReader:
         # Test deprecated 'fname' parameter
         try:
             with pytest.warns(DeprecationWarning, match="'fname' is deprecated"):
-                get_abs_cs_scale(fname="nonexistent.h5")  # type: ignore[union-attr]
+                get_abs_cs_scale(fname="nonexistent.h5")  # type: ignore[misc]
         except (FileNotFoundError, OSError, Exception):
             # File error is expected, but deprecation warning should be issued
             pass
@@ -91,7 +91,7 @@ class TestHDFReader:
         # Test deprecated 'ftype' parameter
         try:
             with pytest.warns(DeprecationWarning, match="'ftype' is deprecated"):
-                get_abs_cs_scale("nonexistent.h5", ftype="nexus")  # type: ignore[union-attr]
+                get_abs_cs_scale("nonexistent.h5", ftype="nexus")  # type: ignore[misc]
         except (FileNotFoundError, OSError, Exception):
             # File error is expected, but deprecation warning should be issued
             pass
@@ -108,7 +108,7 @@ class TestHDFReader:
         mock_file.__getitem__.return_value = MagicMock()
 
         try:
-            result = get_abs_cs_scale("mock_file.h5")  # type: ignore[union-attr]
+            result = get_abs_cs_scale("mock_file.h5")  # type: ignore[misc]
             # Result should be a number or None
             assert isinstance(result, (int, float, type(None)))
         except (KeyError, AttributeError, NotImplementedError):
@@ -124,7 +124,7 @@ class TestHDFReader:
         mock_h5py.return_value.__enter__.return_value = mock_file
 
         try:
-            result = get_analysis_type("mock_file.h5")  # type: ignore[union-attr]
+            result = get_analysis_type("mock_file.h5")  # type: ignore[misc]
             # Result should be a string or None
             assert isinstance(result, (str, type(None)))
         except (KeyError, AttributeError, NotImplementedError, ValueError):
@@ -160,21 +160,21 @@ class TestFtypeUtils:
     @pytest.mark.skipif(not FTYPE_UTILS_AVAILABLE, reason="Ftype utils not available")
     def test_get_ftype_with_nonexistent_file(self):
         """Test get_ftype with non-existent file."""
-        result = get_ftype("nonexistent_file.h5")  # type: ignore[union-attr]
+        result = get_ftype("nonexistent_file.h5")  # type: ignore[misc]
         # Should return False for non-existent file
         assert result is False or result is None
 
     @pytest.mark.skipif(not FTYPE_UTILS_AVAILABLE, reason="Ftype utils not available")
     def test_is_nexus_file_with_nonexistent_file(self):
         """Test isNeXusFile with non-existent file."""
-        result = isNeXusFile("nonexistent_file.h5")  # type: ignore[union-attr]
+        result = isNeXusFile("nonexistent_file.h5")  # type: ignore[misc]
         # Should return False for non-existent file
         assert result is False or result is None
 
     @pytest.mark.skipif(not FTYPE_UTILS_AVAILABLE, reason="Ftype utils not available")
     def test_is_legacy_file_with_nonexistent_file(self):
         """Test isLegacyFile with non-existent file."""
-        result = isLegacyFile("nonexistent_file.h5")  # type: ignore[union-attr]
+        result = isLegacyFile("nonexistent_file.h5")  # type: ignore[misc]
         # Should return False for non-existent file
         assert result is False or result is None
 
@@ -187,9 +187,9 @@ class TestFtypeUtils:
         for filename in test_files:
             # These will fail because files don't exist, but should handle gracefully
             try:
-                get_ftype(filename)  # type: ignore[union-attr]
-                isNeXusFile(filename)  # type: ignore[union-attr]
-                isLegacyFile(filename)  # type: ignore[union-attr]
+                get_ftype(filename)  # type: ignore[misc]
+                isNeXusFile(filename)  # type: ignore[misc]
+                isLegacyFile(filename)  # type: ignore[misc]
             except (FileNotFoundError, OSError):
                 # Expected behavior for non-existent files
                 pass
@@ -199,13 +199,13 @@ class TestFtypeUtils:
         """Test parameter name compatibility."""
         # Test that functions accept the new parameter name 'filename'
         try:
-            result = get_ftype(filename="nonexistent.h5")  # type: ignore[union-attr]
+            result = get_ftype(filename="nonexistent.h5")  # type: ignore[misc]
             assert result is False or result is None
         except (FileNotFoundError, OSError):
             pass
 
         try:
-            result = isNeXusFile(filename="nonexistent.h5")  # type: ignore[union-attr]
+            result = isNeXusFile(filename="nonexistent.h5")  # type: ignore[misc]
             assert result is False or result is None
         except (FileNotFoundError, OSError):
             pass
@@ -238,13 +238,13 @@ class TestQMapUtils:
         """Test QMap initialization."""
         try:
             # Try to create QMap instance
-            qmap = QMap()  # type: ignore[union-attr]
+            qmap = QMap()  # type: ignore[misc]
             assert qmap is not None
         except TypeError:
             # Constructor might require parameters
             try:
                 # Try with mock parameters
-                qmap = QMap()  # type: ignore[union-attr]
+                qmap = QMap()  # type: ignore[misc]
                 assert qmap is not None
             except (TypeError, AttributeError):
                 # Skip if we can't determine constructor signature
@@ -254,13 +254,13 @@ class TestQMapUtils:
     def test_qmap_manager_initialization(self):
         """Test QMapManager initialization."""
         try:
-            manager = QMapManager()  # type: ignore[union-attr]
+            manager = QMapManager()  # type: ignore[misc]
             assert manager is not None
         except TypeError:
             # Constructor might require parameters
             try:
                 # Try with mock parameters
-                manager = QMapManager()  # type: ignore[union-attr]
+                manager = QMapManager()  # type: ignore[misc]
                 assert manager is not None
             except (TypeError, AttributeError):
                 pass
@@ -269,7 +269,7 @@ class TestQMapUtils:
     def test_qmap_methods(self):
         """Test QMap methods."""
         try:
-            qmap = QMap()  # type: ignore[union-attr]
+            qmap = QMap()  # type: ignore[misc]
 
             # Test common Q-map methods
             possible_methods = [
@@ -293,7 +293,7 @@ class TestQMapUtils:
     def test_qmap_manager_methods(self):
         """Test QMapManager methods."""
         try:
-            manager = QMapManager()  # type: ignore[union-attr]
+            manager = QMapManager()  # type: ignore[misc]
 
             # Test common manager methods
             possible_methods = [
@@ -374,7 +374,7 @@ class TestFileIOIntegration:
         # Test with available modules
         if HDF_READER_AVAILABLE:
             try:
-                get_abs_cs_scale(test_filename)  # type: ignore[union-attr]
+                get_abs_cs_scale(test_filename)  # type: ignore[misc]
             except Exception:
                 pass
 
@@ -396,18 +396,18 @@ class TestFileIOErrorHandling:
         # Test HDF reader
         if HDF_READER_AVAILABLE:
             with pytest.raises((FileNotFoundError, OSError, Exception)):
-                get_abs_cs_scale(nonexistent_file)  # type: ignore[union-attr]
+                get_abs_cs_scale(nonexistent_file)  # type: ignore[misc]
 
             # get_analysis_type handles missing files gracefully
-            result = get_analysis_type(nonexistent_file)  # type: ignore[union-attr]
+            result = get_analysis_type(nonexistent_file)  # type: ignore[misc]
             assert isinstance(result, tuple)
 
         # Test ftype utils
         if FTYPE_UTILS_AVAILABLE:
             # These should return False rather than raise exceptions
-            assert get_ftype(nonexistent_file) is False  # type: ignore[union-attr]
-            assert isNeXusFile(nonexistent_file) is False  # type: ignore[union-attr]
-            assert isLegacyFile(nonexistent_file) is False  # type: ignore[union-attr]
+            assert get_ftype(nonexistent_file) is False  # type: ignore[misc]
+            assert isNeXusFile(nonexistent_file) is False  # type: ignore[misc]
+            assert isLegacyFile(nonexistent_file) is False  # type: ignore[misc]
 
     def test_invalid_file_format_handling(self):
         """Test handling of invalid file formats."""
@@ -420,11 +420,11 @@ class TestFileIOErrorHandling:
                 # Test with different modules
                 if HDF_READER_AVAILABLE:
                     with pytest.raises((OSError, ValueError, Exception)):
-                        get_abs_cs_scale(tmp.name)  # type: ignore[union-attr]
+                        get_abs_cs_scale(tmp.name)  # type: ignore[misc]
 
                 if FTYPE_UTILS_AVAILABLE:
                     # Should handle gracefully
-                    result = get_ftype(tmp.name)  # type: ignore[union-attr]
+                    result = get_ftype(tmp.name)  # type: ignore[misc]
                     assert result is False or isinstance(result, bool)
 
             finally:
@@ -444,11 +444,11 @@ class TestFileIOErrorHandling:
                 # Test modules handle permission errors
                 if HDF_READER_AVAILABLE:
                     with pytest.raises((PermissionError, OSError, Exception)):
-                        get_abs_cs_scale(tmp.name)  # type: ignore[union-attr]
+                        get_abs_cs_scale(tmp.name)  # type: ignore[misc]
 
                 if FTYPE_UTILS_AVAILABLE:
                     # Should handle gracefully
-                    get_ftype(tmp.name)  # type: ignore[union-attr]
+                    get_ftype(tmp.name)  # type: ignore[misc]
                     # Might return False or raise exception
 
             finally:
@@ -495,7 +495,7 @@ class TestFileIOPerformance:
 
         if FTYPE_UTILS_AVAILABLE:
             start_time = time.time()
-            result = get_ftype(nonexistent_file)  # type: ignore[union-attr]
+            result = get_ftype(nonexistent_file)  # type: ignore[misc]
             execution_time = time.time() - start_time
 
             # Should execute quickly (less than 0.1 seconds)
@@ -515,7 +515,7 @@ class TestFileIOPerformance:
         if HDF_READER_AVAILABLE:
             start_time = time.time()
             try:
-                get_abs_cs_scale("mock_file.h5")  # type: ignore[union-attr]
+                get_abs_cs_scale("mock_file.h5")  # type: ignore[misc]
             except Exception:
                 pass
             execution_time = time.time() - start_time

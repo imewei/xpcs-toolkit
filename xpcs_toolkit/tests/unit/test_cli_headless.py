@@ -31,7 +31,7 @@ class TestArgumentParser:
         """Test basic parser creation."""
         parser = create_parser()
         assert isinstance(parser, argparse.ArgumentParser)
-        assert "XPCS Toolkit" in parser.description
+        assert parser.description is not None and "XPCS Toolkit" in parser.description
 
     def test_parser_version_argument(self):
         """Test version argument."""

@@ -154,19 +154,21 @@ XPCS Toolkit Development Team
 Advanced Photon Source, Argonne National Laboratory
 """
 
+from typing import Any, Union
+
 # Removed PyQtGraph-dependent imports for headless operation
 
 
 def plot(
-    fc,
-    pg_hdl,
-    plot_type=2,
-    plot_norm=0,
-    legend=None,
-    title=None,
-    loc="upper right",
-    **kwargs,
-):
+    fc: Any,
+    pg_hdl: Any,
+    plot_type: int = 2,
+    plot_norm: int = 0,
+    legend: Union[str, None] = None,
+    title: Union[str, None] = None,
+    loc: str = "upper right",
+    **kwargs: Any,
+) -> None:
     """
     Visualize temporal stability of partial scattering profiles over time.
 

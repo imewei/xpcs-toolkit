@@ -95,6 +95,7 @@ import logging
 import os
 import sys
 import warnings
+from typing import Any
 
 # Use lazy imports for heavy dependencies
 from ._lazy_imports import lazy_import
@@ -110,7 +111,7 @@ from xpcs_toolkit.helper.logging_config import get_logger, setup_logging
 logger = logging.getLogger(__name__)
 
 
-def configure_logging(enable_verbose_output=False):
+def configure_logging(enable_verbose_output: bool = False) -> None:
     """Configure logging with appropriate level and format.
 
     Args:
@@ -131,7 +132,7 @@ def configure_logging(enable_verbose_output=False):
     setup_logging({"level": level})
 
 
-def plot_saxs_2d(arguments):
+def plot_saxs_2d(arguments: Any) -> None:
     """
     Generate publication-ready 2D Small-Angle X-ray Scattering (SAXS) pattern visualizations.
 
@@ -263,7 +264,7 @@ def plot_saxs_2d(arguments):
     return 0
 
 
-def plot_g2_function(arguments):
+def plot_g2_function(arguments: Any) -> None:
     """
     Analyze and visualize intensity correlation functions g₂(q,τ) from XPCS measurements.
 
@@ -443,7 +444,7 @@ def plot_g2_function(arguments):
     return 0
 
 
-def plot_saxs1d(args):
+def plot_saxs1d(args: Any) -> None:
     """Plot 1D radial scattering profiles"""
     logger.info(f"Processing SAXS 1D for path: {args.path}")
 
@@ -543,7 +544,7 @@ def plot_saxs1d(args):
     return 0
 
 
-def plot_stability(args):
+def plot_stability(args: Any) -> None:
     """Plot beam stability analysis"""
     logger.info(f"Processing stability analysis for path: {args.path}")
 
@@ -589,7 +590,7 @@ def plot_stability(args):
     return 0
 
 
-def list_files(args):
+def list_files(args: Any) -> None:
     """List available HDF files in directory"""
     logger.info(f"Listing files in path: {args.path}")
 
@@ -607,7 +608,7 @@ def list_files(args):
     return 0
 
 
-def create_parser():
+def create_parser() -> argparse.ArgumentParser:
     """Create comprehensive argument parser for XPCS analysis.
 
     Returns
@@ -781,7 +782,7 @@ For technical support: https://github.com/imewei/xpcs-toolkit
     return parser
 
 
-def main():
+def main() -> None:
     """Main entry point with comprehensive logging and error handling."""
     parser = create_parser()
     args = parser.parse_args()

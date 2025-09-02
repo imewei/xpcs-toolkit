@@ -1,6 +1,7 @@
 import logging
 import os
 import traceback
+from typing import Any
 
 # Use lazy imports for heavy dependencies to improve import time
 from .._lazy_imports import lazy_import
@@ -18,12 +19,12 @@ memory = Memory(cache_dir, verbose=0)
 
 
 @memory.cache
-def fit_with_fixed(*args, **kwargs):
+def fit_with_fixed(*args: Any, **kwargs: Any) -> Any:
     # wrap the fitting function in memory so avoid re-run
     return fit_with_fixed_raw(*args, **kwargs)
 
 
-def single_exp(x, tau, bkg, cts):
+def single_exp(x: Any, tau: float, bkg: float, cts: float) -> Any:
     """
     Single exponential decay function for XPCS correlation analysis.
 
@@ -47,7 +48,7 @@ def single_exp(x, tau, bkg, cts):
     return cts * np.exp(-2.0 * x / tau) + bkg
 
 
-def fit_tau(qd, tau, tau_err):
+def fit_tau(qd: Any, tau: Any, tau_err: Any) -> Any:
     """
     Fit relaxation times as a function of q-vector magnitude for XPCS analysis.
 
@@ -90,7 +91,7 @@ def fit_tau(qd, tau, tau_err):
     return reg.coef_, reg.intercept_, np.exp(x2), np.exp(y2)
 
 
-def fit_xpcs(tel, qd, g2, g2_err, b):
+def fit_xpcs(tel: Any, qd: Any, g2: Any, g2_err: Any, b: Any) -> Any:
     """
     :param tel: t_el
     :param qd: ql_dyn
@@ -146,7 +147,7 @@ def fit_xpcs(tel, qd, g2, g2_err, b):
     return fit_result, fit_val
 
 
-def fit_with_fixed_raw(base_func, x, y, sigma, bounds, fit_flag, fit_x, p0=None):
+def fit_with_fixed_raw(base_func: Any, x: Any, y: Any, sigma: Any, bounds: Any, fit_flag: Any, fit_x: Any, p0: Any = None) -> Any:
     """
     :param base_func: the base function used for fitting; it can have multiple
         input variables, some of which can be fixed during the fitting;

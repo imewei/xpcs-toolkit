@@ -59,7 +59,7 @@ class LoggerWriter:
             # Assume it's a logging function like logger.debug
             self.level_func = logger_or_func
 
-        self.buffer = []
+        self.buffer: list[str] = []
         self.lock = threading.Lock()
 
     def write(self, message: str) -> int:
@@ -163,12 +163,12 @@ class AsyncLoggerWriter(LoggerWriter):
         level: Optional[int] = None,
     ):
         super().__init__(logger_or_func, level)
-        self.message_queue = queue.Queue(maxsize=1000)  # Prevent unbounded growth
+        self.message_queue: queue.Queue[str] = queue.Queue(maxsize=1000)  # Prevent unbounded growth
         self.worker_thread = threading.Thread(target=self._worker, daemon=True)
         self.shutdown_event = threading.Event()
         self.worker_thread.start()
 
-    def _worker(self):
+    def _worker(self) -> None:
         """Worker thread that processes messages from the queue."""
         while not self.shutdown_event.is_set():
             try:
@@ -207,7 +207,7 @@ class AsyncLoggerWriter(LoggerWriter):
 
         return len(message)
 
-    def close(self):
+    def close(self) -> None:
         """Close the async writer and wait for worker thread to finish."""
         self.flush()
         self.shutdown_event.set()

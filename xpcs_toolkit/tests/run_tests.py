@@ -118,8 +118,8 @@ Examples:
         else:
             base_cmd.append("--cov-report=term-missing")
 
-    tests_passed = []
-    tests_failed = []
+    tests_passed: list[str] = []
+    tests_failed: list[str] = []
 
     # Run unit tests
     if args.unit or args.all:

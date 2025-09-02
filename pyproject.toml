@@ -263,6 +263,20 @@ disallow_untyped_defs = false
 disallow_incomplete_defs = false
 disallow_untyped_decorators = false
 
+# Legacy compatibility modules - less strict typing due to compatibility requirements
+[[tool.mypy.overrides]]
+module = [
+    "xpcs_toolkit.module.*",
+    "xpcs_toolkit.helper.*",
+    "xpcs_toolkit.fileIO.*",
+    "xpcs_toolkit.configure.*",
+    "xpcs_toolkit._lazy_imports",
+    "xpcs_toolkit.utils.common.lazy_imports",
+]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+warn_return_any = false
+
 # Ruff Configuration
 [tool.ruff]
 target-version = "py39"
