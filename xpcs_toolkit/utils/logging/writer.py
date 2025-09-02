@@ -218,7 +218,11 @@ class AsyncLoggerWriter(LoggerWriter):
 
 
 @contextmanager
-def redirect_std_streams(stdout_logger: Optional[logging.Logger] = None, stderr_logger: Optional[logging.Logger] = None, async_mode: bool = False) -> Any:
+def redirect_std_streams(
+    stdout_logger: Optional[logging.Logger] = None,
+    stderr_logger: Optional[logging.Logger] = None,
+    async_mode: bool = False,
+) -> Any:
     """
     Context manager to temporarily redirect stdout/stderr to loggers.
 
@@ -295,6 +299,9 @@ class LogWriter(LoggerWriter):
             DeprecationWarning,
             stacklevel=2,
         )
+
         # Create a logger function for backward compatibility
-        logger_func = lambda msg: logging.log(level, msg)
+        def logger_func(msg):
+            logging.log(level, msg)
+
         super().__init__(logger_func)
