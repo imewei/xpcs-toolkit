@@ -1,3 +1,11 @@
+"""
+APS 8-ID-I beamline specific data structure mappings.
+
+This module defines the HDF5 key mappings for XPCS data files collected
+at the APS 8-ID-I beamline, providing standardized access paths for
+different data formats and analysis results.
+"""
+
 key = {
     "nexus": {
         # qmap related

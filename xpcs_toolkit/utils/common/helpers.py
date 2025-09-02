@@ -1,7 +1,33 @@
+"""
+Common utility functions for data processing and visualization.
+
+This module provides shared utility functions used throughout the XPCS toolkit
+for data manipulation, normalization, and range calculations.
+"""
+
 import numpy as np
 
 
 def get_min_max(data, min_percent=0, max_percent=100, **kwargs):
+    """
+    Calculate minimum and maximum values for data visualization.
+    
+    Parameters
+    ----------
+    data : array_like
+        Input data array
+    min_percent : float, default 0
+        Minimum percentile for range calculation
+    max_percent : float, default 100
+        Maximum percentile for range calculation
+    **kwargs
+        Additional plotting parameters including plot_norm and plot_type
+        
+    Returns
+    -------
+    tuple
+        (vmin, vmax) values for visualization range
+    """
     vmin = np.percentile(data.ravel(), min_percent)
     vmax = np.percentile(data.ravel(), max_percent)
     if "plot_norm" in kwargs and "plot_type" in kwargs and kwargs["plot_norm"] == 3:
@@ -16,6 +42,23 @@ def get_min_max(data, min_percent=0, max_percent=100, **kwargs):
 
 
 def norm_saxs_data(Iq, q, plot_norm=0):
+    """
+    Normalize SAXS intensity data for different plotting modes.
+    
+    Parameters
+    ----------
+    Iq : array_like
+        SAXS intensity values
+    q : array_like
+        Scattering vector magnitudes
+    plot_norm : int, default 0
+        Normalization mode (0=none, 1=q^2, 2=q^4, 3=I/I_0)
+        
+    Returns
+    -------
+    tuple
+        (normalized_Iq, xlabel, ylabel) for plotting
+    """
     ylabel = "Intensity"
     if plot_norm == 1:
         Iq = Iq * np.square(q)
@@ -33,6 +76,21 @@ def norm_saxs_data(Iq, q, plot_norm=0):
 
 
 def create_slice(arr, x_range):
+    """
+    Create a slice object for array range selection.
+    
+    Parameters
+    ----------
+    arr : array_like
+        Input array to slice
+    x_range : tuple
+        (start, end) range values
+        
+    Returns
+    -------
+    slice
+        Slice object for array indexing
+    """
     start, end = 0, arr.size - 1
     while arr[start] < x_range[0]:
         start += 1

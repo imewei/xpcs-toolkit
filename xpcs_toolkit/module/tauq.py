@@ -1,3 +1,10 @@
+"""
+Tau-q visualization module for XPCS relaxation time analysis.
+
+This module provides plotting functions to visualize the relationship between
+relaxation times (tau) and scattering vector magnitude (q) in XPCS experiments.
+"""
+
 import numpy as np
 
 colors = ("b", "r", "g", "c", "m", "y", "k")
@@ -5,6 +12,22 @@ shapes = ("o", "v", "^", "<", ">", "8", "s", "p", "P", "*")
 
 
 def plot(xf_list, hdl, q_range, offset, plot_type=3):
+    """
+    Plot tau-q relationship for XPCS analysis.
+    
+    Parameters
+    ----------
+    xf_list : list
+        List of XPCS analysis objects containing fit results
+    hdl : object
+        Figure handle for plotting
+    q_range : tuple
+        Q-vector range for analysis
+    offset : float
+        Vertical offset multiplier for multiple datasets
+    plot_type : int, default 3
+        Plot scale type (0=lin-lin, 1=log-lin, 2=lin-log, 3=log-log)
+    """
     hdl.clear()
     ax = hdl.subplots(1, 1)
 
@@ -53,6 +76,16 @@ def plot(xf_list, hdl, q_range, offset, plot_type=3):
 
 
 def plot_pre(xf_list, hdl):
+    """
+    Create preliminary fitting parameter plots for XPCS analysis.
+    
+    Parameters
+    ----------
+    xf_list : list
+        List of XPCS analysis objects with fit summaries
+    hdl : object
+        Figure handle for creating subplots
+    """
     hdl.clear()
     ax = hdl.subplots(2, 2, sharex=True).flatten()
     titles = ["contrast", "tau (s)", "stretch", "baseline"]

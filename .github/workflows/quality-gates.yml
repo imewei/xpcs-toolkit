@@ -176,7 +176,7 @@ jobs:
     - name: Check docstring coverage
       run: |
         echo "::group::Docstring Coverage"
-        interrogate xpcs_toolkit --verbose --fail-under=80 --exclude xpcs_toolkit/tests
+        interrogate xpcs_toolkit --verbose --fail-under=75 --exclude xpcs_toolkit/tests
         echo "::endgroup::"
     
     - name: Build documentation

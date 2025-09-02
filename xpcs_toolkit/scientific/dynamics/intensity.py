@@ -1,3 +1,10 @@
+"""
+Intensity dynamics analysis for XPCS experiments.
+
+This module provides functions to analyze and visualize intensity time series
+data from XPCS measurements, with support for data smoothing and sampling.
+"""
+
 import numpy as np
 
 # PyQtGraph import removed for headless operation
@@ -24,6 +31,23 @@ colors = [
 
 
 def smooth_data(fc, window=1, sampling=1):
+    """
+    Smooth and sample intensity dynamics data.
+    
+    Parameters
+    ----------
+    fc : object
+        XPCS file object containing Int_t intensity data
+    window : int, default 1
+        Moving average window size for smoothing
+    sampling : int, default 1
+        Downsampling factor for data reduction
+        
+    Returns
+    -------
+    tuple
+        (x, y) arrays of frame indices and smoothed intensities
+    """
     # some bad frames have both x and y = 0;
     # x, y = fc.Int_t[0], fc.Int_t[1]
     y = fc.Int_t[1]
