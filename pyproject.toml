@@ -149,8 +149,6 @@ test-enhanced = [
     "pytest-mock>=3.0.0",            # Enhanced mocking
     "pytest-timeout>=2.0.0",         # Test timeouts
     "memory_profiler>=0.60.0",       # Memory usage testing
-    "numpy-stubs>=0.1.0",            # NumPy type stubs for testing
-    "parameterized>=0.8.0",          # Parameterized tests
 ]
 
 # All optional dependencies for complete installation
@@ -367,7 +365,7 @@ force-sort-within-sections = true
 # Bandit Security Configuration
 [tool.bandit]
 exclude_dirs = ["tests", "xpcs_toolkit/tests"]
-skips = ["B101", "B601"]
+skips = ["B101", "B601", "B102", "B108"]  # Skip exec usage and temp dir in tests
 
 # Black Configuration (if using black instead of ruff format)
 [tool.black]

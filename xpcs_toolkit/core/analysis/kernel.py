@@ -18,7 +18,7 @@ from ...scientific.processing.averaging import AverageToolbox
 from ...scientific.scattering import saxs_1d as saxs1d
 from ...scientific.scattering import saxs_2d as saxs2d
 from ...utils.compatibility.matplotlib import DataTreeWidget
-from ..data.file import XpcsDataFile
+from ...xpcs_file import XpcsDataFile
 from ..data.locator import DataFileLocator
 
 logger = logging.getLogger(__name__)
