@@ -382,7 +382,7 @@ A: - Watch the GitHub repository for notifications
 A: XPCS Toolkit is developed at Argonne National Laboratory. For institutional partnerships or specialized support, contact weichen@anl.gov.
 
 Still have questions?
---------------------
+-----------------------
 
 If your question isn't answered here:
 

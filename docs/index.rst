@@ -10,7 +10,7 @@ XPCS Toolkit: Advanced X-ray Photon Correlation Spectroscopy Analysis
    :alt: Python Version
 
 .. image:: https://readthedocs.org/projects/xpcs-toolkit/badge/?version=latest
-   :target: https://xpcs-toolkit.readthedocs.io/en/latest/?badge=latest
+   :target: https://xpcs-toolkit.readthedocs.io/en/latest/
    :alt: Documentation Status
 
 .. image:: https://img.shields.io/badge/coverage-93%25-brightgreen
