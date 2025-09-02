@@ -173,7 +173,11 @@ colors = (
 symbols = ["o", "t", "t1", "t2", "t3", "s", "p", "h", "star", "+", "d", "x"]
 
 
-def get_data(xf_list: list[str], q_range: tuple[int, int] | None = None, t_range: tuple[int, int] | None = None) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def get_data(
+    xf_list: list[str],
+    q_range: tuple[int, int] | None = None,
+    t_range: tuple[int, int] | None = None,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Extract correlation function data from XPCS data files with optional filtering.
 

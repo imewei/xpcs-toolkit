@@ -122,6 +122,6 @@ please refer to the git commit history prior to this date.
 ## 📞 **Release Notes**
 
 For detailed release notes and upgrade instructions, see:
-- [Migration Guide](docs/archive/MIGRATION_GUIDE.md) - Upgrading between versions
+- Migration Guide (see docs/archive/) - Upgrading between versions
 - Dependencies Guide - Managing dependencies and installation options
 - [GitHub Releases](https://github.com/imewei/xpcs-toolkit/releases) - Official releases
