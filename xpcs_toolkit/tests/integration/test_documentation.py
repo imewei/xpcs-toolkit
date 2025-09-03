@@ -26,6 +26,7 @@ import pytest
 
 import xpcs_toolkit
 from xpcs_toolkit.core.data import locator
+from xpcs_toolkit.core.data.locator import DataFileLocator
 from xpcs_toolkit.scientific.correlation import g2
 from xpcs_toolkit.tests.fixtures.synthetic_data import SyntheticXPCSDataGenerator
 
@@ -247,7 +248,7 @@ class TestCodeExampleValidation:
         # Mock environment for examples that require external data
         self.mock_context = {
             "XpcsDataFile": MagicMock,
-            "DataFileLocator": locator.DataFileLocator,
+            "DataFileLocator": DataFileLocator,
             "g2mod": g2,
             "g2": g2,
             "np": None,  # Will be set up with lazy import
