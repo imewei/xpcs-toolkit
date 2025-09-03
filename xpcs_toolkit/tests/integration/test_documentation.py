@@ -36,7 +36,7 @@ except ImportError as e:
     # Fallback for CI environments where package structure might not be properly installed
     import warnings
 
-    warnings.warn(f"Could not import core.data modules: {e}")
+    warnings.warn(f"Could not import core.data modules: {e}", stacklevel=2)
     locator = None
     DataFileLocator = None
     core_data_available = False
