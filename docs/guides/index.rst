@@ -5,28 +5,9 @@ Comprehensive guides for using XPCS Toolkit in various scenarios and workflows.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Getting Started
-   
-   basic_usage
-   file_formats
-   command_line
-
-.. toctree::
-   :maxdepth: 2
    :caption: Analysis Workflows
    
    saxs_analysis
-   correlation_analysis
-   stability_monitoring
-   batch_processing
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Advanced Topics
-   
-   performance_optimization
-   integration
-   troubleshooting
 
 Overview
 --------

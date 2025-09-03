@@ -55,7 +55,7 @@ Command line visualization:
    xpcs-toolkit saxs2d /path/to/data/ --scale linear --vmin 10 --vmax 1000
 
 Advanced 2D Analysis
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 Beam center determination and q-calibration:
 
@@ -134,7 +134,7 @@ Extract 1D intensity profiles from 2D patterns:
        plt.show()
 
 Multi-Phi Analysis
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 Analyze angular-dependent scattering:
 
@@ -168,7 +168,7 @@ Quantitative Analysis
 ---------------------
 
 Guinier Analysis
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 Extract radius of gyration using Guinier approximation:
 
@@ -218,7 +218,7 @@ Extract radius of gyration using Guinier approximation:
            print(f"Fit quality: {fit_info}")
 
 Porod Analysis
-~~~~~~~~~~~~
+~~~~~~~~~~~~~~
 
 High-q analysis for surface area information:
 
@@ -270,7 +270,7 @@ High-q analysis for surface area information:
            print(f"Fit quality: {fit_info}")
 
 Power Law Fitting
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 General power law analysis:
 
@@ -320,7 +320,7 @@ Data Export and Processing
 --------------------------
 
 Export SAXS Data
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 Save analysis results for further processing:
 
@@ -354,7 +354,7 @@ Save analysis results for further processing:
                   fmt='%.6e')
 
 Batch Processing
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 Process multiple SAXS files:
 
@@ -438,7 +438,7 @@ Best Practices
 - Monitor memory usage
 
 Troubleshooting
---------------
+~~~~~~~~~~~~~~~
 
 **Common Issues:**
 

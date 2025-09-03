@@ -1,5 +1,5 @@
 Quick Start Tutorial
-===================
+====================
 
 This tutorial will get you analyzing XPCS data in under 5 minutes. We'll cover the most common workflows and essential features.
 
@@ -339,6 +339,5 @@ Need Help?
 - **Documentation**: You're reading it! 📚
 - **Examples**: Check the ``examples/`` directory in the repository
 - **Issues**: Report problems on `GitHub <https://github.com/imewei/xpcs-toolkit/issues>`_
-- **Discussions**: Join the community on `GitHub Discussions <https://github.com/imewei/xpcs-toolkit/discussions>`_
 
 Happy analyzing! 🔬✨

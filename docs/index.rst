@@ -9,9 +9,6 @@ XPCS Toolkit: Advanced X-ray Photon Correlation Spectroscopy Analysis
    :target: https://python.org
    :alt: Python Version
 
-.. image:: https://readthedocs.org/projects/xpcs-toolkit/badge/?version=latest
-   :target: https://xpcs-toolkit.readthedocs.io/en/latest/
-   :alt: Documentation Status
 
 .. image:: https://img.shields.io/badge/coverage-93%25-brightgreen
    :target: https://github.com/imewei/xpcs-toolkit
@@ -46,22 +43,18 @@ Get started with XPCS Toolkit in just a few minutes:
 .. grid:: 2
 
     .. grid-item-card:: Multi-tau Correlation Analysis
-        :img-top: _static/correlation.png
         
         Advanced g2(q,t) correlation function processing with comprehensive statistical analysis and fitting capabilities.
 
     .. grid-item-card:: Two-time Correlation
-        :img-top: _static/twotime.png
         
         Time-resolved correlation analysis for studying dynamic processes and temporal evolution.
 
     .. grid-item-card:: SAXS Visualization
-        :img-top: _static/saxs.png
         
         Small-Angle X-ray Scattering pattern analysis with publication-quality visualization tools.
 
     .. grid-item-card:: Stability Monitoring
-        :img-top: _static/stability.png
         
         Real-time beam stability assessment and quality control for experimental validation.
 
@@ -81,7 +74,6 @@ Get started with XPCS Toolkit in just a few minutes:
    :caption: User Guides
 
    guides/index
-   tutorials/index
 
 .. toctree::
    :maxdepth: 2
@@ -93,12 +85,11 @@ Get started with XPCS Toolkit in just a few minutes:
    :maxdepth: 2
    :caption: Development
 
-   development/index
    contributing
    changelog
 
 🎯 **Use Cases**
----------------
+----------------
 
 **Synchrotron Beamlines**
    Real-time analysis during experiments, quality control, automated processing pipelines, and remote monitoring capabilities.
@@ -135,25 +126,21 @@ XPCS Toolkit is designed for production use with enterprise-grade quality standa
      - Automated CI/CD validation
 
 🏢 **Institutional Support**
----------------------------
+-----------------------------
 
 Developed at **Argonne National Laboratory** with support from the U.S. Department of Energy, Office of Science, Office of Basic Energy Sciences.
 
-.. image:: _static/anl-logo.png
-   :width: 200px
-   :align: center
-   :alt: Argonne National Laboratory
+*Supported by Argonne National Laboratory*
 
 📞 **Getting Help**
-------------------
+-------------------
 
 - **Issues**: Report bugs and request features on `GitHub Issues <https://github.com/imewei/xpcs-toolkit/issues>`_
-- **Discussions**: Join the community on `GitHub Discussions <https://github.com/imewei/xpcs-toolkit/discussions>`_
 - **Email**: Contact the development team at weichen@anl.gov
 - **Documentation**: This comprehensive documentation with examples and guides
 
 📜 **Citation**
---------------
+---------------
 
 If you use XPCS Toolkit in your research, please cite:
 

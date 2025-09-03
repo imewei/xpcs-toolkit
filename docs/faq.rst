@@ -368,7 +368,7 @@ A: Multiple resources available:
 
 - **Documentation**: This comprehensive guide
 - **GitHub Issues**: https://github.com/imewei/xpcs-toolkit/issues
-- **GitHub Discussions**: https://github.com/imewei/xpcs-toolkit/discussions  
+  
 - **Email**: weichen@anl.gov for direct contact
 
 **Q: How do I stay updated on new releases?**
