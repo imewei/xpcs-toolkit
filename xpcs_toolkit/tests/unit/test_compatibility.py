@@ -295,7 +295,9 @@ class TestReorganizationIntegration:
 
             # They should have the same name and similar functionality
             # Note: During refactoring, these may be separate implementations
-            assert OldXpcsDataFile.__name__ == NewXpcsDataFile.__name__ == "XpcsDataFile"
+            assert (
+                OldXpcsDataFile.__name__ == NewXpcsDataFile.__name__ == "XpcsDataFile"
+            )
         except ImportError:
             # New structure might not be fully implemented yet
             pytest.skip("New modular structure not yet available")
