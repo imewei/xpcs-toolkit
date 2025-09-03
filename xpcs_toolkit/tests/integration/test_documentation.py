@@ -354,7 +354,7 @@ file_count = len(temp_locator.source_files)
         for i, example in enumerate(basic_examples):
             try:
                 exec_globals = {"__name__": "__main__"}
-                exec(example, exec_globals)
+                exec(example, exec_globals)  # nosec B102
 
             except Exception as e:
                 pytest.fail(f"Basic locator example {i} failed: {e}")
@@ -444,7 +444,7 @@ class TestDocumentationConsistency:
 
         for import_statement in documented_imports:
             try:
-                exec(import_statement)
+                exec(import_statement)  # nosec B102
             except ImportError as e:
                 pytest.fail(f"Documented import path invalid: {import_statement} - {e}")
 

@@ -468,7 +468,7 @@ class TestModuleIntegration:
         imported_modules = []
         for module_name in module_names:
             try:
-                exec(f"from xpcs_toolkit.module import {module_name}")
+                exec(f"from xpcs_toolkit.module import {module_name}")  # nosec B102
                 imported_modules.append(module_name)
             except ImportError:
                 # Some modules might not be available

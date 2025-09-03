@@ -52,7 +52,7 @@ class TestArgumentParser:
     def test_parser_verbose_argument(self):
         """Test verbose argument."""
         parser = create_parser()
-        args = parser.parse_args(["--verbose", "list", "/tmp"])
+        args = parser.parse_args(["--verbose", "list", "/tmp"])  # nosec B108
 
         assert args.verbose is True
 
@@ -68,7 +68,7 @@ class TestArgumentParser:
                 "--log-format",
                 "json",
                 "list",
-                "/tmp",
+                "/tmp",  # nosec B108
             ]
         )
 
@@ -214,7 +214,7 @@ class TestMainFunction:
 
     def test_main_exception_handling(self):
         """Test main function exception handling."""
-        with patch("sys.argv", ["cli_headless", "unknown_command", "/tmp"]):
+        with patch("sys.argv", ["cli_headless", "unknown_command", "/tmp"]):  # nosec B108
             with patch("xpcs_toolkit.cli_headless.get_logger"):
                 with pytest.raises(SystemExit) as excinfo:
                     main()
@@ -790,7 +790,7 @@ class TestCLIIntegration:
         # Test that all subparsers are created
         for command in expected_commands:
             # This should not raise an error if subparser exists
-            args = parser.parse_args([command, "/tmp"])
+            args = parser.parse_args([command, "/tmp"])  # nosec B108
             assert args.command == command
 
     def test_cli_function_imports(self):

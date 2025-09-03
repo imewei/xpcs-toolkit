@@ -95,13 +95,13 @@ class TestBackwardCompatibilityImports:
             pass  # Expected for missing file
 
         try:
-            locator = DataFileLocator("/tmp")
+            locator = DataFileLocator("/tmp")  # nosec B108
             assert hasattr(locator, "__class__")
         except (FileNotFoundError, OSError):
             pass  # Expected for missing directory
 
         try:
-            kernel = AnalysisKernel("/tmp")
+            kernel = AnalysisKernel("/tmp")  # nosec B108
             assert hasattr(kernel, "__class__")
         except (FileNotFoundError, OSError):
             pass  # Expected for missing directory
@@ -199,7 +199,7 @@ class TestDeprecationWarnings:
                 warnings.simplefilter("always")
 
                 # Import the deprecated class
-                exec(f"from xpcs_toolkit import {class_name}")
+                exec(f"from xpcs_toolkit import {class_name}")  # nosec B102
 
                 # Check if warning was generated
                 if w:  # Some warnings might not be generated in test environment
@@ -232,7 +232,7 @@ class TestImportCompatibility:
         """Test that star imports work correctly."""
         # Test star imports in a separate namespace
         namespace = {}
-        exec("from xpcs_toolkit import *", namespace)
+        exec("from xpcs_toolkit import *", namespace)  # nosec B102
 
         # Should have imported main classes
         assert "XpcsDataFile" in namespace

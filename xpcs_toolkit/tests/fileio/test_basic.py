@@ -335,7 +335,7 @@ class TestFileIOIntegration:
 
         for submodule in submodules:
             try:
-                exec(f"from xpcs_toolkit.fileIO import {submodule}")
+                exec(f"from xpcs_toolkit.fileIO import {submodule}")  # nosec B102
             except ImportError:
                 # Some submodules might have missing dependencies
                 pass

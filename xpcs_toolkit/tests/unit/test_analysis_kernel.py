@@ -538,7 +538,8 @@ class TestAnalysisKernelJobManagement:
         # Test submit_averaging_job
         try:
             kernel_for_jobs.submit_averaging_job(
-                files=["file1.hdf", "file2.hdf"], output_path="/tmp/output.hdf"
+                files=["file1.hdf", "file2.hdf"],
+                output_path="/tmp/output.hdf",  # nosec B108
             )
         except (AttributeError, TypeError, ValueError, KeyError):
             # Expected if job management not fully implemented
@@ -610,7 +611,7 @@ class TestAnalysisKernelUtilityMethods:
 
         # Test SAXS 1D export
         with contextlib.suppress(AttributeError, TypeError, ValueError):
-            kernel_for_utils.export_saxs_1d_data(pg_handler=mock_handler, folder="/tmp")
+            kernel_for_utils.export_saxs_1d_data(pg_handler=mock_handler, folder="/tmp")  # nosec B108
 
         # Test G2 export
         with contextlib.suppress(AttributeError, TypeError, ValueError):

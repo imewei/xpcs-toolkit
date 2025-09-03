@@ -44,9 +44,9 @@ class TestXpcsConfig:
 
     def test_custom_configuration(self):
         """Test creating configuration with custom values."""
-        custom_cache_dir = Path("/tmp/custom_cache")
-        custom_temp_dir = Path("/tmp/custom_temp")
-        custom_log_file = Path("/tmp/custom.log")
+        custom_cache_dir = Path("/tmp/custom_cache")  # nosec B108
+        custom_temp_dir = Path("/tmp/custom_temp")  # nosec B108
+        custom_log_file = Path("/tmp/custom.log")  # nosec B108
 
         config = XpcsConfig(
             default_file_format="hdf5",
@@ -140,9 +140,9 @@ class TestXpcsConfig:
             "default_file_format": "custom",
             "max_workers": 12,
             "log_level": "WARNING",
-            "cache_dir": "/tmp/cache",
-            "temp_dir": "/tmp/temp",
-            "log_file": "/tmp/app.log",
+            "cache_dir": "/tmp/cache",  # nosec B108
+            "temp_dir": "/tmp/temp",  # nosec B108
+            "log_file": "/tmp/app.log",  # nosec B108
             "use_parallel_processing": False,
             "memory_limit_gb": 32.0,
         }
@@ -152,9 +152,9 @@ class TestXpcsConfig:
         assert config.default_file_format == "custom"
         assert config.max_workers == 12
         assert config.log_level == "WARNING"
-        assert config.cache_dir == Path("/tmp/cache")
-        assert config.temp_dir == Path("/tmp/temp")
-        assert config.log_file == Path("/tmp/app.log")
+        assert config.cache_dir == Path("/tmp/cache")  # nosec B108
+        assert config.temp_dir == Path("/tmp/temp")  # nosec B108
+        assert config.log_file == Path("/tmp/app.log")  # nosec B108
         assert config.use_parallel_processing is False
         assert config.memory_limit_gb == 32.0
 
