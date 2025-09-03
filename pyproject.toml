@@ -143,12 +143,17 @@ extended = [
 
 # Enhanced testing dependencies for comprehensive test coverage
 test-enhanced = [
+    "pytest>=6.0.0",                 # Base testing framework
+    "pytest-cov>=3.0.0",             # Coverage reporting
+    "coverage[toml]>=6.0.0",         # Code coverage
     "pytest-benchmark>=4.0.0",      # Performance benchmarking
     "pytest-xdist>=3.0.0",          # Parallel testing
     "hypothesis>=6.0.0",             # Property-based testing
     "pytest-mock>=3.0.0",            # Enhanced mocking
     "pytest-timeout>=2.0.0",         # Test timeouts
     "memory_profiler>=0.60.0",       # Memory usage testing
+    "ruff>=0.1.0",                   # Code quality and linting
+    "mypy>=1.0.0",                   # Type checking
 ]
 
 # All optional dependencies for complete installation

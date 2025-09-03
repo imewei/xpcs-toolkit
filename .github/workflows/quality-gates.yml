@@ -33,6 +33,14 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -e ".[dev]"
+        # Ensure ruff is available
+        pip install ruff>=0.1.0
+        
+    - name: Verify tools installation
+      run: |
+        echo "Verifying ruff installation:"
+        ruff --version
+        which ruff
     
     - name: Code formatting check
       run: |
