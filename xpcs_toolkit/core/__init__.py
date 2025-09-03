@@ -7,4 +7,8 @@ and domain models that form the heart of the XPCS analysis system.
 
 from __future__ import annotations
 
-__all__: list[str] = []
+from . import data
+
+__all__: list[str] = [
+    "data",
+]

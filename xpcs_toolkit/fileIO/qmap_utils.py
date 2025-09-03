@@ -18,7 +18,15 @@ logger = logging.getLogger(__name__)
 # Set up disk cache for q-space maps
 _cache_dir = Path.home() / ".cache" / "xpcs_toolkit" / "qmaps"
 _cache_dir.mkdir(parents=True, exist_ok=True)
-_memory = Memory(str(_cache_dir), verbose=0)
+_memory = None
+
+
+def _get_memory():
+    """Lazily initialize the joblib Memory cache."""
+    global _memory
+    if _memory is None:
+        _memory = Memory(str(_cache_dir), verbose=0)
+    return _memory
 
 
 class QMapManager:
@@ -37,7 +45,7 @@ class QMapManager:
 
         if use_disk_cache:
             # Use joblib Memory for persistent caching
-            self._cached_qmap_loader = _memory.cache(self._load_qmap_uncached)
+            self._cached_qmap_loader = _get_memory().cache(self._load_qmap_uncached)
         else:
             self._cached_qmap_loader = self._load_qmap_uncached
 
