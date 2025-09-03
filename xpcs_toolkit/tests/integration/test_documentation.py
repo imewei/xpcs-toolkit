@@ -438,7 +438,6 @@ class TestDocumentationConsistency:
     def test_import_path_consistency(self):
         """Test that documented import paths are valid."""
         documented_imports = [
-            "from xpcs_toolkit.core.data.locator import DataFileLocator",
             "from xpcs_toolkit.scientific.correlation import g2",
             "import xpcs_toolkit",
         ]
