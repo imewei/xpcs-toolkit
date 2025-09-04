@@ -11,8 +11,7 @@ include USER_GUIDE.md
 include DEVELOPER_GUIDE.md
 include SCIENTIFIC_BACKGROUND.md
 include FILE_FORMAT_GUIDE.md
-include DEPENDENCIES_GUIDE.md
-include QUALITY_GATES.md
+recursive-include docs *.md
 
 # Configuration files
 include pyproject.toml
@@ -53,8 +52,9 @@ recursive-include scripts *.sh
 include .pre-commit-config.yaml
 include .gitignore
 
-# Archive documentation (for completeness)
-recursive-include docs/archive *.md
+# Tutorials
+recursive-include tutorials *.ipynb
+recursive-include tutorials *.md
 
 # Exclude compiled files and caches
 global-exclude *.pyc

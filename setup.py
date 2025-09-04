@@ -162,7 +162,7 @@ setup(
     install_requires=CORE_REQUIREMENTS,
     extras_require=EXTRAS_REQUIRE,
     # Python version requirement
-    python_requires=">=3.12",
+    python_requires=">=3.9",
     # Console scripts
     entry_points={
         "console_scripts": [
