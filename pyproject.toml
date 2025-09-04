@@ -202,12 +202,17 @@ addopts = [
     "--strict-config",
     "--verbose",
     "--tb=short",
+    "--durations=10",  # Show 10 slowest tests
+    "--maxfail=5",  # Stop after 5 failures
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
     "benchmark: marks tests as performance benchmarks",
+    "performance: marks tests as performance tests",
+    "fileio: marks tests as file I/O related",
+    "serial: marks tests that must run serially (not in parallel)",
 ]
 filterwarnings = [
     "error",

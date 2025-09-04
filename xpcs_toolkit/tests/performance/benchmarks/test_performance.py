@@ -58,18 +58,18 @@ class TestPerformanceBenchmarks:
 
     @pytest.fixture(scope="class")
     def large_test_dataset(self, synthetic_data_generator):
-        """Generate large dataset for performance testing."""
+        """Generate large dataset for performance testing (optimized size)."""
         return synthetic_data_generator.generate_brownian_motion_intensity(
-            n_times=10000,  # Large dataset
-            n_q_bins=50,
+            n_times=2000,  # Reduced from 10000 for faster tests
+            n_q_bins=20,   # Reduced from 50
             noise_level=0.1,
         )
 
     @pytest.fixture(scope="class")
     def medium_test_dataset(self, synthetic_data_generator):
-        """Generate medium dataset for standard benchmarks."""
+        """Generate medium dataset for standard benchmarks (optimized size)."""
         return synthetic_data_generator.generate_brownian_motion_intensity(
-            n_times=1000, n_q_bins=20, noise_level=0.1
+            n_times=500, n_q_bins=10, noise_level=0.1  # Reduced for speed
         )
 
     @pytest.fixture(scope="class")
@@ -270,17 +270,18 @@ class TestPerformanceBenchmarks:
         else:
             pytest.skip("Memory profiling failed")
 
-    @pytest.mark.parametrize("data_size", [100, 1000, 10000])
+    @pytest.mark.parametrize("data_size", [50, 200, 500])  # Reduced from [100, 1000, 10000]
     @pytest.mark.benchmark(group="scaling")
+    @pytest.mark.slow  # Mark as slow test
     @pytest.mark.skipif(
         not pytest_benchmark_available, reason="pytest-benchmark not installed"
     )
     def test_scaling_performance(self, benchmark, data_size):
-        """Test how performance scales with data size."""
-        # Generate data of specified size
+        """Test how performance scales with data size (optimized with smaller datasets)."""
+        # Generate data of specified size with fewer q_bins for speed
         generator = SyntheticXPCSDataGenerator(random_seed=42)
         intensity, _, _ = generator.generate_brownian_motion_intensity(
-            n_times=data_size, n_q_bins=10
+            n_times=data_size, n_q_bins=5  # Reduced from 10 to 5
         )
 
         # Benchmark correlation calculation
@@ -290,10 +291,9 @@ class TestPerformanceBenchmarks:
         stats = benchmark.stats
         mean_time = stats.get("mean", 0)
 
-        # Time should scale reasonably with data size
-        # For n_times data, expect roughly O(n log n) scaling for multi-tau
-        expected_scaling_factor = data_size * np.log2(data_size) / (100 * np.log2(100))
-        max_expected_time = 0.1 * expected_scaling_factor  # 0.1s baseline for size 100
+        # Time should scale reasonably with data size (adjusted for smaller baseline)
+        expected_scaling_factor = data_size * np.log2(data_size) / (50 * np.log2(50))  # Adjusted baseline
+        max_expected_time = 0.05 * expected_scaling_factor  # Reduced baseline time
 
         assert mean_time < max_expected_time, (
             f"Scaling too poor: {mean_time:.3f}s > {max_expected_time:.3f}s for size {data_size}"

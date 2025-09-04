@@ -160,6 +160,7 @@ clean-test: ## Remove test and coverage artifacts
 	rm -fr $(HTMLCOV_DIR)/
 	rm -fr $(CACHE_DIR)/
 	rm -fr .pytest_cache/
+	rm -fr test_reports/
 	find . -name '.benchmarks' -type d -exec rm -rf {} +
 	rm -f test_report.html
 	rm -f bandit-report.json
@@ -222,13 +223,13 @@ security/bandit: ## Run security checks with bandit
 test: test/unit ## Run basic unit tests
 	@echo "$(GREEN)✓ Unit tests completed$(NC)"
 
-test/unit: ## Run unit tests
+test/unit: ## Run unit tests (optimized with parallelization)
 	@echo "$(CYAN)Running unit tests...$(NC)"
-	$(PYTEST) $(TESTS_DIR)/ -v --tb=short
+	$(PYTEST) $(TESTS_DIR)/unit/ -v --tb=short -n auto --maxfail=5 --durations=10
 
-test/integration: ## Run integration tests
+test/integration: ## Run integration tests (limited parallelization)
 	@echo "$(CYAN)Running integration tests...$(NC)"
-	$(PYTEST) $(TESTS_DIR)/ -v -m "integration" --tb=short
+	$(PYTEST) $(TESTS_DIR)/integration/ -v --tb=short -n 2 --durations=10
 
 test/cli: ## Test CLI functionality
 	@echo "$(CYAN)Testing CLI functionality...$(NC)"
@@ -258,8 +259,28 @@ test/performance: ## Run performance tests
 	@$(PYTHON) -c "import time; start=time.time(); import $(PACKAGE_NAME); print(f'Import time: {time.time()-start:.3f}s')"
 	@echo "$(GREEN)✓ Performance tests completed$(NC)"
 
+test/fast: ## Run fast unit tests only (excluding slow tests)
+	@echo "$(CYAN)Running fast unit tests...$(NC)"
+	$(PYTEST) $(TESTS_DIR)/unit/ -v --tb=short -m "not slow" -n auto --maxfail=3 --durations=5
+
+test/slow: ## Run slow tests only
+	@echo "$(CYAN)Running slow tests...$(NC)"
+	$(PYTEST) $(TESTS_DIR)/ -v --tb=short -m "slow" --durations=15
+
+test/performance: ## Run performance benchmarks (serial execution)
+	@echo "$(CYAN)Running performance benchmarks...$(NC)"
+	$(PYTEST) $(TESTS_DIR)/performance/ -v --tb=short -m "not slow" --durations=15
+
+test/ci: ## Run CI-optimized test suite (parallel, excluding slow tests)
+	@echo "$(CYAN)Running CI-optimized tests...$(NC)"
+	$(PYTEST) $(TESTS_DIR)/ -v --tb=short -m "not slow and not benchmark" -n auto --maxfail=5 --durations=15
+
 test/all: test/unit test/integration test/cli test/performance ## Run all tests
 	@echo "$(GREEN)✓ All tests completed$(NC)"
+
+test/parallel: ## Run all tests in parallel (full parallelization)
+	@echo "$(CYAN)Running all tests in parallel...$(NC)"
+	$(PYTEST) $(TESTS_DIR)/ -v --tb=short -n auto --durations=20
 
 coverage: ## Run tests with coverage reporting
 	@echo "$(CYAN)Running coverage analysis...$(NC)"
