@@ -9,19 +9,26 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "xpcs-toolkit"
 dynamic = ["version"]
-description = "XPCS Toolkit: A comprehensive command-line tool for X-ray Photon Correlation Spectroscopy analysis"
+description = "Advanced X-ray Photon Correlation Spectroscopy (XPCS) analysis toolkit for synchrotron beamline operations and research environments"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.9"
 license = {text = "MIT"}
 keywords = [
     "XPCS", 
     "X-ray", 
-    "photon correlation spectroscopy", 
+    "photon-correlation-spectroscopy", 
     "synchrotron", 
-    "visualization", 
-    "scientific computing",
-    "materials science",
-    "soft matter"
+    "beamline", 
+    "scientific-computing",
+    "materials-science",
+    "soft-matter",
+    "correlation-analysis",
+    "SAXS",
+    "scattering",
+    "dynamics",
+    "HDF5",
+    "data-analysis",
+    "visualization"
 ]
 
 authors = [
