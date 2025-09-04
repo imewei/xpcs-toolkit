@@ -8,7 +8,8 @@
 [![Coverage Status](https://img.shields.io/codecov/c/github/imewei/xpcs-toolkit)](https://codecov.io/gh/imewei/xpcs-toolkit)
 [![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Downloads](https://img.shields.io/pypi/dm/xpcs-toolkit)](https://pypi.org/project/xpcs-toolkit/)
-[![GitHub stars](https://img.shields.io/github/stars/imewei/xpcs-toolkit)](https://github.com/imewei/xpcs-toolkit/stargazers)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/xpcs-toolkit?color=blue&logo=pypi)](https://pypi.org/project/xpcs-toolkit/)
+[![GitHub stars](https://img.shields.io/github/stars/imewei/xpcs-toolkit?style=social)](https://github.com/imewei/xpcs-toolkit/stargazers)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
 
 A comprehensive command-line tool for X-ray Photon Correlation Spectroscopy (XPCS) analysis, designed for synchrotron beamline operations and research environments.
@@ -55,16 +56,13 @@ make dev  # or: pip install -e .[dev]
 # Core functionality
 pip install xpcs-toolkit
 
-# With specific optional dependencies
-pip install xpcs-toolkit[dev]         # Development tools
-pip install xpcs-toolkit[docs]        # Documentation tools  
-pip install xpcs-toolkit[performance] # Performance optimizations
+# Development installation
+pip install xpcs-toolkit[dev]         # Development and testing tools
+pip install xpcs-toolkit[all]         # All optional dependencies
 
-# With all optional dependencies
-pip install xpcs-toolkit[all]
-
-# Minimal (containers/embedded)
-pip install -r requirements-minimal.txt
+# From source
+git clone https://github.com/imewei/xpcs-toolkit.git
+cd xpcs-toolkit && make dev
 ```
 
 ## 🚀 Quick Start
@@ -179,12 +177,6 @@ make coverage       # Generate test coverage report
 - **[Quick Start Tutorial](https://xpcs-toolkit.readthedocs.io/en/latest/quickstart.html)** - Get started in 5 minutes  
 - **[API Reference](https://xpcs-toolkit.readthedocs.io/en/latest/api/)** - Complete API documentation
 - **[User Guides](https://xpcs-toolkit.readthedocs.io/en/latest/guides/)** - In-depth tutorials and examples
-- **[FAQ](https://xpcs-toolkit.readthedocs.io/en/latest/faq.html)** - Common questions and troubleshooting
-
-#### Development Resources
-- **[Contributing Guide](https://xpcs-toolkit.readthedocs.io/en/latest/contributing.html)** - How to contribute
-- **[Changelog](https://xpcs-toolkit.readthedocs.io/en/latest/changelog.html)** - Release history
-- **[Developer Documentation](https://xpcs-toolkit.readthedocs.io/en/latest/development/)** - Development setup
 
 ## 🤝 Contributing
 
@@ -242,16 +234,13 @@ Developed at **Argonne National Laboratory** with support from the U.S. Departme
 - **Documentation**: See included documentation files and tutorials
 
 ## 📖 Local Documentation
-
-### User Guides
 - **[USER_GUIDE.md](USER_GUIDE.md)** - Complete user guide with CLI and API examples
 - **[SCIENTIFIC_BACKGROUND.md](SCIENTIFIC_BACKGROUND.md)** - Theory and scientific methods  
 - **[FILE_FORMAT_GUIDE.md](FILE_FORMAT_GUIDE.md)** - File formats and data structures
-
-### Developer Resources  
 - **[DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md)** - Development setup, testing, and contribution guide
-- **[DEPENDENCIES_GUIDE.md](DEPENDENCIES_GUIDE.md)** - Dependency management and installation options
-- **[QUALITY_GATES.md](QUALITY_GATES.md)** - Code quality standards and CI/CD processes
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - How to contribute to the project
+- **[CHANGELOG.md](CHANGELOG.md)** - Release history and changes
+- **[docs/QUALITY_REPORT.md](docs/QUALITY_REPORT.md)** - Code quality metrics and analysis
 
 ## 📜 License
 
