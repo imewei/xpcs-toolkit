@@ -138,7 +138,7 @@ Advanced Photon Source, Argonne National Laboratory
 
 import numpy as np
 
-from ..mpl_compat import mkPen
+from xpcs_toolkit.mpl_compat import mkPen
 
 PG_COLORS = [
     "#1f77b4",

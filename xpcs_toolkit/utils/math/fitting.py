@@ -4,7 +4,7 @@ import traceback
 from typing import Any
 
 # Use lazy imports for heavy dependencies to improve import time
-from .._lazy_imports import lazy_import
+from xpcs_toolkit._lazy_imports import lazy_import
 
 np = lazy_import("numpy")
 curve_fit = lazy_import("scipy.optimize", "curve_fit")

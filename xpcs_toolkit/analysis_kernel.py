@@ -10,11 +10,12 @@ from ._lazy_imports import lazy_import
 
 np = lazy_import("numpy")
 
+from xpcs_toolkit.mpl_compat import DataTreeWidget
+
 from .data_file_locator import DataFileLocator
 from .helper.listmodel import TableDataModel
 from .module import g2mod, intt, saxs1d, saxs2d, stability, tauq, twotime
 from .module.average_toolbox import AverageToolbox
-from .mpl_compat import DataTreeWidget
 from .xpcs_file import XpcsDataFile
 
 logger = logging.getLogger(__name__)

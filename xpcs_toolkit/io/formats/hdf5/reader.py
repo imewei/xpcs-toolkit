@@ -3,10 +3,11 @@ from pathlib import Path
 from typing import Any, Optional, Union
 
 # Use lazy imports for heavy dependencies
-from .._lazy_imports import lazy_import
-from ..helper.logging_config import get_logger
-from ..helper.logging_utils import PerformanceTimer, log_exceptions
-from .aps_8idi import key as hdf_key
+from xpcs_toolkit._lazy_imports import lazy_import
+from xpcs_toolkit.helper.logging_config import get_logger
+from xpcs_toolkit.helper.logging_utils import PerformanceTimer, log_exceptions
+
+from xpcs_toolkit.fileIO.aps_8idi import key as hdf_key
 
 h5py = lazy_import("h5py")
 np = lazy_import("numpy")

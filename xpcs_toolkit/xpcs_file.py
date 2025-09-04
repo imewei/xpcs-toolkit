@@ -1091,7 +1091,7 @@ class XpcsDataFile:
 
     def get_pg_tree(self):
         """Return data tree in dictionary format for headless usage"""
-        from .mpl_compat import DataTreeWidget
+        from xpcs_toolkit.mpl_compat import DataTreeWidget
 
         data = self.load_dataset()
         if data is None:

@@ -17,7 +17,7 @@ from contextlib import contextmanager
 import logging
 from typing import Any, Callable, Optional, Union
 
-from .._lazy_imports import lazy_import
+from xpcs_toolkit._lazy_imports import lazy_import
 
 h5py = lazy_import("h5py")
 np = lazy_import("numpy")

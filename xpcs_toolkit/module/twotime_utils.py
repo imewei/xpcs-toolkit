@@ -15,7 +15,7 @@ from .._lazy_imports import lazy_import
 
 h5py = lazy_import("h5py")
 
-from ..fileIO.aps_8idi import key as key_map
+from xpcs_toolkit.fileIO.aps_8idi import key as key_map
 
 key_map = key_map["nexus"]
 

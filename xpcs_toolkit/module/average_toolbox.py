@@ -173,16 +173,17 @@ from shutil import copyfile
 import time
 import uuid
 
+from xpcs_toolkit.mpl_compat import MockSignal
+
 # Use lazy imports for heavy dependencies
 from .._lazy_imports import lazy_import
-from ..mpl_compat import MockSignal
 
 np = lazy_import("numpy")
 trange = lazy_import("tqdm", "trange")
 
-from ..fileIO.hdf_reader import put
-from ..helper.listmodel import ListDataModel
-from ..xpcs_file import XpcsDataFile as XF
+from xpcs_toolkit.fileIO.hdf_reader import put
+from xpcs_toolkit.helper.listmodel import ListDataModel
+from xpcs_toolkit.xpcs_file import XpcsDataFile as XF
 
 # Optional imports
 try:

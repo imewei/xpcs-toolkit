@@ -10,7 +10,9 @@ from ...utils.common.lazy_imports import lazy_import
 
 np = lazy_import("numpy")
 
-from ...helper.listmodel import TableDataModel
+from xpcs_toolkit.helper.listmodel import TableDataModel
+
+from ...core.data.locator import DataFileLocator
 from ...scientific.correlation import twotime
 from ...scientific.dynamics import intensity as intt
 from ...scientific.dynamics import stability, tauq
@@ -19,7 +21,6 @@ from ...scientific.scattering import saxs_1d as saxs1d
 from ...scientific.scattering import saxs_2d as saxs2d
 from ...utils.compatibility.matplotlib import DataTreeWidget
 from ...xpcs_file import XpcsDataFile
-from ..data.locator import DataFileLocator
 
 logger = logging.getLogger(__name__)
 
