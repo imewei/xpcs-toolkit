@@ -22,52 +22,72 @@ def test_new_package_imports():
     assert hasattr(xpcs_toolkit, "__author__")
 
 
-def test_cli_version_new_name():
-    """Test that the new CLI commands show correct branding (if installed as console scripts)."""
+@pytest.fixture(scope="session")
+def cli_version_results():
+    """Cache CLI version results to avoid repeated subprocess calls."""
     import shutil
-
+    results = {}
+    
     # Test xpcs-toolkit command if available
     if shutil.which("xpcs-toolkit"):
         result = subprocess.run(
-            ["xpcs-toolkit", "--version"], capture_output=True, text=True
+            ["xpcs-toolkit", "--version"], capture_output=True, text=True, timeout=10
         )
-        if result.returncode == 0:
-            assert "xpcs-toolkit" in result.stdout.lower()
-
+        results["xpcs-toolkit"] = result
+    
     # Test xpcs command if available
     if shutil.which("xpcs"):
-        result = subprocess.run(["xpcs", "--version"], capture_output=True, text=True)
-        if result.returncode == 0:
-            assert "xpcs-toolkit" in result.stdout.lower()
-
-    # At minimum, test the direct module invocation
+        result = subprocess.run(
+            ["xpcs", "--version"], capture_output=True, text=True, timeout=10
+        )
+        results["xpcs"] = result
+    
+    # Direct module invocation (most important test)
     result = subprocess.run(
         [sys.executable, "-m", "xpcs_toolkit.cli_headless", "--version"],
         capture_output=True,
         text=True,
+        timeout=10
     )
+    results["module"] = result
+    
+    return results
+
+
+def test_cli_version_new_name(cli_version_results):
+    """Test that the new CLI commands show correct branding (optimized with cached results)."""
+    # Check cached results instead of running subprocess calls
+    if "xpcs-toolkit" in cli_version_results:
+        result = cli_version_results["xpcs-toolkit"]
+        if result.returncode == 0:
+            assert "xpcs-toolkit" in result.stdout.lower()
+
+    if "xpcs" in cli_version_results:
+        result = cli_version_results["xpcs"]
+        if result.returncode == 0:
+            assert "xpcs-toolkit" in result.stdout.lower()
+
+    # At minimum, test the direct module invocation
+    result = cli_version_results["module"]
     assert result.returncode == 0
     assert "xpcs-toolkit" in result.stdout.lower()
 
 
-def test_cli_help_new_branding():
-    """Test that the CLI shows new branding."""
+@pytest.fixture(scope="session")
+def cli_help_result():
+    """Cache CLI help result to avoid repeated subprocess calls."""
     result = subprocess.run(
         [sys.executable, "-m", "xpcs_toolkit.cli_headless", "--help"],
         capture_output=True,
         text=True,
+        timeout=10
     )
-    assert result.returncode == 0
-    assert "XPCS Toolkit" in result.stdout
-    assert "usage" in result.stdout.lower()
+    return result
 
 
-def test_backward_compatibility_warning():
-    """Test that backward compatibility imports issue deprecation warnings."""
-    import subprocess
-    import sys
-
-    # Test in a subprocess to ensure clean import and instantiation
+@pytest.fixture(scope="session") 
+def backward_compatibility_result():
+    """Cache backward compatibility test result."""
     test_code = """
 import warnings
 warnings.simplefilter('always')
@@ -80,9 +100,22 @@ except:
     pass  # Don't care about errors, just want warnings
 """
     result = subprocess.run(
-        [sys.executable, "-c", test_code], capture_output=True, text=True
+        [sys.executable, "-c", test_code], capture_output=True, text=True, timeout=10
     )
+    return result
 
+
+def test_cli_help_new_branding(cli_help_result):
+    """Test that the CLI shows new branding (optimized with cached result)."""
+    result = cli_help_result
+    assert result.returncode == 0
+    assert "XPCS Toolkit" in result.stdout
+    assert "usage" in result.stdout.lower()
+
+
+def test_backward_compatibility_warning(backward_compatibility_result):
+    """Test that backward compatibility imports issue deprecation warnings (optimized)."""
+    result = backward_compatibility_result
     # Check that a deprecation warning was issued (warnings go to stderr)
     assert "DeprecationWarning" in result.stderr
     assert "deprecated" in result.stderr.lower()
