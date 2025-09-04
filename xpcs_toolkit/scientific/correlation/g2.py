@@ -414,6 +414,40 @@ def pg_plot(
 
     For visualization in headless mode, use the matplotlib-based plotting
     functions available in the CLI interface instead.
+
+    Parameters
+    ----------
+    hdl : object
+        Plot handle (disabled)
+    xf_list : list of str
+        List of XPCS data file paths (disabled)
+    q_range : tuple of int
+        Momentum transfer range (disabled)
+    t_range : tuple of int
+        Time range (disabled)
+    y_range : tuple of float
+        Y-axis range (disabled)
+    y_auto : bool, optional
+        Auto-scale Y axis (disabled)
+    q_auto : bool, optional
+        Auto-scale Q axis (disabled)
+    t_auto : bool, optional
+        Auto-scale time axis (disabled)
+    **kwargs
+        Additional plotting parameters (disabled)
+
+    Returns
+    -------
+    None
+        Function raises NotImplementedError
+
+    Examples
+    --------
+    This function is disabled in headless mode:
+    
+    >>> pg_plot(None, [], (0, 10), (0, 1), (0.9, 2.0))
+    Traceback (most recent call last):
+    NotImplementedError: GUI plotting functionality has been disabled...
     """
     raise NotImplementedError(
         "GUI plotting functionality has been disabled in headless mode. "
@@ -427,6 +461,38 @@ def pg_plot_one_g2(ax, x, y, dy, color, label, symbol, symbol_size=5):
 
     This function has been disabled as it requires GUI plotting functionality.
     Use the matplotlib-based CLI interface for visualization instead.
+
+    Parameters
+    ----------
+    ax : object
+        Plot axis handle (disabled)
+    x : array_like
+        X-axis data (disabled)
+    y : array_like
+        Y-axis data (disabled)
+    dy : array_like
+        Error bar data (disabled)
+    color : str
+        Plot color (disabled)
+    label : str
+        Plot label (disabled)
+    symbol : str
+        Plot symbol (disabled)
+    symbol_size : int, optional
+        Symbol size (disabled), default 5
+
+    Returns
+    -------
+    None
+        Function raises NotImplementedError
+
+    Examples
+    --------
+    This function is disabled in headless mode:
+    
+    >>> pg_plot_one_g2(None, [], [], [], 'red', 'test', 'o')
+    Traceback (most recent call last):
+    NotImplementedError: GUI plotting functionality has been disabled...
     """
     raise NotImplementedError(
         "GUI plotting functionality has been disabled in headless mode. "
