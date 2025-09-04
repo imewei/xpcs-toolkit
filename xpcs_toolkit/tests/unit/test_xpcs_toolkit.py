@@ -27,21 +27,21 @@ def cli_version_results():
     """Cache CLI version results to avoid repeated subprocess calls."""
     import shutil
     results = {}
-    
+
     # Test xpcs-toolkit command if available
     if shutil.which("xpcs-toolkit"):
         result = subprocess.run(
             ["xpcs-toolkit", "--version"], capture_output=True, text=True, timeout=10
         )
         results["xpcs-toolkit"] = result
-    
+
     # Test xpcs command if available
     if shutil.which("xpcs"):
         result = subprocess.run(
             ["xpcs", "--version"], capture_output=True, text=True, timeout=10
         )
         results["xpcs"] = result
-    
+
     # Direct module invocation (most important test)
     result = subprocess.run(
         [sys.executable, "-m", "xpcs_toolkit.cli_headless", "--version"],
@@ -50,7 +50,7 @@ def cli_version_results():
         timeout=10
     )
     results["module"] = result
-    
+
     return results
 
 
@@ -85,7 +85,7 @@ def cli_help_result():
     return result
 
 
-@pytest.fixture(scope="session") 
+@pytest.fixture(scope="session")
 def backward_compatibility_result():
     """Cache backward compatibility test result."""
     test_code = """

@@ -444,7 +444,7 @@ def pg_plot(
     Examples
     --------
     This function is disabled in headless mode:
-    
+
     >>> pg_plot(None, [], (0, 10), (0, 1), (0.9, 2.0))
     Traceback (most recent call last):
     NotImplementedError: GUI plotting functionality has been disabled...
@@ -489,7 +489,7 @@ def pg_plot_one_g2(ax, x, y, dy, color, label, symbol, symbol_size=5):
     Examples
     --------
     This function is disabled in headless mode:
-    
+
     >>> pg_plot_one_g2(None, [], [], [], 'red', 'test', 'o')
     Traceback (most recent call last):
     NotImplementedError: GUI plotting functionality has been disabled...

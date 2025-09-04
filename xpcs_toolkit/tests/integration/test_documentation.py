@@ -117,7 +117,7 @@ class TestDocumentationQuality:
                 obj = getattr(module_obj, name)
                 if not callable(obj):
                     continue
-                
+
                 # Skip imported objects (they don't need our docstrings)
                 if hasattr(obj, '__module__') and obj.__module__ != module_obj.__name__:
                     continue

@@ -139,7 +139,9 @@ def mock_data_file():
 def synthetic_data_generator():
     """Create a synthetic data generator for testing (session-scoped)."""
     try:
-        from xpcs_toolkit.tests.fixtures.synthetic_data import SyntheticXPCSDataGenerator
+        from xpcs_toolkit.tests.fixtures.synthetic_data import (
+            SyntheticXPCSDataGenerator,
+        )
         return SyntheticXPCSDataGenerator(random_seed=42)
     except ImportError:
         return None
@@ -149,22 +151,22 @@ def synthetic_data_generator():
 def shared_temp_files(temp_dir):
     """Create shared temporary files for testing (session-scoped)."""
     files = {}
-    
+
     # Create test HDF5 files with minimal data
     import h5py
-    
+
     test_file = temp_dir / "shared_test.h5"
     with h5py.File(test_file, "w") as f:
         f.create_dataset("test_data", data=np.arange(100))
         f.create_dataset("metadata", data="test")
-        
+
     files["hdf5_test"] = test_file
-    
+
     # Create test text file
     text_file = temp_dir / "test.txt"
     text_file.write_text("test data\nline 2\n")
     files["text_test"] = text_file
-    
+
     return files
 
 
@@ -185,11 +187,11 @@ def pytest_collection_modifyitems(config, items):
         # Add slow marker for performance tests
         if "performance" in item.nodeid or "slow" in item.name:
             item.add_marker(pytest.mark.slow)
-            
+
         # Mark tests that must run serially (not in parallel)
         if any(keyword in item.nodeid for keyword in ["cli", "subprocess", "system"]):
             item.add_marker(pytest.mark.serial)
-            
+
         # Mark benchmark tests
         if "benchmark" in item.nodeid or "benchmark" in item.name:
             item.add_marker(pytest.mark.benchmark)
